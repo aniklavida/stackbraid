@@ -1,0 +1,19 @@
+{
+  "name": "@stackbraid/conformance",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Contract conformance suite for the StackBraid Identity API. Runs against any backend implementing contract/openapi.yaml, on any database provider, given only a base URL.",
+  "type": "module",
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "bin": {
+    "stackbraid-conformance": "cli/run.mjs"
+  },
+  "scripts": {
+    "conformance": "node cli/run.mjs",
+    "stub": "node fixtures/stub-server/server.mjs",
+    "demo:violations": "node scripts/demo-violations.mjs"
+  },
+  "license": "MIT"
+}
