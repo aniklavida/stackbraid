@@ -1,0 +1,21 @@
+{
+  "name": "@stackbraid/client-typescript",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TypeScript client for the StackBraid Identity API, generated from contract/openapi.yaml. Never hand-edited — see README.md.",
+  "type": "module",
+  "types": "./src/generated/index.ts",
+  "main": "./src/generated/index.ts",
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "scripts": {
+    "generate": "openapi-ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@hey-api/openapi-ts": "0.99.0",
+    "typescript": "5.9.3"
+  },
+  "license": "MIT"
+}
