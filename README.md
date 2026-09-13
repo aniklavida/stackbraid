@@ -43,6 +43,27 @@ StackBraid ships its own agent configuration, and it is **tool-neutral**. Proced
 
 A skeleton's real failure mode is people abandoning its conventions — month three, someone adds an endpoint by hand, skips the contract, hand-writes a client, and it rots from inside. StackBraid has exactly one correct path, which is what a playbook can encode.
 
+## Dependencies
+
+**Every dependency shipped here is inherited by every user of this skeleton.** Full audit, every licence, every verification date: [`docs/DEPENDENCIES.md`](docs/DEPENDENCIES.md). Direct, top-level dependencies of what exists today:
+
+| Package | Licence | Class |
+|---|---|---|
+| `@hey-api/openapi-ts` (TypeScript client) | MIT | build-tooling |
+| `typescript` (TypeScript client) | Apache-2.0 | build-tooling |
+| `dio` (Dart client) | MIT | compiled into user code |
+| `copy_with_extension` (Dart client) | MIT | compiled into user code |
+| `json_annotation` (Dart client) | BSD-3-Clause | compiled into user code |
+| `build_runner`, `copy_with_extension_gen`, `json_serializable`, `test` (Dart client, dev-only) | BSD-3-Clause / MIT | build-tooling |
+| `postgres:16-alpine` | PostgreSQL Licence | separate process |
+| `rabbitmq:3.13-management-alpine` | MPL-2.0 | separate process |
+| `redis:7.2-alpine` | BSD-3-Clause | separate process |
+| `prom/prometheus:v2.54.1` | Apache-2.0 | separate process |
+| `grafana/loki:2.9.8` | AGPL-3.0-only | separate process |
+| `grafana/grafana:11.2.0` | AGPL-3.0-only | separate process |
+
+A CI check (`scripts/check-dependency-licenses.mjs`) fails the build if a dependency changes version or is added without a matching entry in the audit.
+
 ## Documentation
 
 - [Product specification](docs/SPEC.md)
@@ -50,6 +71,7 @@ A skeleton's real failure mode is people abandoning its conventions — month th
 - [Folder structure](docs/STRUCTURE.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Release checklist](docs/RELEASE_CHECKLIST.md)
+- [Dependency licence audit](docs/DEPENDENCIES.md)
 
 ## Licence
 
