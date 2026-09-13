@@ -11,5 +11,8 @@ All notable changes to StackBraid are documented here, following [Keep a Changel
 - The `Identity` API contract (`contract/openapi.yaml`): auth, users and roles, validated against OpenAPI 3.1.
 - A conformance suite (`contract/conformance/`), written against the contract and runnable against any backend on any database provider, with a stub fixture proving it catches contract violations.
 - Generated TypeScript (`clients/typescript/`) and Dart (`clients/dart/`) clients, wired to regenerate from `contract/openapi.yaml` with one command (`scripts/generate-clients.sh`), plus a drift check and pre-commit hook that fail when the committed clients no longer match a fresh generation. Client generation is wired; no backend exists, so neither client has called a real server.
+- The repository folder scaffold from `docs/STRUCTURE.md` — `backends/`, `frontends/`, `mobile/`, `create/` — each a placeholder stating plainly that no code lives there yet.
+- `infra/compose.yaml`: Postgres, RabbitMQ, Redis, Prometheus, Loki and Grafana on one network, every value defaulted so the stack runs with no `.env` file. Prometheus scrapes itself and RabbitMQ's built-in metrics plugin; Grafana auto-provisions both datasources and three pre-built dashboards (`infra/grafana/dashboards/`). `.env.example` names every variable the compose file reads and fills none in.
+- CI (`.github/workflows/ci.yml`): lint (shellcheck, yamllint, dashboard JSON validation), build (compose config validation, TypeScript client typecheck), test (the Dart client's test suite), and a `client-drift` job that runs `scripts/check-client-drift.sh` in CI so drifted clients can no longer reach `main` through an unconfigured clone or a `--no-verify` commit.
 
-Nothing is implemented yet. There is no release.
+Nothing is implemented yet. There is no release. The infrastructure stack has not been run end to end on a clean machine — see the commit messages above for exactly what was and was not verified.
