@@ -13,9 +13,9 @@ Anything reciprocal-for-consumers — **RPL, SSPL, RSAL, BSL, or a revenue-gated
 
 This document is the narrative record. The machine-readable source of truth is `docs/dependency-inventory.json`, checked on every push by `scripts/check-dependency-licenses.mjs` (see "The CI gate" below). **A licence recorded from memory is not an audit** — every entry below was verified against the actual package's registry metadata or licence file on the date given, not carried forward from an earlier audit's notes.
 
-**Truthfulness note:** no backend, frontend or mobile app exists yet (see `AGENTS.md`). This inventory covers exactly what is genuinely shipped today — the two generated API clients, the infrastructure compose stack, and the tooling CI installs. It will grow, stack by stack, as each is actually built. Nothing below pre-audits code that does not exist.
+**Truthfulness note:** the .NET backend is under construction (see `docs/ROADMAP.md` step 2); no frontend or mobile app exists yet. This inventory covers exactly what is genuinely shipped today — the two generated API clients, the infrastructure compose stack, the tooling CI installs, and the .NET backend's own resolved dependency graph. It will grow, stack by stack, as each is actually built. Nothing below pre-audits code that does not exist.
 
-Last verified: **2026-09-13**.
+Last verified: **2026-09-14**.
 
 ## TypeScript client — `clients/typescript/`
 
@@ -53,6 +53,38 @@ Unlike the TypeScript client, the generated Dio-based Dart client **does** carry
 All eleven are MIT or BSD-3-Clause — compliant with the compiled-into-user-code rule.
 
 **Build tooling** (`dev_dependencies:` in `pubspec.yaml` — `build_runner`, `copy_with_extension_gen`, `json_serializable`, `test` — plus the 51 further packages their code generation and test-running pull in transitively). Every one of them is BSD-3-Clause, MIT or Apache-2.0 (`source_helper`), per `docs/dependency-inventory.json`, ecosystem `dart-client`. None are compiled into a consumer's app; they run only while regenerating the client or running `dart test`.
+
+## .NET backend — `backends/dotnet/`
+
+Every project under `backends/dotnet/src/` and `backends/dotnet/tests/` restores
+with `RestorePackagesWithLockFile` (set once in `backends/dotnet/Directory.Build.props`),
+so each has its own committed `packages.lock.json` — the .NET analogue of
+`package-lock.json` / `pubspec.lock`, and what `scripts/check-dependency-licenses.mjs`
+reads under the `nuget-dotnet-backend` ecosystem.
+
+**Compiled into the running backend** (referenced by a `src/` project, so it ships inside the server that answers a request):
+
+| Package | Version | Licence |
+|---|---|---|
+| `Mediator.Abstractions` | 3.0.2 | MIT (nuspec declares a `license type="file"`; verified against the committed `LICENSE` in `martinothamar/Mediator` on GitHub) |
+| `FluentValidation` | 12.1.1 | Apache-2.0 |
+| `Microsoft.EntityFrameworkCore` (+ `.Abstractions`, `.Analyzers`) | 10.0.12 | MIT |
+| `Microsoft.Extensions.Caching.Memory` (+ `.Abstractions`) | 10.0.12 | MIT |
+| `Microsoft.Extensions.DependencyInjection` (+ `.Abstractions`) | 10.0.12 | MIT |
+| `Microsoft.Extensions.Logging` (+ `.Abstractions`) | 10.0.12 | MIT |
+| `Microsoft.Extensions.Options` | 10.0.12 | MIT |
+| `Microsoft.Extensions.Primitives` | 10.0.12 | MIT |
+
+All eight are MIT or Apache-2.0 — compliant with the compiled-into-user-code rule. `StackBraid.Shared`
+(see `docs/STRUCTURE.md`) also uses a `FrameworkReference` to `Microsoft.AspNetCore.App` for
+`ProblemDetails`, localization and rate limiting types — a reference to the shared
+.NET runtime already installed alongside the SDK, not a NuGet download of its own, so it
+carries no separate licence to audit (the same basis `backends/dotnet/src/Host` gets automatically
+from `Microsoft.NET.Sdk.Web`).
+
+**Build/test tooling** (referenced only by a `tests/` project — xUnit, Shouldly and NSubstitute, matching `docs/SPEC.md`'s test-dependency table — plus their own transitive closure): `xunit` and its `xunit.*` satellite packages, `xunit.runner.visualstudio`, `xunit.abstractions` (Apache-2.0 — its nuspec `licenseUrl` points at xunit's own `license.txt`, read directly rather than assumed), `Microsoft.NET.Test.Sdk`, `Microsoft.TestPlatform.*`, `coverlet.collector`, `Shouldly` (BSD-3-Clause) and its `DiffEngine`/`EmptyFiles` dependencies, `NSubstitute` (BSD-3-Clause) and its `Castle.Core` (Apache-2.0) dependency, plus `Newtonsoft.Json`, `System.CodeDom`, `System.Diagnostics.EventLog` and `System.Management` pulled in transitively. None of these compile into the running server; every one is MIT, Apache-2.0 or BSD-3-Clause regardless.
+
+**Deliberately not added yet:** `Hangfire.Core`, `QuestPDF` and `ClosedXML` — named in `docs/SPEC.md`'s dependency table as the intended real implementations behind `IJobScheduler`, `IPdfGenerator` and `IExcelExporter` — are not referenced by any `.csproj` today. Those interfaces currently ship with a minimal, dependency-free default (an in-process job queue, a hand-written PDF writer, and CSV export) so the layer compiles and is genuinely tested without auditing a library nothing yet depends on. They enter this document, with a verified date, the same day they enter a `.csproj` — the same rule already applied to them here before any backend existed.
 
 ## Infrastructure — `infra/compose.yaml`
 
@@ -113,7 +145,7 @@ The rule: an attribution obligation arises only from **actually reusing** third-
 
 ## The CI gate
 
-`scripts/check-dependency-licenses.mjs` (zero runtime dependencies — Node built-ins only) runs in `.github/workflows/ci.yml` on every push and pull request. It checks what is **actually resolved** today — `clients/typescript/package-lock.json`, `clients/dart/pubspec.lock`, and every `image:` tag in `infra/compose.yaml` — against `docs/dependency-inventory.json`, and fails the build when:
+`scripts/check-dependency-licenses.mjs` (zero runtime dependencies — Node built-ins only) runs in `.github/workflows/ci.yml` on every push and pull request. It checks what is **actually resolved** today — `clients/typescript/package-lock.json`, `clients/dart/pubspec.lock`, every `backends/dotnet/**/packages.lock.json`, and every `image:` tag in `infra/compose.yaml` — against `docs/dependency-inventory.json`, and fails the build when:
 
 - a resolved package/version has no matching entry in the inventory (**unaudited dependency**);
 - a resolved version differs from the version the inventory audited (**drift** — the exact shape of the Redis problem, generalised: something moved and nobody re-checked the licence);

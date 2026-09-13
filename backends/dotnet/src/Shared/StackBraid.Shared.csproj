@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>StackBraid.Shared</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    Not a web project (no host, no listening port) — but Problem Details,
+    localization and rate limiting are ASP.NET Core types, and a
+    FrameworkReference pulls them from the shared runtime already installed
+    alongside the SDK, at no extra download and no licence of its own to
+    audit (the same basis Host already gets automatically from
+    Microsoft.NET.Sdk.Web).
+  -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mediator.Abstractions" Version="3.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Resources\*.json" />
+  </ItemGroup>
+
+</Project>

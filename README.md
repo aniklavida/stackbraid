@@ -55,6 +55,10 @@ A skeleton's real failure mode is people abandoning its conventions — month th
 | `copy_with_extension` (Dart client) | MIT | compiled into user code |
 | `json_annotation` (Dart client) | BSD-3-Clause | compiled into user code |
 | `build_runner`, `copy_with_extension_gen`, `json_serializable`, `test` (Dart client, dev-only) | BSD-3-Clause / MIT | build-tooling |
+| `Mediator.Abstractions` (.NET backend) | MIT | compiled into user code |
+| `FluentValidation` (.NET backend) | Apache-2.0 | compiled into user code |
+| `Microsoft.EntityFrameworkCore` (.NET backend) | MIT | compiled into user code |
+| `xunit`, `Shouldly`, `NSubstitute` (.NET backend, test-only) | Apache-2.0 / BSD-3-Clause | build-tooling |
 | `postgres:16-alpine` | PostgreSQL Licence | separate process |
 | `rabbitmq:3.13-management-alpine` | MPL-2.0 | separate process |
 | `redis:7.2-alpine` | BSD-3-Clause | separate process |

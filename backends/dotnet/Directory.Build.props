@@ -1,0 +1,19 @@
+<Project>
+
+  <!--
+    Settings shared by every project in the .NET backend.
+
+    RestorePackagesWithLockFile pins the exact resolved graph per project into
+    packages.lock.json, committed alongside the csproj — the .NET analogue of
+    package-lock.json / pubspec.lock, and what the dependency licence audit
+    (docs/DEPENDENCIES.md, scripts/check-dependency-licenses.mjs) reads to know
+    what is actually resolved.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\StackBraid.Features.Identity.Application.csproj" />
+    <ProjectReference Include="..\Contracts\StackBraid.Features.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Shared\StackBraid.Shared.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

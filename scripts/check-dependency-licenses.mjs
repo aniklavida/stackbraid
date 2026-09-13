@@ -26,7 +26,7 @@
 // Zero runtime dependencies — Node built-ins only, matching the conformance
 // suite's own zero-dependency rule (nothing here needs its own licence audit).
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -134,6 +134,50 @@ if (existsSync(pubspecLockPath)) {
   checkResolved('dart-client', resolved, { sourceLabel: 'clients/dart/pubspec.lock' });
 } else {
   warn('clients/dart/pubspec.lock not found — skipping Dart check.');
+}
+
+// --- .NET: backends/dotnet ------------------------------------------------
+// Every project's own packages.lock.json (RestorePackagesWithLockFile, set
+// in backends/dotnet/Directory.Build.props) is the .NET analogue of
+// package-lock.json / pubspec.lock — the exact resolved graph, committed.
+// A "Project" entry is an in-solution ProjectReference, not a package, and
+// is skipped; everything else is a real NuGet dependency, audited the same
+// way as any other ecosystem here.
+const dotnetBackendRoot = p('backends', 'dotnet');
+if (existsSync(dotnetBackendRoot)) {
+  const lockFiles = [];
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === 'bin' || entry.name === 'obj' || entry.name === 'node_modules') continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (entry.name === 'packages.lock.json') {
+        lockFiles.push(full);
+      }
+    }
+  };
+  walk(dotnetBackendRoot);
+
+  const resolvedByKey = new Map(); // name -> version, deduped across projects (a shared restore resolves one version per package)
+  for (const lockFile of lockFiles) {
+    const lock = JSON.parse(readFileSync(lockFile, 'utf8'));
+    for (const deps of Object.values(lock.dependencies || {})) {
+      for (const [name, meta] of Object.entries(deps)) {
+        if (meta.type === 'Project' || !meta.resolved) continue; // in-solution reference, not a package
+        resolvedByKey.set(name, meta.resolved);
+      }
+    }
+  }
+
+  if (lockFiles.length === 0) {
+    warn('backends/dotnet exists but no packages.lock.json was found — skipping .NET check.');
+  } else {
+    const resolved = [...resolvedByKey.entries()].map(([name, version]) => ({ name, version }));
+    checkResolved('nuget-dotnet-backend', resolved, { sourceLabel: `${lockFiles.length} backends/dotnet/**/packages.lock.json file(s)` });
+  }
+} else {
+  warn('backends/dotnet not found — skipping .NET check.');
 }
 
 // --- Docker images: infra/compose.yaml ------------------------------------

@@ -1336,6 +1336,356 @@
       "verifiedOn": "2026-09-13",
       "source": "https://registry.npmjs.org/@redocly/cli/2.52.1",
       "notes": "Documented in contract/README.md as the contract-lint command; not currently wired into a CI workflow \u2014 see docs/DEPENDENCIES.md open item"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Castle.Core",
+      "version": "5.1.1",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "coverlet.collector",
+      "version": "6.0.4",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "DiffEngine",
+      "version": "11.3.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "EmptyFiles",
+      "version": "4.4.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "FluentValidation",
+      "version": "12.1.1",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Mediator.Abstractions",
+      "version": "3.0.2",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "nuspec declares license type=\"file\"; verified against martinothamar/Mediator's committed LICENSE file on GitHub (MIT, copyright Martin Othamar)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.CodeCoverage",
+      "version": "17.14.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.EntityFrameworkCore",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.EntityFrameworkCore.Abstractions",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.EntityFrameworkCore.Analyzers",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Caching.Abstractions",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Caching.Memory",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.DependencyInjection",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Logging",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Options",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Primitives",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.NET.Test.Sdk",
+      "version": "17.14.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.TestPlatform.ObjectModel",
+      "version": "17.14.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.TestPlatform.TestHost",
+      "version": "17.14.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Newtonsoft.Json",
+      "version": "13.0.3",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "NSubstitute",
+      "version": "5.3.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Shouldly",
+      "version": "4.3.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "System.CodeDom",
+      "version": "6.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "System.Diagnostics.EventLog",
+      "version": "6.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "System.Management",
+      "version": "6.0.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "xunit",
+      "version": "2.9.3",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "xunit.abstractions",
+      "version": "2.0.3",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "nuspec licenseUrl points to xunit/xunit's license.txt, which is Apache-2.0"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "xunit.analyzers",
+      "version": "1.18.0",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "xunit.assert",
+      "version": "2.9.3",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "xunit.core",
+      "version": "2.9.3",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "xunit.extensibility.core",
+      "version": "2.9.3",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "xunit.extensibility.execution",
+      "version": "2.9.3",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "xunit.runner.visualstudio",
+      "version": "3.1.4",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
     }
   ]
 }
