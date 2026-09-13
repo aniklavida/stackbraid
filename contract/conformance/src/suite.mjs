@@ -1,13 +1,15 @@
 // Orchestrates the conformance run: a connectivity preflight, then every
 // registered check group, then the report.
-//
-// Deliberately empty of checks for now — this file is the runner's
-// scaffolding. The checks themselves (auth, users, roles, the error
-// envelope) land in a follow-up commit and register themselves here.
 
 import { createHarness, printReport } from './report.mjs';
+import { registerAuthChecks } from './checks/auth.mjs';
+import { registerErrorEnvelopeChecks } from './checks/errors.mjs';
+import { registerUserChecks } from './checks/users.mjs';
+import { registerRoleChecks } from './checks/roles.mjs';
 
-const CHECK_GROUPS = [];
+// Order matters: auth registers the primary test user and hands off a live
+// session (`ctx.primaryUser.activeTokens`) that users/roles checks reuse.
+const CHECK_GROUPS = [registerAuthChecks, registerErrorEnvelopeChecks, registerUserChecks, registerRoleChecks];
 
 export async function runConformanceSuite(baseUrl) {
   try {

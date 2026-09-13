@@ -4,10 +4,11 @@ One test suite, written against `contract/openapi.yaml`, runnable against any
 backend on any database provider. It takes a base URL and nothing else — it
 has no knowledge of which backend is running.
 
-**Status:** the runner exists. The checks themselves (auth, users, roles, the
-error envelope) land in a follow-up commit. No backend exists yet to run this
-against (see `docs/SPEC.md`); a deliberately non-conforming stub server, used
-to prove the suite actually catches violations, is coming with the checks.
+**Status:** the runner and every check now exist. No backend exists yet to
+run this against for real (see `docs/SPEC.md`) — a deliberately
+non-conforming stub server, used to prove the suite actually catches
+violations, is coming in a follow-up commit as a test fixture. Nothing here
+implies any real backend has ever passed this suite.
 
 ## Usage
 
@@ -19,6 +20,50 @@ node cli/run.mjs http://localhost:8080
 
 Exits `0` if every check passed or was explicitly skipped, non-zero if any
 check failed — so CI can gate on it.
+
+### Optional environment variables
+
+| Variable | Purpose |
+|---|---|
+| `CONFORMANCE_ADMIN_EMAIL` / `CONFORMANCE_ADMIN_PASSWORD` | Credentials for a seeded administrator, used only for permission-gated endpoints (listing/managing users and roles). Without these, the suite falls back to the user it registers for itself; a resulting `403` on those specific checks is reported as **skipped**, not failed, with the reason named. |
+| `CONFORMANCE_MAX_EXPIRY_WAIT_MS` | How long the suite is willing to wait for a live access token to actually expire (default `65000`). The suite reads the token's own `expiresAt` and only exercises the "expired token" check if the wait fits this budget — see "What this does not (and cannot) do" below. |
+
+## What it checks
+
+- **Shape and type of every response field** — not just status codes. Every
+  `User`, `Role`, `TokenPair` and `Page<T>` in every response is validated
+  field by field against `contract/openapi.yaml`'s schemas.
+- **The error envelope** — every non-2xx response must be RFC 9457 Problem
+  Details (`application/problem+json`) with `type`/`title`/`status` plus
+  StackBraid's `code`/`traceId` extension, `errors` on validation failures,
+  no undocumented extra fields, and a `traceId` that actually correlates one
+  request.
+- **Pagination** — `GET /v1/users` returns `page`/`pageSize`/`totalItems`/
+  `totalPages` (offset, per card 1's decision), `totalPages` is arithmetically
+  consistent, and a cursor-shaped field (`nextCursor` and friends) leaking in
+  is treated as a violation.
+- **Timestamps** — every `UtcDateTime` field is checked against the exact
+  pattern pinned in the contract: RFC 3339, UTC, a trailing `Z`, never a
+  numeric offset like `+00:00`.
+- **Auth: refreshed / expired / revoked** — a token from `/v1/auth/refresh`
+  works; a token rotated out by a later refresh, or explicitly revoked by
+  `/v1/auth/logout`, is rejected; an access token is rejected once its own
+  `expiresAt` has passed.
+- **Both token-delivery paths from card 1** — `login`, `refresh` and
+  `logout` are each exercised with tokens passed in the request body
+  (mobile/API clients) *and* via the httpOnly `refreshToken` cookie with no
+  body (browser clients), including that the cookie carries
+  `HttpOnly; Secure; SameSite=Strict` and the same token value as the body.
+
+## What this does not (and cannot) do
+
+The suite is given only a base URL — it cannot force a real backend's access
+token to expire on demand. It reads the `expiresAt` the backend itself
+returned and either waits for genuine expiry (if that fits within
+`CONFORMANCE_MAX_EXPIRY_WAIT_MS`) or skips that one check with a clear
+reason. Run the backend under test with a short-lived access token TTL to
+exercise it for real; a stub fixture that does exactly that is coming in a
+follow-up commit.
 
 ## Design
 
