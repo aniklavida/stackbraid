@@ -31,11 +31,15 @@ works; read it as the specification a backend will be judged against.
    contract that only describes the happy path teaches a client to only
    handle the happy path.
 5. **Regenerate, don't hand-edit, clients.** `clients/typescript` and
-   `clients/dart` do not exist yet (that's a later card); once they do, the
-   rule is the same one `STRUCTURE.md` states for the rest of the repo — an
+   `clients/dart` are generated from this file by
+   `./scripts/generate-clients.sh` and committed — never hand-edited. The
+   same rule `STRUCTURE.md` states for the rest of the repo applies: an
    `api/` folder is generated and never hand-edited. If a generated client
    ever needs a change that isn't in the contract, that's a sign the
-   contract is wrong, not the client.
+   contract is wrong, not the client. A pre-commit hook
+   (`scripts/check-client-drift.sh`, enabled by `git config core.hooksPath
+   .githooks`) fails the commit if the committed clients drift from a fresh
+   regeneration.
 6. **Breaking changes get a new major path prefix, not a silent edit.**
    `/v1/` is in the path from the first commit specifically so this is
    possible later without breaking every existing client at once. Nothing in
