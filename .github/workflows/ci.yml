@@ -135,6 +135,45 @@ jobs:
           dotnet test tests/Features.Identity.UnitTests/StackBraid.Features.Identity.UnitTests.csproj --no-restore --configuration Release
           dotnet test tests/ArchitectureTests/StackBraid.ArchitectureTests.csproj --no-restore --configuration Release
 
+  dotnet-integration:
+    runs-on: ubuntu-latest
+    # A real Postgres, via a GitHub Actions service container — not
+    # Testcontainers, not the repository's own start-local-postgres.sh
+    # (that script exists for a contributor's machine; CI already has a
+    # container engine, so a service container is the natural equivalent).
+    # Same image and tag as infra/compose.yaml, so what CI tests against
+    # matches what a real deployment runs.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stackbraid_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.100'
+
+      - name: Restore (locked mode — fails on any drift from packages.lock.json)
+        working-directory: backends/dotnet
+        run: dotnet restore StackBraid.sln --locked-mode
+
+      - name: Run integration tests against the service-container Postgres
+        working-directory: backends/dotnet
+        env:
+          STACKBRAID_TEST_POSTGRES_CONNECTION_STRING: "Host=localhost;Port=5432;Database=stackbraid_test;Username=postgres;Password=postgres"
+        run: dotnet test tests/Features.Identity.IntegrationTests/StackBraid.Features.Identity.IntegrationTests.csproj --no-restore --configuration Release
+
   dependency-licences:
     runs-on: ubuntu-latest
     steps:
