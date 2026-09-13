@@ -5,6 +5,18 @@
     <ProjectReference Include="..\..\..\Shared\StackBraid.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Mediator.Abstractions" Version="3.0.2" />
+    <!--
+      Relational, not provider-specific: ToTable/HasColumnName etc. apply to
+      any relational database and are what every relational EF Core
+      provider (Postgres, SQL Server, MySQL) builds on. Npgsql itself is
+      never referenced here — that stays confined to Database/Postgres,
+      per docs/STRUCTURE.md.
+    -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.12" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

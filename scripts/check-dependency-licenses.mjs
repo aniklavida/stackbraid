@@ -35,6 +35,13 @@ const p = (...parts) => path.join(rootDir, ...parts);
 
 const PERMISSIVE = new Set([
   'MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'ISC', '0BSD', 'Python-2.0',
+  // The PostgreSQL Licence is OSI-approved and permissive — textually a BSD/MIT-style
+  // grant (see postgres/postgres's own COPYRIGHT file). It appears here because Npgsql
+  // and Npgsql.EntityFrameworkCore.PostgreSQL — the .NET driver, compiled into the
+  // running backend — are licensed under it; this is unrelated to the Postgres *server*
+  // itself, which is audited separately in this file under the infra-image ecosystem on
+  // the separate-process rule.
+  'PostgreSQL',
 ]);
 
 // Substrings checked case-insensitively against every recorded licence,

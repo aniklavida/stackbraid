@@ -10,6 +10,7 @@ bin/
 obj/
 *.user
 TestResults/
+backends/dotnet/.local-postgres-test-state
 
 # Python
 __pycache__/

@@ -1,10 +1,12 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using StackBraid.Shared.Behaviors;
 using StackBraid.Shared.Caching;
 using StackBraid.Shared.Documents;
 using StackBraid.Shared.Jobs;
 using StackBraid.Shared.Mailing;
 using StackBraid.Shared.Messaging;
+using StackBraid.Shared.Security;
 using StackBraid.Shared.Storage;
 using StackBraid.Shared.Web;
 
@@ -21,6 +23,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddShared(this IServiceCollection services)
     {
         services.AddSharedWeb();
+        services.AddSharedPipelineBehaviors();
         services.AddInProcessMessaging();
         services.AddInProcessJobs();
         services.AddMemoryCache();
@@ -29,6 +32,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddSingleton<IPdfGenerator, MinimalPdfGenerator>();
         services.AddSingleton<IExcelExporter, CsvExcelExporter>();
+        services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
         return services;
     }
 }

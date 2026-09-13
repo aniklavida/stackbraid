@@ -58,6 +58,7 @@ A skeleton's real failure mode is people abandoning its conventions — month th
 | `Mediator.Abstractions` (.NET backend) | MIT | compiled into user code |
 | `FluentValidation` (.NET backend) | Apache-2.0 | compiled into user code |
 | `Microsoft.EntityFrameworkCore` (.NET backend) | MIT | compiled into user code |
+| `Npgsql.EntityFrameworkCore.PostgreSQL` (.NET backend, `Database/Postgres` only) | PostgreSQL Licence (permissive) | compiled into user code |
 | `xunit`, `Shouldly`, `NSubstitute` (.NET backend, test-only) | Apache-2.0 / BSD-3-Clause | build-tooling |
 | `postgres:16-alpine` | PostgreSQL Licence | separate process |
 | `rabbitmq:3.13-management-alpine` | MPL-2.0 | separate process |

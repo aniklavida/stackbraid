@@ -74,15 +74,23 @@ reads under the `nuget-dotnet-backend` ecosystem.
 | `Microsoft.Extensions.Logging` (+ `.Abstractions`) | 10.0.12 | MIT |
 | `Microsoft.Extensions.Options` | 10.0.12 | MIT |
 | `Microsoft.Extensions.Primitives` | 10.0.12 | MIT |
+| `Microsoft.EntityFrameworkCore.Relational` | 10.0.12 | MIT |
+| `Npgsql` (+ `Npgsql.EntityFrameworkCore.PostgreSQL`) | 10.0.3 | PostgreSQL Licence — OSI-approved and permissive, textually BSD/MIT-style (see `postgres/postgres`'s own `COPYRIGHT`); the .NET *driver*, unrelated to which licence governs the Postgres *server* process itself (audited separately below, under infrastructure) |
 
-All eight are MIT or Apache-2.0 — compliant with the compiled-into-user-code rule. `StackBraid.Shared`
-(see `docs/STRUCTURE.md`) also uses a `FrameworkReference` to `Microsoft.AspNetCore.App` for
+All ten are MIT, Apache-2.0 or the permissive PostgreSQL Licence — compliant with the compiled-into-user-code rule.
+`Microsoft.EntityFrameworkCore.Relational` is deliberately separate from `Npgsql.EntityFrameworkCore.PostgreSQL`:
+it is what `backends/dotnet/src/Features/Identity/Persistence` (entity configuration, provider-agnostic) references for
+relational concepts like `ToTable`/`HasColumnName` that apply to any relational database, while `Npgsql.*` is confined
+to `backends/dotnet/src/Database/Postgres` — the one place a provider name is allowed to appear, per `docs/STRUCTURE.md`.
+`StackBraid.Shared` (see `docs/STRUCTURE.md`) also uses a `FrameworkReference` to `Microsoft.AspNetCore.App` for
 `ProblemDetails`, localization and rate limiting types — a reference to the shared
 .NET runtime already installed alongside the SDK, not a NuGet download of its own, so it
 carries no separate licence to audit (the same basis `backends/dotnet/src/Host` gets automatically
 from `Microsoft.NET.Sdk.Web`).
 
-**Build/test tooling** (referenced only by a `tests/` project — xUnit, Shouldly and NSubstitute, matching `docs/SPEC.md`'s test-dependency table — plus their own transitive closure): `xunit` and its `xunit.*` satellite packages, `xunit.runner.visualstudio`, `xunit.abstractions` (Apache-2.0 — its nuspec `licenseUrl` points at xunit's own `license.txt`, read directly rather than assumed), `Microsoft.NET.Test.Sdk`, `Microsoft.TestPlatform.*`, `coverlet.collector`, `Shouldly` (BSD-3-Clause) and its `DiffEngine`/`EmptyFiles` dependencies, `NSubstitute` (BSD-3-Clause) and its `Castle.Core` (Apache-2.0) dependency, plus `Newtonsoft.Json`, `System.CodeDom`, `System.Diagnostics.EventLog` and `System.Management` pulled in transitively. None of these compile into the running server; every one is MIT, Apache-2.0 or BSD-3-Clause regardless.
+**Design-time only, never shipped** (`Microsoft.EntityFrameworkCore.Design`, referenced with `PrivateAssets="all"` in `Database/Postgres` — it powers `dotnet ef migrations add` and is not copied into the built output): `Microsoft.EntityFrameworkCore.Design` itself plus its own transitive closure — the Roslyn `Microsoft.CodeAnalysis.*` packages, `Microsoft.Build.Framework`, `Microsoft.VisualStudio.SolutionPersistence`, `Mono.TextTemplating`, the `System.Composition.*` family, `Humanizer.Core`, and this one path's own `Newtonsoft.Json` 13.0.4 (the test projects separately resolve 13.0.3 — both versions are audited, both MIT). Classified `build-tooling`, the same basis as a CI-only linter: installed to generate code at development time, never linked into or redistributed with the running server.
+
+**Build/test tooling** (referenced only by a `tests/` project — xUnit, Shouldly and NSubstitute, matching `docs/SPEC.md`'s test-dependency table — plus their own transitive closure): `xunit` and its `xunit.*` satellite packages, `xunit.runner.visualstudio`, `xunit.abstractions` (Apache-2.0 — its nuspec `licenseUrl` points at xunit's own `license.txt`, read directly rather than assumed), `Microsoft.NET.Test.Sdk`, `Microsoft.TestPlatform.*`, `coverlet.collector`, `Shouldly` (BSD-3-Clause) and its `DiffEngine`/`EmptyFiles` dependencies, `NSubstitute` (BSD-3-Clause) and its `Castle.Core` (Apache-2.0) dependency, plus `Newtonsoft.Json` 13.0.3, `System.CodeDom`, `System.Diagnostics.EventLog` and `System.Management` pulled in transitively. None of these compile into the running server; every one is MIT, Apache-2.0 or BSD-3-Clause regardless.
 
 **Deliberately not added yet:** `Hangfire.Core`, `QuestPDF` and `ClosedXML` — named in `docs/SPEC.md`'s dependency table as the intended real implementations behind `IJobScheduler`, `IPdfGenerator` and `IExcelExporter` — are not referenced by any `.csproj` today. Those interfaces currently ship with a minimal, dependency-free default (an in-process job queue, a hand-written PDF writer, and CSV export) so the layer compiles and is genuinely tested without auditing a library nothing yet depends on. They enter this document, with a verified date, the same day they enter a `.csproj` — the same rule already applied to them here before any backend existed.
 
