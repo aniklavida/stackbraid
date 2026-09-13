@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Pre-commit hook: fails the commit if the generated clients have drifted
+# from the contract.
+#
+# Enable it once per clone:
+#   git config core.hooksPath .githooks
+#
+# Only runs the (comparatively slow — Node + Dart + build_runner) drift
+# check when the commit actually touches the contract or the generated
+# clients, so unrelated commits (docs, CI, etc.) are not held up by it.
+set -euo pipefail
+
+root_dir="$(git rev-parse --show-toplevel)"
+cd "$root_dir"
+
+changed="$(git diff --cached --name-only --diff-filter=ACMR)"
+
+if ! printf '%s\n' "$changed" | grep -qE '^(contract/openapi\.yaml|clients/)'; then
+  exit 0
+fi
+
+echo "pre-commit: contract or clients/ changed — checking generated clients for drift..."
+
+if ! "$root_dir/scripts/check-client-drift.sh"; then
+  echo
+  echo "pre-commit: blocked — clients/ does not match a fresh generation." >&2
+  echo "Run ./scripts/generate-clients.sh, review the diff, git add clients/, and commit again." >&2
+  exit 1
+fi
