@@ -109,8 +109,9 @@ instead of in a separate document that could quietly drift from them.
 OpenAPI itself has no concept of a push channel, so the two channels and
 which backend endpoint serves each are documented under the `x-realtime-channels`
 vendor extension at the bottom of the file — informational only, not
-machine-verified today. The conformance suite (a later card) is what will
-actually check both backends emit identical payloads.
+machine-verified today. The conformance suite checks REST responses only;
+extending it to check that both backends emit identical realtime payloads is
+planned and not yet built.
 
 ## Validated against
 

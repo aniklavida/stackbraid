@@ -1,15 +1,15 @@
 // Auth: register, login, refresh, logout, me.
 //
-// Card 1 resolved an ambiguity this file exists to prove both halves of:
-// `TokenPair` returns both tokens in the body (mobile/API clients), AND
-// login/refresh/logout also carry the refresh token as an httpOnly cookie
-// (browser clients). Every one of those three endpoints is exercised via
-// both paths below, not just login.
+// The contract defines two token-delivery paths, and this file exists to
+// prove both halves: `TokenPair` returns both tokens in the body (mobile/API
+// clients), AND login/refresh/logout also carry the refresh token as an
+// httpOnly cookie (browser clients). Every one of those three endpoints is
+// exercised via both paths below, not just login.
 //
-// The three auth invariants the card asks for — a refreshed token works, an
-// expired one does not, a revoked one does not — are each covered at least
-// twice: once through rotation (the old token from a refresh is revoked)
-// and once through logout (an explicit revocation).
+// The three auth invariants — a refreshed token works, an expired one does
+// not, a revoked one does not — are each covered at least twice: once through
+// rotation (the old token from a refresh is revoked) and once through logout
+// (an explicit revocation).
 
 import { request, extractCookieValue, parseCookieAttributes } from '../http.mjs';
 import { fail } from '../assert.mjs';

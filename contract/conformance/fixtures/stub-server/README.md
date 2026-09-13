@@ -3,8 +3,8 @@
 `server.mjs` is a deliberately minimal, in-memory implementation of
 `contract/openapi.yaml`'s `Identity` surface. It exists for exactly one
 purpose: proving `contract/conformance` actually catches contract
-violations, and does so for the specific classes card 2 named — wrong type,
-missing field, wrong timestamp format, wrong error shape, wrong pagination.
+violations, and does so for five specific classes — wrong type, missing
+field, wrong timestamp format, wrong error shape, wrong pagination.
 
 **This is not, and must never be read as, a real backend.** It has no
 persistence, no permission enforcement, no localization, and skips whole
@@ -31,14 +31,14 @@ Environment variables:
 
 ## Violation classes
 
-Each corrupts a distinct part of the response, matching the classes named in
-the conformance card:
+Each corrupts a distinct part of the response, matching the five classes the
+conformance suite checks for:
 
 | Value | What it does |
 |---|---|
 | `wrong-type` | `User.status` becomes a boolean instead of the `active`/`inactive` enum string; `Page.totalItems` becomes a string; `Role.permissions` becomes a comma-joined string instead of an array; `TokenPair.expiresAt` becomes a unix-seconds number instead of an RFC 3339 string. |
 | `missing-field` | Drops `User.displayName`, `TokenPair.tokenType`, `Page.totalPages` and `Role.description` from their respective responses. Never touches `accessToken`/`refreshToken` themselves — that would break the body-vs-cookie tests, which are a different concern entirely. |
-| `bad-timestamp` | Every `UtcDateTime` field is emitted with a numeric `+00:00` offset instead of a trailing `Z` — the exact divergence the card 1 spike caught between .NET and Python. |
+| `bad-timestamp` | Every `UtcDateTime` field is emitted with a numeric `+00:00` offset instead of a trailing `Z` — the exact divergence a spike caught between .NET and Python, recorded in `contract/openapi.yaml`'s `UtcDateTime` description. |
 | `bad-error-shape` | Every error response becomes `{ "error": "...", "message": "..." }` with `content-type: application/json`, instead of RFC 9457 `application/problem+json` with `type`/`title`/`status`/`code`/`traceId`. |
 | `bad-pagination` | `GET /v1/users` returns `{ items, nextCursor }` instead of the offset envelope `{ page, pageSize, totalItems, totalPages, items }`. |
 

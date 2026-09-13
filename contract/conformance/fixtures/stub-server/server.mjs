@@ -49,7 +49,8 @@ const newToken = () => crypto.randomBytes(24).toString('hex');
 function isoTimestamp(date = new Date()) {
   const iso = date.toISOString(); // e.g. 2026-09-13T10:15:30.123Z
   if (VIOLATIONS.has('bad-timestamp')) {
-    // The exact divergence the card 1 spike caught: a numeric offset where the contract requires 'Z'.
+    // The exact divergence a spike caught between .NET and Python: a numeric
+    // offset where the contract requires 'Z'.
     return iso.replace('Z', '+00:00');
   }
   return iso;

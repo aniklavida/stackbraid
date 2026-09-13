@@ -190,8 +190,9 @@ export function validatePageEnvelope(value, field, violations) {
   if ('items' in value && !Array.isArray(value.items)) {
     violations.push(violation(`${field}.items`, 'array', `type ${typeName(value.items)}`));
   }
-  // Card 1 locked offset pagination, not cursor — a cursor-shaped field
-  // leaking in is exactly the class of drift this suite exists to catch.
+  // The contract specifies offset pagination, not cursor (see contract/README.md
+  // "Pagination: offset, not cursor") — a cursor-shaped field leaking in is
+  // exactly the class of drift this suite exists to catch.
   for (const cursorKey of ['nextCursor', 'cursor', 'next', 'previousCursor']) {
     if (cursorKey in value) {
       violations.push(

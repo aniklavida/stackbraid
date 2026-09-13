@@ -39,7 +39,8 @@ check failed — so CI can gate on it.
   no undocumented extra fields, and a `traceId` that actually correlates one
   request.
 - **Pagination** — `GET /v1/users` returns `page`/`pageSize`/`totalItems`/
-  `totalPages` (offset, per card 1's decision), `totalPages` is arithmetically
+  `totalPages` (offset, not cursor — see `contract/README.md`
+  "Pagination: offset, not cursor"), `totalPages` is arithmetically
   consistent, and a cursor-shaped field (`nextCursor` and friends) leaking in
   is treated as a violation.
 - **Timestamps** — every `UtcDateTime` field is checked against the exact
@@ -49,7 +50,7 @@ check failed — so CI can gate on it.
   works; a token rotated out by a later refresh, or explicitly revoked by
   `/v1/auth/logout`, is rejected; an access token is rejected once its own
   `expiresAt` has passed.
-- **Both token-delivery paths from card 1** — `login`, `refresh` and
+- **Both token-delivery paths the contract defines** — `login`, `refresh` and
   `logout` are each exercised with tokens passed in the request body
   (mobile/API clients) *and* via the httpOnly `refreshToken` cookie with no
   body (browser clients), including that the cookie carries
@@ -71,10 +72,10 @@ exactly that by default so the check always runs there.
 Identity API, used only as a test fixture — see its own README for what it
 is and, just as importantly, what it is not. `scripts/demo-violations.mjs`
 runs the real suite against that stub in its baseline (conforming) mode and
-then again with each of the five violation classes card 2 named — wrong
-type, missing field, wrong timestamp format, wrong error shape, wrong
-pagination — injected one at a time, and checks the suite's exit code
-matches what should happen in each case:
+then again with each of the five violation classes — wrong type, missing
+field, wrong timestamp format, wrong error shape, wrong pagination — injected
+one at a time, and checks the suite's exit code matches what should happen in
+each case:
 
 ```bash
 npm run demo:violations
