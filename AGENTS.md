@@ -68,7 +68,7 @@ Feature names are identical across every stack. Adding `invoices` means a folder
 | Compiled into user code | MIT, Apache or BSD only |
 | Run as a separate process | Copyleft acceptable — it never reaches user code |
 
-Anything reciprocal-for-consumers — RPL, SSPL, or a revenue-gated commercial licence — is rejected regardless of quality.
+Anything reciprocal-for-consumers — RPL, SSPL, RSAL, BSL, or a revenue-gated commercial licence — is rejected regardless of quality.
 
 **Currently rejected:** MediatR and AutoMapper (RPL 1.5 or paid) · FluentAssertions v8+ (non-commercial only) · EPPlus (paid for commercial use) · `MySql.Data` (GPL-2.0 — use Pomelo).
 
