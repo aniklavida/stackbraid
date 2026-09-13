@@ -89,6 +89,11 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
         }
       },
+      "Mediator.SourceGenerator": {
+        "type": "Transitive",
+        "resolved": "3.0.2",
+        "contentHash": "yGQzb8Or3nGsQJnVUQIQHr/04LeThd3qMZV0gvgMtXdgH35Rw2xJ2XyQ87v6HhNYOUZ2iirRjUWceebyNKMF7Q=="
+      },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
         "resolved": "17.14.1",
@@ -279,6 +284,8 @@
       "stackbraid.features.identity.application": {
         "type": "Project",
         "dependencies": {
+          "Mediator.Abstractions": "[3.0.2, )",
+          "Mediator.SourceGenerator": "[3.0.2, )",
           "StackBraid.Features.Identity.Contracts": "[1.0.0, )",
           "StackBraid.Features.Identity.Domain": "[1.0.0, )",
           "StackBraid.Shared": "[1.0.0, )"

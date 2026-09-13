@@ -1916,6 +1916,16 @@
       "verifiedOn": "2026-09-14",
       "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
       "notes": "test-only \u2014 never shipped, used by xUnit/Shouldly/NSubstitute test projects"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Mediator.SourceGenerator",
+      "version": "3.0.2",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "nuspec declares license type=\"file\"; verified against martinothamar/Mediator's committed LICENSE file on GitHub (MIT). Referenced with PrivateAssets=\"all\" and ReferenceOutputAssembly=\"false\" in Features/Identity/Application \u2014 an analyzer that generates code at compile time, never itself shipped in the built output."
     }
   ]
 }

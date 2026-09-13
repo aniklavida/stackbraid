@@ -1,12 +1,12 @@
 # backends/dotnet — under construction
 
-**Status: not a working backend yet.** `Shared` (cross-cutting plumbing) and
-the Identity feature's domain, persistence and Postgres provider all
-compile and are tested against a real database. Nothing serves HTTP yet —
-no endpoints, no authentication — and nothing here has been run against the
-contract's conformance suite (see [docs/ROADMAP.md](../../docs/ROADMAP.md),
-step 2). Do not treat any file under this folder as evidence of a working
-API.
+**Status: not a working backend yet.** `Shared`, the Identity feature's
+domain/persistence/Postgres provider, and now its full Application layer
+(every command and query the contract needs) all compile and are tested.
+Nothing serves HTTP yet — no endpoints, no authentication, no JWT — and
+nothing here has been run against the contract's conformance suite (see
+[docs/ROADMAP.md](../../docs/ROADMAP.md), step 2). Do not treat any file
+under this folder as evidence of a working API.
 
 ```
 backends/dotnet/
@@ -19,13 +19,13 @@ backends/dotnet/
 │   ├── Features/Identity/
 │   │   ├── Domain/            entities, value objects, domain events — depends on nothing
 │   │   ├── Persistence/       DbContext, entity configuration, repositories — provider-agnostic
-│   │   ├── Application/       scaffolded, empty — next
-│   │   ├── Contracts/         scaffolded, empty — next
+│   │   ├── Contracts/         DTOs and requests mirroring contract/openapi.yaml — done
+│   │   ├── Application/       every Command and Query the contract needs — done, see below
 │   │   └── Endpoints/         scaffolded, empty — next
 │   └── Host/                 scaffolded — starts, serves only /health/live
 └── tests/
     ├── Shared.UnitTests/                 real tests, all passing
-    ├── Features.Identity.UnitTests/      domain entity behaviour, all passing
+    ├── Features.Identity.UnitTests/      domain + application + mapping, all passing
     ├── Features.Identity.IntegrationTests/   real local Postgres, all passing — see its own README
     └── ArchitectureTests/
 ```
@@ -101,6 +101,32 @@ for why, and `scripts/start-local-postgres.sh` for how): migrations run
 from a genuinely empty database to fully current with no manual step,
 every mapped table exists afterward, and seeding, search/pagination/sort,
 role assignment and refresh-token rotation all round-trip correctly.
+
+## What the Identity feature's `Contracts` and `Application` do today
+
+- **`Contracts`** — every DTO and request `contract/openapi.yaml` names for
+  Identity (`UserDto`, `RoleDto`, `TokenPairDto`, `UserPageDto`,
+  `RegisterRequest`, `LoginRequest`, `RefreshRequest`, `UpdateUserRequest`,
+  `AssignRoleRequest`), as plain records. Zero dependencies, same as
+  `Domain` — this is the only surface another feature (or `Endpoints`) may
+  see.
+- **`Application`** — one `Command` or `Query` per contract operation
+  (register, login, refresh, logout, update profile, assign/revoke role,
+  deactivate, get user, list users, list roles), each with its own handler
+  in the same file — a reader follows one operation start to finish without
+  jumping between projects. Every expected failure (invalid credentials, a
+  taken email, a missing user or role) returns a `Result` carrying an
+  `AppError`, never an exception — the same shape `Shared/Web` already maps
+  to the contract's Problem envelope. Mapping between entities and DTOs is
+  hand-written (`EntityMappingExtensions`), with a test per DTO in
+  `EntityMappingExtensionsTests` asserting every property is populated —
+  the cover for that approach's one real weakness, a forgotten line failing
+  silently.
+- Login and refresh depend on `IAccessTokenIssuer`, a port with no
+  implementation yet — JWT signing is explicitly the next step, not part of
+  this layer. Unit tests substitute it, so the orchestration (credential
+  checking, refresh-token rotation, revocation) is fully tested without a
+  real token yet existing.
 
 ## Building and testing locally
 

@@ -88,6 +88,12 @@ to `backends/dotnet/src/Database/Postgres` — the one place a provider name is 
 carries no separate licence to audit (the same basis `backends/dotnet/src/Host` gets automatically
 from `Microsoft.NET.Sdk.Web`).
 
+`Mediator.SourceGenerator` 3.0.2 (same licence and source as `Mediator.Abstractions` above) is
+referenced only by `Features/Identity/Application`, with `PrivateAssets="all"` and
+`ReferenceOutputAssembly="false"` — a Roslyn analyzer that generates the command/query dispatch
+code at compile time and is never itself present in the built output. Classified `build-tooling`
+for that reason, the same basis as `Microsoft.EntityFrameworkCore.Design` below.
+
 **Design-time only, never shipped** (`Microsoft.EntityFrameworkCore.Design`, referenced with `PrivateAssets="all"` in `Database/Postgres` — it powers `dotnet ef migrations add` and is not copied into the built output): `Microsoft.EntityFrameworkCore.Design` itself plus its own transitive closure — the Roslyn `Microsoft.CodeAnalysis.*` packages, `Microsoft.Build.Framework`, `Microsoft.VisualStudio.SolutionPersistence`, `Mono.TextTemplating`, the `System.Composition.*` family, `Humanizer.Core`, and this one path's own `Newtonsoft.Json` 13.0.4 (the test projects separately resolve 13.0.3 — both versions are audited, both MIT). Classified `build-tooling`, the same basis as a CI-only linter: installed to generate code at development time, never linked into or redistributed with the running server.
 
 **Build/test tooling** (referenced only by a `tests/` project — xUnit, Shouldly and NSubstitute, matching `docs/SPEC.md`'s test-dependency table — plus their own transitive closure): `xunit` and its `xunit.*` satellite packages, `xunit.runner.visualstudio`, `xunit.abstractions` (Apache-2.0 — its nuspec `licenseUrl` points at xunit's own `license.txt`, read directly rather than assumed), `Microsoft.NET.Test.Sdk`, `Microsoft.TestPlatform.*`, `coverlet.collector`, `Shouldly` (BSD-3-Clause) and its `DiffEngine`/`EmptyFiles` dependencies, `NSubstitute` (BSD-3-Clause) and its `Castle.Core` (Apache-2.0) dependency, plus `Newtonsoft.Json` 13.0.3, `System.CodeDom`, `System.Diagnostics.EventLog` and `System.Management` pulled in transitively. None of these compile into the running server; every one is MIT, Apache-2.0 or BSD-3-Clause regardless.

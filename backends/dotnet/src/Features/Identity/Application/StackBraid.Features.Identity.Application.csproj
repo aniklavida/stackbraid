@@ -6,6 +6,19 @@
     <ProjectReference Include="..\..\..\Shared\StackBraid.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Mediator.Abstractions" Version="3.0.2" />
+    <!--
+      PrivateAssets="all" keeps this analyzer confined to this project's own
+      compilation. Without it, NuGet flows analyzers transitively to every
+      consumer (including test projects), which then also runs source
+      generation and trips on DomainEventNotification<TEvent> — an
+      intentionally open generic (Features/Identity/Persistence), not a
+      concrete notification the generator should wire a handler for.
+    -->
+    <PackageReference Include="Mediator.SourceGenerator" Version="3.0.2" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
