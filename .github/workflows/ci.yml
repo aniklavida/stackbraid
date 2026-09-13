@@ -12,6 +12,11 @@ name: CI
 # so an unconfigured clone or a `--no-verify` commit could push drifted
 # clients. Running it here makes the guarantee independent of local
 # configuration.
+#
+# The dependency-licences job is card 30: every dependency shipped here is
+# inherited by every user of this skeleton (see AGENTS.md "Dependencies"),
+# so a version bump or a new dependency that nobody re-audited must fail the
+# build the same way a drifted generated client does. See docs/DEPENDENCIES.md.
 
 on:
   push:
@@ -106,3 +111,15 @@ jobs:
 
       - name: Check generated clients for drift against the contract
         run: ./scripts/check-client-drift.sh
+
+  dependency-licences:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check every resolved dependency is audited, at the audited version, on an accepted licence
+        run: node scripts/check-dependency-licenses.mjs
