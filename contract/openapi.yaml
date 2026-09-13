@@ -1,0 +1,793 @@
+openapi: 3.1.0
+
+info:
+  title: StackBraid Identity API
+  version: 1.0.0
+  summary: Auth, users and roles — the one feature StackBraid ships.
+  description: |
+    Hand-written and authoritative. Every backend (.NET, Python) implements this
+    file exactly; every client (TypeScript, Dart) is generated from it. Nothing
+    in this document describes an implemented system yet — see `contract/README.md`
+    for how to change it safely, and the repository `docs/SPEC.md` for the product
+    this contract belongs to.
+
+    ## Decisions locked here
+
+    - **Error envelope** — [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) Problem
+      Details (`application/problem+json`), extended with `code` and `traceId`, and
+      with `errors` for field-level validation failures. See `Problem` below.
+    - **Pagination** — offset-based (`page` / `pageSize`), not cursor-based. See
+      `contract/README.md` for why.
+    - **Timestamps** — RFC 3339, UTC, trailing `Z`, never a numeric offset. Pinned
+      with an explicit `pattern` on every timestamp field so `+00:00` fails schema
+      validation instead of merely looking wrong in a diff.
+  license:
+    name: MIT
+    url: https://github.com/aniklavida/stackbraid/blob/main/LICENSE
+
+servers:
+  - url: http://localhost:8080
+    description: >-
+      Placeholder only — no backend exists yet (see `docs/SPEC.md`). Every
+      path below already carries `/v1/`, so the eventual real host needs no
+      version prefix of its own.
+
+externalDocs:
+  description: Product specification
+  url: https://github.com/aniklavida/stackbraid/blob/main/docs/SPEC.md
+
+tags:
+  - name: Auth
+    description: Registration, session issuance and the current-user lookup.
+  - name: Users
+    description: Administration of user accounts.
+  - name: Roles
+    description: Role catalogue and per-user role assignment.
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  /v1/auth/register:
+    post:
+      operationId: registerUser
+      tags: [Auth]
+      summary: Register a new account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Account created. The caller still has to log in separately — registration does not issue a session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: The email address is already registered.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /v1/auth/login:
+    post:
+      operationId: login
+      tags: [Auth]
+      summary: Exchange credentials for a token pair
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: |
+            Authenticated. The body carries both tokens for non-browser clients
+            (Flutter has no ambient cookie jar). Browser clients additionally
+            receive the refresh token as an httpOnly, Secure, SameSite=Strict
+            cookie and should prefer that cookie over reading it from the body.
+          headers:
+            Set-Cookie:
+              description: 'refreshToken=<value>; HttpOnly; Secure; SameSite=Strict; Path=/v1/auth'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Invalid email or password.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /v1/auth/refresh:
+    post:
+      operationId: refreshToken
+      tags: [Auth]
+      summary: Exchange a refresh token for a new token pair
+      security: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+        description: Omit the body entirely to fall back to the httpOnly `refreshToken` cookie (the browser path).
+      responses:
+        '200':
+          description: A new token pair. The old refresh token is revoked (rotation).
+          headers:
+            Set-Cookie:
+              description: 'refreshToken=<value>; HttpOnly; Secure; SameSite=Strict; Path=/v1/auth'
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '401':
+          description: The refresh token is missing, expired, or already used.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /v1/auth/logout:
+    post:
+      operationId: logout
+      tags: [Auth]
+      summary: Revoke the current session
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+        description: Omit the body to revoke the session named by the httpOnly cookie.
+      responses:
+        '204':
+          description: Session revoked. Idempotent — logging out twice is not an error.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [Auth]
+      summary: Read the caller's own account
+      responses:
+        '200':
+          description: The authenticated user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/users:
+    get:
+      operationId: listUsers
+      tags: [Users]
+      summary: List users
+      description: Paginated, filtered and sorted. Requires the `users:read` permission.
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - $ref: '#/components/parameters/UserSortParam'
+        - $ref: '#/components/parameters/SearchParam'
+        - name: status
+          in: query
+          description: Filter by account status.
+          schema:
+            $ref: '#/components/schemas/UserStatus'
+        - name: roleId
+          in: query
+          description: Filter to users holding this role.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: A page of users.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /v1/users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/UserIdParam'
+    get:
+      operationId: getUser
+      tags: [Users]
+      summary: Read a single user
+      responses:
+        '200':
+          description: The requested user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateUser
+      tags: [Users]
+      summary: Update a user's profile
+      description: Partial update. Role membership is managed through `/v1/users/{userId}/roles`, not through this endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: The updated user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: The new email address is already in use by another account.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /v1/users/{userId}/deactivate:
+    post:
+      operationId: deactivateUser
+      tags: [Users]
+      summary: Deactivate a user
+      description: |
+        Deactivation, not deletion — the account and its history are kept, but it
+        can no longer authenticate. Idempotent: deactivating an already-inactive
+        user returns the current state rather than an error.
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      responses:
+        '200':
+          description: The user, now inactive.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/roles:
+    get:
+      operationId: listRoles
+      tags: [Roles]
+      summary: List every role
+      description: |
+        Not paginated. Roles are an administrator-curated catalogue, not
+        user-generated data — the count stays small by design, so this returns
+        the full list rather than a `Page<Role>`.
+      responses:
+        '200':
+          description: Every role in the system.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Role'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /v1/users/{userId}/roles:
+    post:
+      operationId: assignRole
+      tags: [Roles]
+      summary: Assign a role to a user
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignRoleRequest'
+      responses:
+        '200':
+          description: The user, with the role now attached. Assigning a role the user already holds is a no-op that returns the same state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: The user or the role does not exist.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /v1/users/{userId}/roles/{roleId}:
+    delete:
+      operationId: revokeRole
+      tags: [Roles]
+      summary: Revoke a role from a user
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+        - $ref: '#/components/parameters/RoleIdParam'
+      responses:
+        '204':
+          description: Revoked, or the user did not hold the role to begin with — both are treated as success.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: The user or the role does not exist.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: The access token returned in `TokenPair.accessToken`. Short-lived; renew with `/v1/auth/refresh`.
+
+  parameters:
+    UserIdParam:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RoleIdParam:
+      name: roleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PageParam:
+      name: page
+      in: query
+      description: 1-based page number.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSizeParam:
+      name: pageSize
+      in: query
+      description: Items per page.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    UserSortParam:
+      name: sort
+      in: query
+      description: |
+        One sortable field, optionally prefixed with `-` for descending.
+        Allowed fields: `email`, `displayName`, `createdAt`, `status`.
+        Examples: `createdAt`, `-createdAt`.
+      schema:
+        type: string
+        default: '-createdAt'
+        pattern: '^-?(email|displayName|createdAt|status)$'
+    SearchParam:
+      name: search
+      in: query
+      description: Case-insensitive substring match against email and display name.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 200
+
+  responses:
+    BadRequest:
+      description: The request failed validation. `Problem.errors` maps each invalid field to its messages.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unauthorized:
+      description: The access token is missing, expired, or invalid.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: The caller is authenticated but lacks the permission this endpoint requires.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: No resource exists at this identifier.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    TooManyRequests:
+      description: Rate limit exceeded. Retry after the interval named in `detail`.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+  schemas:
+
+    UtcDateTime:
+      type: string
+      format: date-time
+      description: >-
+        RFC 3339, UTC, always suffixed `Z` — never a numeric offset such as
+        `+00:00`. A spike caught .NET emitting the offset form while Python
+        emitted `Z` for the same instant; this pattern makes the offset form
+        fail validation instead of merely looking inconsistent.
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?Z$'
+      examples:
+        - '2026-09-13T10:15:30Z'
+
+    NullableUtcDateTime:
+      type:
+        - string
+        - 'null'
+      format: date-time
+      description: Same rule as `UtcDateTime`; `null` means the event has not happened yet.
+      pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?Z$'
+      examples:
+        - '2026-09-13T10:15:30Z'
+        - null
+
+    Problem:
+      type: object
+      description: >-
+        The error envelope for every non-2xx response, served as
+        `application/problem+json` per RFC 9457. `type`, `title` and `status`
+        are the RFC's required core; `code`, `traceId` and `errors` are this
+        contract's extension members and are what clients actually branch on —
+        `title` is for a human, `code` is for a switch statement.
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri-reference
+          description: A stable identifier for this problem type. `about:blank` when no more specific type applies.
+          default: about:blank
+        title:
+          type: string
+          description: A short, human-readable summary, constant for a given `type`.
+        status:
+          type: integer
+          description: The HTTP status code, repeated here so it survives proxies that only pass the body along.
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence.
+        instance:
+          type: string
+          format: uri-reference
+          description: The request path that produced this problem.
+        code:
+          type: string
+          description: A stable, machine-readable application error code, e.g. `IDENTITY.INVALID_CREDENTIALS`. Stable across locales and across both backends; `title` and `detail` are not (they are localized).
+        traceId:
+          type: string
+          description: Correlation ID for this request, matching the one in structured logs.
+        errors:
+          type: object
+          description: Present only for validation problems (`status` 400). Maps a field name to its violation messages.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      examples:
+        - type: about:blank
+          title: Invalid credentials
+          status: 401
+          code: IDENTITY.INVALID_CREDENTIALS
+          traceId: 8f14e45f-ceea-4b6b-8b3e-1e6d6a3e6b31
+        - type: about:blank
+          title: Validation failed
+          status: 400
+          code: IDENTITY.VALIDATION_FAILED
+          traceId: 3c9f6a2e-6b8a-4e3a-9b8f-2b7b0a3d9f21
+          errors:
+            email: ['must be a valid email address']
+            password: ['must be at least 8 characters']
+
+    UserStatus:
+      type: string
+      enum: [active, inactive]
+
+    Role:
+      type: object
+      required: [id, name, permissions]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Unique, human-readable role name, e.g. `admin`.
+        description:
+          type:
+            - string
+            - 'null'
+        permissions:
+          type: array
+          description: Permission codes granted by this role, e.g. `users:read`, `users:write`.
+          items:
+            type: string
+
+    User:
+      type: object
+      required: [id, email, displayName, status, roles, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+        createdAt:
+          $ref: '#/components/schemas/UtcDateTime'
+        updatedAt:
+          $ref: '#/components/schemas/UtcDateTime'
+        lastLoginAt:
+          $ref: '#/components/schemas/NullableUtcDateTime'
+
+    RegisterRequest:
+      type: object
+      required: [email, password, displayName]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          writeOnly: true
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 200
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          writeOnly: true
+
+    RefreshRequest:
+      type: object
+      description: Optional — omit entirely to use the httpOnly cookie instead.
+      properties:
+        refreshToken:
+          type: string
+
+    UpdateUserRequest:
+      type: object
+      description: Every field is optional; only the fields present are changed.
+      minProperties: 1
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        email:
+          type: string
+          format: email
+
+    AssignRoleRequest:
+      type: object
+      required: [roleId]
+      properties:
+        roleId:
+          type: string
+          format: uuid
+
+    TokenPair:
+      type: object
+      required: [accessToken, refreshToken, tokenType, expiresAt]
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+          const: Bearer
+        expiresAt:
+          $ref: '#/components/schemas/UtcDateTime'
+          description: Expiry of `accessToken` (not the refresh token).
+
+    Page:
+      type: object
+      description: >-
+        The shape every paginated list shares. OpenAPI has no generics, so
+        `Page<T>` is realized as this base object plus a per-type `items`
+        array — see `UserPage` below and `contract/README.md` for why.
+      required: [page, pageSize, totalItems, totalPages]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+        totalItems:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+
+    UserPage:
+      description: 'Page<User>.'
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
+
+    RealtimeMessage:
+      description: >-
+        Every message either backend pushes over realtime, whatever the
+        transport. SignalR (.NET) and native WebSockets (Python) differ in how
+        a client subscribes; the JSON on the wire is this schema, identical on
+        both. See the `x-realtime-channels` section of this document for the
+        two subscription mechanics.
+      oneOf:
+        - $ref: '#/components/schemas/UserDeactivatedMessage'
+        - $ref: '#/components/schemas/UserRoleChangedMessage'
+        - $ref: '#/components/schemas/JobProgressMessage'
+      discriminator:
+        propertyName: type
+        mapping:
+          user.deactivated: '#/components/schemas/UserDeactivatedMessage'
+          user.role_changed: '#/components/schemas/UserRoleChangedMessage'
+          job.progress: '#/components/schemas/JobProgressMessage'
+
+    UserDeactivatedMessage:
+      type: object
+      required: [type, userId, occurredAt]
+      properties:
+        type:
+          type: string
+          const: user.deactivated
+        userId:
+          type: string
+          format: uuid
+        occurredAt:
+          $ref: '#/components/schemas/UtcDateTime'
+
+    UserRoleChangedMessage:
+      type: object
+      required: [type, userId, roles, occurredAt]
+      properties:
+        type:
+          type: string
+          const: user.role_changed
+        userId:
+          type: string
+          format: uuid
+        roles:
+          type: array
+          description: The user's full role set after the change, not a diff.
+          items:
+            $ref: '#/components/schemas/Role'
+        occurredAt:
+          $ref: '#/components/schemas/UtcDateTime'
+
+    JobProgressMessage:
+      type: object
+      required: [type, jobId, status, progress, occurredAt]
+      properties:
+        type:
+          type: string
+          const: job.progress
+        jobId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, running, succeeded, failed]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        occurredAt:
+          $ref: '#/components/schemas/UtcDateTime'
+
+x-realtime-channels:
+  description: >-
+    OpenAPI has no first-class channel concept — these are documented as an
+    extension rather than left unwritten, so the shapes above are still
+    authoritative even though this section is not machine-verified today.
+  channels:
+    identity.notifications:
+      message:
+        $ref: '#/components/schemas/RealtimeMessage'
+      description: >-
+        Per-user stream carrying UserDeactivatedMessage and
+        UserRoleChangedMessage. .NET: SignalR hub at `/v1/hubs/notifications`;
+        the client connects with the access token and is placed in group
+        `user:{userId}` server-side. Python: WebSocket at
+        `/v1/ws/notifications`, access token passed as a query parameter,
+        one connection per user. Both back onto the same Redis backplane, so a
+        message published from either process reaches the caller.
+    jobs.progress:
+      message:
+        $ref: '#/components/schemas/RealtimeMessage'
+      description: >-
+        Carries JobProgressMessage. .NET: SignalR hub at `/v1/hubs/jobs`,
+        group `job:{jobId}`. Python: WebSocket at `/v1/ws/jobs/{jobId}`.

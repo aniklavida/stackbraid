@@ -8,5 +8,6 @@ All notable changes to StackBraid are documented here, following [Keep a Changel
 
 - Product specification, architecture, folder structure, roadmap and release checklist.
 - Contributor and agent instructions.
+- The `Identity` API contract (`contract/openapi.yaml`): auth, users and roles, validated against OpenAPI 3.1.
 
 Nothing is implemented yet. There is no release.
