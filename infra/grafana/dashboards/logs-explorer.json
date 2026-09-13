@@ -1,0 +1,28 @@
+{
+  "uid": "stackbraid-logs-explorer",
+  "title": "StackBraid / Logs explorer",
+  "description": "Loki is wired and reachable from the first `docker compose up`, but nothing ships logs to it yet — that starts when a backend and its log shipper exist (see docs/ROADMAP.md). This panel is expected to show no data until then.",
+  "tags": ["stackbraid"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "logs",
+      "title": "All logs",
+      "gridPos": { "h": 16, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        { "expr": "{job=~\".+\"}", "refId": "A" }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "sortOrder": "Descending"
+      }
+    }
+  ]
+}
