@@ -28,6 +28,11 @@ git config core.hooksPath .githooks
 It regenerates both clients and fails the commit if `clients/` doesn't match
 a fresh generation — see `scripts/check-client-drift.sh`.
 
+The same check also runs in CI (`.github/workflows/ci.yml`, job
+`client-drift`) on every push and pull request, so drift is caught even from
+a clone where the hook was never enabled, or a commit made with
+`--no-verify`.
+
 ## Commit messages
 
 Describe what changed and why. Reference the contract change if there was one.

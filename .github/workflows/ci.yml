@@ -1,0 +1,108 @@
+name: CI
+
+# Card 4 (repository skeleton and infrastructure): build, test and lint for
+# everything that exists today — the infra compose file and the two
+# generated clients. There is no backend, frontend or mobile app yet (see
+# AGENTS.md), so there is nothing else to build, test or lint. Contract
+# conformance is covered separately by conformance.yml.
+#
+# The client-drift job is the one gap card 3 correctly left open: the drift
+# check previously ran only through an opt-in local pre-commit hook
+# (.githooks/pre-commit, enabled via `git config core.hooksPath .githooks`),
+# so an unconfigured clone or a `--no-verify` commit could push drifted
+# clients. Running it here makes the guarantee independent of local
+# configuration.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck and yamllint
+        run: sudo apt-get update && sudo apt-get install -y shellcheck yamllint
+
+      - name: Shellcheck all shell scripts
+        run: shellcheck scripts/*.sh .githooks/pre-commit
+
+      - name: Lint YAML (infra, workflows)
+        run: |
+          yamllint -d "{extends: default, rules: {line-length: disable, document-start: disable, truthy: disable}}" \
+            infra/compose.yaml \
+            infra/prometheus/prometheus.yml \
+            infra/loki/loki-config.yaml \
+            infra/grafana/provisioning/datasources/datasources.yml \
+            infra/grafana/provisioning/dashboards/dashboards.yml \
+            .github/workflows
+
+      - name: Validate Grafana dashboard JSON
+        run: |
+          for f in infra/grafana/dashboards/*.json; do
+            python3 -m json.tool "$f" > /dev/null
+          done
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate infra/compose.yaml
+        run: docker compose -f infra/compose.yaml config
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build the TypeScript client
+        working-directory: clients/typescript
+        run: |
+          npm ci
+          npm run typecheck
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.13.3'
+
+      - name: Fetch the Dart client's dependencies
+        working-directory: clients/dart
+        run: dart pub get
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.13.3'
+
+      - name: Run the Dart client's tests
+        working-directory: clients/dart
+        run: |
+          dart pub get
+          dart test
+
+  client-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.13.3'
+
+      - name: Check generated clients for drift against the contract
+        run: ./scripts/check-client-drift.sh
