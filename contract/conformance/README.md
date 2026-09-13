@@ -4,11 +4,11 @@ One test suite, written against `contract/openapi.yaml`, runnable against any
 backend on any database provider. It takes a base URL and nothing else — it
 has no knowledge of which backend is running.
 
-**Status:** the runner and every check now exist. No backend exists yet to
-run this against for real (see `docs/SPEC.md`) — a deliberately
-non-conforming stub server, used to prove the suite actually catches
-violations, is coming in a follow-up commit as a test fixture. Nothing here
-implies any real backend has ever passed this suite.
+**Status:** the runner, every check, and a stub fixture that proves the
+checks actually fail (and fail for the right reasons) all exist. No backend
+exists yet to run this against for real (see `docs/SPEC.md`) — a clean run
+against `fixtures/stub-server/` is evidence the suite works, never evidence
+any real backend conforms to anything.
 
 ## Usage
 
@@ -62,8 +62,29 @@ token to expire on demand. It reads the `expiresAt` the backend itself
 returned and either waits for genuine expiry (if that fits within
 `CONFORMANCE_MAX_EXPIRY_WAIT_MS`) or skips that one check with a clear
 reason. Run the backend under test with a short-lived access token TTL to
-exercise it for real; a stub fixture that does exactly that is coming in a
-follow-up commit.
+exercise it for real; the stub fixture (see `fixtures/stub-server/`) does
+exactly that by default so the check always runs there.
+
+## Proving it works
+
+`fixtures/stub-server/` is a deliberately non-conforming stub of the
+Identity API, used only as a test fixture — see its own README for what it
+is and, just as importantly, what it is not. `scripts/demo-violations.mjs`
+runs the real suite against that stub in its baseline (conforming) mode and
+then again with each of the five violation classes card 2 named — wrong
+type, missing field, wrong timestamp format, wrong error shape, wrong
+pagination — injected one at a time, and checks the suite's exit code
+matches what should happen in each case:
+
+```bash
+npm run demo:violations
+# or: node scripts/demo-violations.mjs
+```
+
+This is the actual CI gate for the suite itself (see
+`.github/workflows/conformance.yml`, added next): if a future change to the
+suite ever stopped catching one of these classes, this is what would turn
+CI red.
 
 ## Design
 
