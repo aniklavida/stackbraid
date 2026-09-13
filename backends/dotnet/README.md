@@ -5,13 +5,13 @@ manage users and roles — all implemented, all authenticated with real JWTs,
 all backed by a real Postgres database, and **all proven green against
 `contract/conformance`, the suite that is the single source of truth for
 whether a backend actually satisfies the contract** (see "Conformance" below
-for the real run). This is `docs/ROADMAP.md` step 2's target. What is not
-yet true: no architecture-test enforcement of the dependency rules
-(`docs/STRUCTURE.md`'s two hard rules are followed by convention only so
-far), no second provider (SQL Server/MySQL), no second backend (Python),
-and none of the Tier 2 "professional" capabilities beyond the minimal
-defaults `Shared` already ships (see below). Frontends and mobile do not
-exist yet.
+for the real run). `docs/STRUCTURE.md`'s dependency rules are enforced, not
+just followed by convention — `tests/ArchitectureTests` fails the build the
+moment one is violated (see "Architecture tests" below). This is
+`docs/ROADMAP.md` step 2's target. What is not yet true: no second provider
+(SQL Server/MySQL), no second backend (Python), and none of the Tier 2
+"professional" capabilities beyond the minimal defaults `Shared` already
+ships (see below). Frontends and mobile do not exist yet.
 
 ```
 backends/dotnet/
@@ -32,7 +32,7 @@ backends/dotnet/
     ├── Shared.UnitTests/                 real tests, all passing
     ├── Features.Identity.UnitTests/      domain + application + mapping, all passing
     ├── Features.Identity.IntegrationTests/   real local Postgres, all passing — see its own README
-    └── ArchitectureTests/                 scaffolded, empty — next
+    └── ArchitectureTests/                 the layering rules, enforced — see below
 ```
 
 ## Conformance — the real evidence
@@ -168,6 +168,33 @@ and never used past local development; a real deployment supplies its own
 secret via configuration or environment, and `appsettings.json`'s own
 (production-facing) key is intentionally blank so a missing secret fails
 loudly at startup rather than silently signing tokens with nothing.
+
+## Architecture tests
+
+`tests/ArchitectureTests` (NetArchTest) turns `docs/STRUCTURE.md`'s two hard
+rules, plus the layering `docs/STRUCTURE.md`'s dependency table implies,
+into six tests that fail the build on violation:
+
+- `Domain` depends on nothing — checked at the raw assembly-reference
+  level, not just "no framework imports": zero references to any other
+  `StackBraid.*` assembly, EF Core, ASP.NET Core or Mediator.
+- `Application` depends only on its own `Domain`, `Contracts` and `Shared`
+  — never reaching forward into `Persistence` or `Endpoints`.
+- `Persistence` depends only on its own `Domain` and `Shared` — never
+  skipping forward into `Application` or `Endpoints`.
+- `Contracts` depends on none of its own feature's internals (`Domain`,
+  `Persistence`, `Application`, `Endpoints`) — the only surface another
+  feature may see stays genuinely empty of everything else.
+- `Shared` never imports a feature.
+- No provider name appears outside `Database/Postgres` — checked by
+  scanning every other assembly's references for `Npgsql`.
+
+Every one of these six was seen to genuinely fail before being committed:
+each rule was violated on purpose (an extra `ProjectReference` plus one
+line of code touching the forbidden type), run in isolation, watched fail
+with the violating type named in the output, then reverted — never
+committed. This is not a claim taken on faith; the commit message for this
+work names the exact violation tried for each rule.
 
 ## Building and testing locally
 

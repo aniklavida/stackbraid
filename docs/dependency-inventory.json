@@ -2166,6 +2166,26 @@
       "verifiedOn": "2026-09-14",
       "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
       "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "NetArchTest.Rules",
+      "version": "1.3.2",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "GitHub BenMorris/NetArchTest LICENSE file (nuspec carries no license/licenseUrl tag at all)",
+      "notes": "test-only \u2014 architecture tests (backends/dotnet/tests/ArchitectureTests), never shipped"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Mono.Cecil",
+      "version": "0.11.3",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuspec licenseUrl points to the MIT license text)",
+      "notes": "test-only \u2014 NetArchTest.Rules' own IL-inspection dependency, never shipped"
     }
   ]
 }
