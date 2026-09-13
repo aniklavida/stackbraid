@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Licence-audit drift gate — StackBraid card 30.
+// Licence-audit drift gate.
 //
 // Every dependency shipped here is inherited by every user of this skeleton
 // (see AGENTS.md "Dependencies"). docs/dependency-inventory.json is the

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Regenerates both StackBraid clients from contract/openapi.yaml.
-# This is the one command card 3 requires: it is never split into two,
-# because two commands means one of them stops being run.
+# Deliberately one command, never split into two: two commands means one of
+# them stops being run.
 #
 # Requires on PATH:
 #   - Node.js >= 18.17 and npm (for the TypeScript client)

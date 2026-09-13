@@ -1,19 +1,18 @@
 name: CI
 
-# Card 4 (repository skeleton and infrastructure): build, test and lint for
-# everything that exists today — the infra compose file and the two
-# generated clients. There is no backend, frontend or mobile app yet (see
+# Build, test and lint for everything that exists today — the infra compose
+# file and the two generated clients. There is no backend, frontend or mobile app yet (see
 # AGENTS.md), so there is nothing else to build, test or lint. Contract
 # conformance is covered separately by conformance.yml.
 #
-# The client-drift job is the one gap card 3 correctly left open: the drift
-# check previously ran only through an opt-in local pre-commit hook
+# The client-drift job closes a known gap: the drift check previously ran
+# only through an opt-in local pre-commit hook
 # (.githooks/pre-commit, enabled via `git config core.hooksPath .githooks`),
 # so an unconfigured clone or a `--no-verify` commit could push drifted
 # clients. Running it here makes the guarantee independent of local
 # configuration.
 #
-# The dependency-licences job is card 30: every dependency shipped here is
+# The dependency-licences job exists because every dependency shipped here is
 # inherited by every user of this skeleton (see AGENTS.md "Dependencies"),
 # so a version bump or a new dependency that nobody re-audited must fail the
 # build the same way a drifted generated client does. See docs/DEPENDENCIES.md.
