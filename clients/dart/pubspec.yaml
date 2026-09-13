@@ -1,0 +1,23 @@
+name: stackbraid_client
+description: >-
+  Generated Dart client for the StackBraid Identity API, generated from
+  contract/openapi.yaml by OpenAPITools/openapi-generator. Never hand-edited
+  — see README.md.
+version: 0.1.0
+publish_to: none
+
+environment:
+  # >=3.11.0 so build_runner and json_serializable resolve without pinning an
+  # older generator version — see README.md "Toolchain".
+  sdk: ">=3.11.0 <4.0.0"
+
+dependencies:
+  dio: ^5.7.0
+  copy_with_extension: ^17.1.0
+  json_annotation: ^4.12.0
+
+dev_dependencies:
+  build_runner: ^2.16.1
+  copy_with_extension_gen: ^17.1.0
+  json_serializable: ^6.14.1
+  test: ^1.16.0

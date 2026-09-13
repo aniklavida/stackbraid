@@ -1,0 +1,6 @@
+# Files generated once and then hand-maintained by StackBraid, matching the
+# TypeScript client's package.json/tsconfig.json pattern. openapi-generator
+# will not overwrite these on regeneration — see clients/dart/README.md.
+pubspec.yaml
+analysis_options.yaml
+README.md
