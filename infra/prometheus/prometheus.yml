@@ -1,0 +1,24 @@
+# Prometheus scrape configuration for the StackBraid infrastructure stack.
+#
+# Only real, currently-running targets are listed. Backend services will add
+# their own scrape jobs (e.g. /metrics on the .NET or Python host) once they
+# exist — see ../../docs/ROADMAP.md.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus monitoring itself — always present, gives Grafana's
+  # "Platform overview" dashboard real data with no other service running.
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # RabbitMQ's built-in Prometheus plugin, enabled via
+  # ../rabbitmq/enabled_plugins. Exposes queue, connection and node metrics
+  # on 15692 regardless of whether anything has connected to RabbitMQ yet.
+  - job_name: rabbitmq
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["rabbitmq:15692"]
