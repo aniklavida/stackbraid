@@ -1,0 +1,1341 @@
+{
+  "$comment": "Machine-readable dependency licence inventory for StackBraid. Source of truth for scripts/check-dependency-licenses.mjs. Human-readable narrative in docs/DEPENDENCIES.md. Update both together \u2014 see docs/DEPENDENCIES.md '# Keeping this current'.",
+  "rule": {
+    "compiled-into-user-code": "MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, Python-2.0 only",
+    "separate-process": "Copyleft acceptable \u2014 it never reaches the user's code",
+    "build-tooling": "Invoked via CLI/codegen at build or test time, never linked into or shipped inside the user's compiled application \u2014 copyleft acceptable on the same basis as separate-process",
+    "ci-only": "Installed by a CI workflow to check the repository itself, never installed on an end user's machine or shipped in a release artifact \u2014 copyleft acceptable, invoked via CLI only, never linked",
+    "bannedRegardlessOfClass": [
+      "RPL",
+      "SSPL",
+      "RSAL",
+      "BSL",
+      "Business Source License",
+      "Commons Clause",
+      "proprietary",
+      "revenue-gated commercial"
+    ]
+  },
+  "entries": [
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "@hey-api/codegen-core",
+      "version": "0.9.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "transitive devDependency"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "@hey-api/json-schema-ref-parser",
+      "version": "1.4.4",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "transitive devDependency"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "@hey-api/openapi-ts",
+      "version": "0.99.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "transitive devDependency"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "@hey-api/shared",
+      "version": "0.5.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "transitive devDependency"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "@hey-api/spec-types",
+      "version": "0.2.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "transitive devDependency"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "@hey-api/types",
+      "version": "0.1.4",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "transitive devDependency"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "@jsdevtools/ono",
+      "version": "7.1.3",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "transitive devDependency"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "@lukeed/ms",
+      "version": "2.0.2",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "transitive devDependency"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "@types/json-schema",
+      "version": "7.0.15",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "transitive devDependency"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "ansi-colors",
+      "version": "4.1.3",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "argparse",
+      "version": "2.0.1",
+      "license": "Python-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "bundle-name",
+      "version": "4.1.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "c12",
+      "version": "3.3.4",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "chokidar",
+      "version": "5.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "color-support",
+      "version": "1.1.3",
+      "license": "ISC",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "commander",
+      "version": "15.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "confbox",
+      "version": "0.2.4",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "cross-spawn",
+      "version": "7.0.6",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "default-browser",
+      "version": "5.5.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "default-browser-id",
+      "version": "5.0.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "define-lazy-prop",
+      "version": "3.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "defu",
+      "version": "6.1.7",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "destr",
+      "version": "2.0.5",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "dotenv",
+      "version": "17.4.2",
+      "license": "BSD-2-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "exsolve",
+      "version": "1.1.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "get-tsconfig",
+      "version": "4.14.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "giget",
+      "version": "3.3.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "is-docker",
+      "version": "3.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "is-in-ssh",
+      "version": "1.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "is-inside-container",
+      "version": "1.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "is-wsl",
+      "version": "3.1.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "isexe",
+      "version": "2.0.0",
+      "license": "ISC",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "jiti",
+      "version": "2.7.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "js-yaml",
+      "version": "4.2.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "ohash",
+      "version": "2.0.12",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "open",
+      "version": "11.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "path-key",
+      "version": "3.1.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "pathe",
+      "version": "2.0.3",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "perfect-debounce",
+      "version": "2.1.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "pkg-types",
+      "version": "2.3.3",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "confbox",
+      "version": "0.3.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "transitive devDependency"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "powershell-utils",
+      "version": "0.1.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "rc9",
+      "version": "3.1.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "readdirp",
+      "version": "5.1.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "resolve-pkg-maps",
+      "version": "1.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "run-applescript",
+      "version": "7.1.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "semver",
+      "version": "7.8.4",
+      "license": "ISC",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "shebang-command",
+      "version": "2.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "shebang-regex",
+      "version": "3.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "typescript",
+      "version": "5.9.3",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "which",
+      "version": "2.0.2",
+      "license": "ISC",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "npm-typescript-client",
+      "name": "wsl-utils",
+      "version": "0.3.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/typescript/package-lock.json (license field)",
+      "notes": "devDependency of the codegen/typecheck toolchain; the generated client itself (src/generated/) has zero runtime dependencies"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "_fe_analyzer_shared",
+      "version": "108.0.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "analyzer",
+      "version": "14.4.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "args",
+      "version": "2.7.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "async",
+      "version": "2.13.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive runtime dependency of dio/copy_with_extension/json_annotation"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "boolean_selector",
+      "version": "2.1.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "build",
+      "version": "4.0.11",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "build_config",
+      "version": "1.3.3",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "build_daemon",
+      "version": "4.1.6",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "build_runner",
+      "version": "2.16.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "devDependency: code generator (build_runner/json_serializable/copy_with_extension_gen)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "built_collection",
+      "version": "5.1.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "built_value",
+      "version": "8.13.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "checked_yaml",
+      "version": "2.0.4",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "cli_config",
+      "version": "0.2.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "collection",
+      "version": "1.19.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive runtime dependency of dio/copy_with_extension/json_annotation"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "convert",
+      "version": "3.1.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "copy_with_extension",
+      "version": "17.1.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "runtime dependency of the generated Dio-based client (dependencies: in pubspec.yaml)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "copy_with_extension_gen",
+      "version": "17.1.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "devDependency: code generator (build_runner/json_serializable/copy_with_extension_gen)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "coverage",
+      "version": "1.15.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "crypto",
+      "version": "3.0.7",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "dart_style",
+      "version": "3.1.13",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "dio",
+      "version": "5.11.1",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "runtime dependency of the generated Dio-based client (dependencies: in pubspec.yaml)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "dio_web_adapter",
+      "version": "2.2.2",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive runtime dependency of dio/copy_with_extension/json_annotation"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "file",
+      "version": "7.0.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "fixnum",
+      "version": "1.1.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "frontend_server_client",
+      "version": "4.0.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "glob",
+      "version": "2.2.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "graphs",
+      "version": "2.3.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "http_multi_server",
+      "version": "3.2.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "http_parser",
+      "version": "4.1.2",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive runtime dependency of dio/copy_with_extension/json_annotation"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "io",
+      "version": "1.1.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "json_annotation",
+      "version": "4.12.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "runtime dependency of the generated Dio-based client (dependencies: in pubspec.yaml)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "json_serializable",
+      "version": "6.14.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "devDependency: code generator (build_runner/json_serializable/copy_with_extension_gen)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "logging",
+      "version": "1.3.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "matcher",
+      "version": "0.12.20",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "meta",
+      "version": "1.19.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive runtime dependency of dio/copy_with_extension/json_annotation"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "mime",
+      "version": "2.1.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive runtime dependency of dio/copy_with_extension/json_annotation"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "node_preamble",
+      "version": "2.0.2",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "package_config",
+      "version": "3.0.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "path",
+      "version": "1.9.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive runtime dependency of dio/copy_with_extension/json_annotation"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "pool",
+      "version": "1.5.3",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "pub_semver",
+      "version": "2.2.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "pubspec_parse",
+      "version": "1.6.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "shelf",
+      "version": "1.4.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "shelf_packages_handler",
+      "version": "3.0.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "shelf_static",
+      "version": "1.1.3",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "shelf_web_socket",
+      "version": "3.0.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "source_gen",
+      "version": "4.3.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "source_helper",
+      "version": "1.3.13",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "source_map_stack_trace",
+      "version": "2.1.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "source_maps",
+      "version": "0.10.14",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "source_span",
+      "version": "1.10.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "stack_trace",
+      "version": "1.12.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "stream_channel",
+      "version": "2.1.4",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "stream_transform",
+      "version": "2.1.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "string_scanner",
+      "version": "1.4.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "term_glyph",
+      "version": "1.2.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "test",
+      "version": "1.32.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "devDependency: code generator (build_runner/json_serializable/copy_with_extension_gen)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "test_api",
+      "version": "0.7.14",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "test_core",
+      "version": "0.6.20",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "typed_data",
+      "version": "1.4.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "vm_service",
+      "version": "15.3.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "watcher",
+      "version": "1.2.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "web",
+      "version": "1.1.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive runtime dependency of dio/copy_with_extension/json_annotation"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "web_socket",
+      "version": "1.0.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "web_socket_channel",
+      "version": "3.0.3",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "webkit_inspection_protocol",
+      "version": "1.2.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "dart-client",
+      "name": "yaml",
+      "version": "3.1.4",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-13",
+      "source": "clients/dart/pubspec.lock + pub.dev license page",
+      "notes": "transitive devDependency (code generation or test-only toolchain)"
+    },
+    {
+      "ecosystem": "infra-image",
+      "name": "postgres",
+      "version": "16-alpine",
+      "license": "PostgreSQL",
+      "class": "separate-process",
+      "verifiedOn": "2026-09-13",
+      "source": "https://github.com/postgres/postgres COPYRIGHT (REL_16_STABLE)",
+      "notes": "Permissive licence (functionally MIT/BSD-like); own process, never links against generated code"
+    },
+    {
+      "ecosystem": "infra-image",
+      "name": "rabbitmq",
+      "version": "3.13-management-alpine",
+      "license": "MPL-2.0",
+      "class": "separate-process",
+      "verifiedOn": "2026-09-13",
+      "source": "https://github.com/rabbitmq/rabbitmq-server v3.13.7 LICENSE (core), some OCF files Apache-2.0",
+      "notes": "Weak copyleft, file-level; acceptable for a separate process that is only talked to over AMQP"
+    },
+    {
+      "ecosystem": "infra-image",
+      "name": "redis",
+      "version": "7.2-alpine",
+      "license": "BSD-3-Clause",
+      "class": "separate-process",
+      "verifiedOn": "2026-09-13",
+      "source": "https://github.com/redis/redis 7.2.0 COPYING",
+      "notes": "Deliberately pinned below 7.4: Redis 7.4+ is dual RSALv2/SSPLv1, both on the reciprocal-for-consumers reject list regardless of class. 7.2 is the last BSD release. See docs/DEPENDENCIES.md for the pending long-term call (stay on 7.2 vs move to Valkey)."
+    },
+    {
+      "ecosystem": "infra-image",
+      "name": "prom/prometheus",
+      "version": "v2.54.1",
+      "license": "Apache-2.0",
+      "class": "separate-process",
+      "verifiedOn": "2026-09-13",
+      "source": "https://github.com/prometheus/prometheus v2.54.1 LICENSE",
+      "notes": ""
+    },
+    {
+      "ecosystem": "infra-image",
+      "name": "grafana/loki",
+      "version": "2.9.8",
+      "license": "AGPL-3.0-only",
+      "class": "separate-process",
+      "verifiedOn": "2026-09-13",
+      "source": "https://github.com/grafana/loki v2.9.8 LICENSE",
+      "notes": "Network copyleft, but not on the reciprocal-for-consumers reject list (that list is RPL/SSPL/RSAL/BSL/revenue-gated-commercial). Runs as its own process, queried over HTTP; nothing here is linked into or redistributed with user code."
+    },
+    {
+      "ecosystem": "infra-image",
+      "name": "grafana/grafana",
+      "version": "11.2.0",
+      "license": "AGPL-3.0-only",
+      "class": "separate-process",
+      "verifiedOn": "2026-09-13",
+      "source": "https://github.com/grafana/grafana v11.2.0 LICENSE",
+      "notes": "Same reasoning as Loki above."
+    },
+    {
+      "ecosystem": "ci-tool",
+      "name": "actions/checkout",
+      "version": "v4",
+      "license": "MIT",
+      "class": "ci-only",
+      "verifiedOn": "2026-09-13",
+      "source": "https://github.com/actions/checkout LICENSE",
+      "notes": "GitHub Action, runs only inside CI"
+    },
+    {
+      "ecosystem": "ci-tool",
+      "name": "actions/setup-node",
+      "version": "v4",
+      "license": "MIT",
+      "class": "ci-only",
+      "verifiedOn": "2026-09-13",
+      "source": "https://github.com/actions/setup-node LICENSE",
+      "notes": "GitHub Action, runs only inside CI"
+    },
+    {
+      "ecosystem": "ci-tool",
+      "name": "dart-lang/setup-dart",
+      "version": "v1",
+      "license": "BSD-3-Clause",
+      "class": "ci-only",
+      "verifiedOn": "2026-09-13",
+      "source": "https://github.com/dart-lang/setup-dart LICENSE",
+      "notes": "GitHub Action, runs only inside CI"
+    },
+    {
+      "ecosystem": "ci-tool",
+      "name": "shellcheck",
+      "version": "apt (runner default)",
+      "license": "GPL-3.0-only",
+      "class": "ci-only",
+      "verifiedOn": "2026-09-13",
+      "source": "https://github.com/koalaman/shellcheck LICENSE",
+      "notes": "Installed by ci.yml via apt-get, invoked as a CLI linter over scripts/*.sh; never linked into or shipped with any artifact"
+    },
+    {
+      "ecosystem": "ci-tool",
+      "name": "yamllint",
+      "version": "apt (runner default)",
+      "license": "GPL-3.0-only",
+      "class": "ci-only",
+      "verifiedOn": "2026-09-13",
+      "source": "https://github.com/adrienverge/yamllint LICENSE",
+      "notes": "Installed by ci.yml via apt-get, invoked as a CLI linter over YAML files; never linked into or shipped with any artifact"
+    },
+    {
+      "ecosystem": "ci-tool",
+      "name": "@openapitools/openapi-generator-cli",
+      "version": "latest (npx --yes)",
+      "license": "Apache-2.0",
+      "class": "ci-only",
+      "verifiedOn": "2026-09-13",
+      "source": "https://registry.npmjs.org/@openapitools/openapi-generator-cli",
+      "notes": "Invoked by scripts/generate-clients.sh to regenerate clients/dart/; not a runtime dependency of the generated client, and its own output contains no openapi-generator source"
+    },
+    {
+      "ecosystem": "ci-tool",
+      "name": "@redocly/cli",
+      "version": "2.52.1 (pinned in contract/README.md)",
+      "license": "MIT",
+      "class": "ci-only",
+      "verifiedOn": "2026-09-13",
+      "source": "https://registry.npmjs.org/@redocly/cli/2.52.1",
+      "notes": "Documented in contract/README.md as the contract-lint command; not currently wired into a CI workflow \u2014 see docs/DEPENDENCIES.md open item"
+    }
+  ]
+}
