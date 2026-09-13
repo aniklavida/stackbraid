@@ -11,19 +11,19 @@ client is not the same claim as a working integration.
 
 ## Which generator, and why
 
-Card 3 named [`Carapacik/swagger_parser`](https://pub.dev/packages/swagger_parser)
-(MIT) as the primary Dart tool, with
+[`Carapacik/swagger_parser`](https://pub.dev/packages/swagger_parser)
+(MIT) is the primary Dart generator, with
 [`OpenAPITools/openapi-generator`](https://github.com/OpenAPITools/openapi-generator)
-(Apache-2.0) as "the fallback for either target" if the small Dart OpenAPI
-ecosystem turned out to be the weak link the card's own risk section warned
-about. It did: `swagger_parser` 1.44.3 crashes on this contract because it
+(Apache-2.0) as the fallback for either client target. The known risk was
+that the small Dart OpenAPI ecosystem might not handle the whole contract.
+It did not: `swagger_parser` 1.44.3 crashes on this contract because it
 cannot parse OpenAPI's path-item-level `parameters` (used by
 `/v1/users/{userId}` and `/v1/users/{userId}/roles/{roleId}` to avoid
 repeating the same path parameter on every operation) — a confirmed,
 still-open upstream bug:
 [Carapacik/swagger_parser#374](https://github.com/Carapacik/swagger_parser/issues/374).
 That is not something to hand-patch around, so this client is generated with
-the named fallback instead: the `dart-dio` generator, using `dio` for
+the fallback instead: the `dart-dio` generator, using `dio` for
 transport and `json_serializable` for models.
 
 ## Toolchain
@@ -31,8 +31,8 @@ transport and `json_serializable` for models.
 The local Dart SDK was **3.10**; `build_runner >= 2.16` and
 `json_serializable >= 6.14` both require **>= 3.11**, and json_serializable's
 generated null-aware-element syntax needs an SDK constraint lower bound of at
-least 3.8 to parse at all. Per card 3 ("upgrade the toolchain before this
-card rather than pinning again"), the toolchain was upgraded — a standalone
+least 3.8 to parse at all. The requirement is a toolchain upgrade rather
+than another pin, so the toolchain was upgraded — a standalone
 Dart SDK (`brew install dart-sdk`) alongside the Flutter-bundled one, since
 Flutter itself still ships 3.10 — rather than pinning `retrofit_generator` or
 any other package to an older release. `pubspec.yaml`'s `environment.sdk`

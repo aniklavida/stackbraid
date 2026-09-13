@@ -1,13 +1,13 @@
 # Config for OpenAPITools/openapi-generator (Apache-2.0), invoked by
 # scripts/generate-clients.sh at the repository root.
 #
-# swagger_parser (Carapacik/swagger_parser, MIT) is this card's named primary
-# tool for Dart, but it crashes on this contract: it cannot parse path-item-
+# swagger_parser (Carapacik/swagger_parser, MIT) is the primary Dart
+# generator, but it crashes on this contract: it cannot parse path-item-
 # level `parameters` (used by /v1/users/{userId} and
 # /v1/users/{userId}/roles/{roleId}), a confirmed, still-open upstream bug —
-# https://github.com/Carapacik/swagger_parser/issues/374. The card names
-# openapi-generator as "the fallback for either target" for exactly this
-# situation, so this client uses it instead. See clients/dart/README.md.
+# https://github.com/Carapacik/swagger_parser/issues/374. openapi-generator
+# is the designated fallback for either client target, so this client uses
+# it instead. See clients/dart/README.md.
 generatorName: dart-dio
 inputSpec: ../../contract/openapi.yaml
 outputDir: .
