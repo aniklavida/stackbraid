@@ -44,4 +44,7 @@ public readonly struct Result
     public static Result Failure(AppError error) => new(false, error);
 
     public static implicit operator Result(AppError error) => Failure(error);
+
+    public TResult Match<TResult>(Func<TResult> onSuccess, Func<AppError, TResult> onFailure) =>
+        IsSuccess ? onSuccess() : onFailure(Error!);
 }

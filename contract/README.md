@@ -6,9 +6,11 @@ from it, never the other way round. See `docs/SPEC.md` for why this project
 is contract-first at all, and `docs/ARCHITECTURE.md` for where the contract
 sits relative to everything else.
 
-**Status:** the contract for `Identity` exists. No backend implements it yet
-— nothing here is running code. Do not read this file as evidence the API
-works; read it as the specification a backend will be judged against.
+**Status:** the .NET backend (`backends/dotnet`) implements this contract and
+passes `contract/conformance` in full — see `backends/dotnet/README.md` for
+the real run. The Python backend does not exist yet. Read this file as the
+specification every backend is judged against, not as a description of any
+one backend's current behaviour.
 
 ## Changing it safely
 

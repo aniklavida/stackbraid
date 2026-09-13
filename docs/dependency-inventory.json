@@ -1926,6 +1926,246 @@
       "verifiedOn": "2026-09-14",
       "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
       "notes": "nuspec declares license type=\"file\"; verified against martinothamar/Mediator's committed LICENSE file on GitHub (MIT). Referenced with PrivateAssets=\"all\" and ReferenceOutputAssembly=\"false\" in Features/Identity/Application \u2014 an analyzer that generates code at compile time, never itself shipped in the built output."
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.AspNetCore.Authentication.JwtBearer",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Bcl.Cryptography",
+      "version": "10.0.2",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Configuration",
+      "version": "10.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Configuration.Binder",
+      "version": "10.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.DependencyModel",
+      "version": "10.0.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Diagnostics.Abstractions",
+      "version": "10.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.FileProviders.Abstractions",
+      "version": "10.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Hosting.Abstractions",
+      "version": "10.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only \u2014 never shipped"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.IdentityModel.Abstractions",
+      "version": "8.22.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.IdentityModel.JsonWebTokens",
+      "version": "8.22.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.IdentityModel.Logging",
+      "version": "8.22.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.IdentityModel.Protocols",
+      "version": "8.19.2",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.IdentityModel.Protocols.OpenIdConnect",
+      "version": "8.19.2",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.IdentityModel.Tokens",
+      "version": "8.22.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Serilog",
+      "version": "4.3.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Serilog.AspNetCore",
+      "version": "10.0.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Serilog.Extensions.Hosting",
+      "version": "10.0.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Serilog.Extensions.Logging",
+      "version": "10.0.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Serilog.Formatting.Compact",
+      "version": "3.0.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Serilog.Settings.Configuration",
+      "version": "10.0.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Serilog.Sinks.Console",
+      "version": "6.1.1",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Serilog.Sinks.Debug",
+      "version": "3.0.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Serilog.Sinks.File",
+      "version": "7.0.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "System.IdentityModel.Tokens.Jwt",
+      "version": "8.22.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
     }
   ]
 }

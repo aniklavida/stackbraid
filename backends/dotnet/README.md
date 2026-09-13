@@ -1,12 +1,17 @@
-# backends/dotnet — under construction
+# backends/dotnet
 
-**Status: not a working backend yet.** `Shared`, the Identity feature's
-domain/persistence/Postgres provider, and now its full Application layer
-(every command and query the contract needs) all compile and are tested.
-Nothing serves HTTP yet — no endpoints, no authentication, no JWT — and
-nothing here has been run against the contract's conformance suite (see
-[docs/ROADMAP.md](../../docs/ROADMAP.md), step 2). Do not treat any file
-under this folder as evidence of a working API.
+**Status: the first working backend.** Register, log in, refresh, log out,
+manage users and roles — all implemented, all authenticated with real JWTs,
+all backed by a real Postgres database, and **all proven green against
+`contract/conformance`, the suite that is the single source of truth for
+whether a backend actually satisfies the contract** (see "Conformance" below
+for the real run). This is `docs/ROADMAP.md` step 2's target. What is not
+yet true: no architecture-test enforcement of the dependency rules
+(`docs/STRUCTURE.md`'s two hard rules are followed by convention only so
+far), no second provider (SQL Server/MySQL), no second backend (Python),
+and none of the Tier 2 "professional" capabilities beyond the minimal
+defaults `Shared` already ships (see below). Frontends and mobile do not
+exist yet.
 
 ```
 backends/dotnet/
@@ -14,23 +19,55 @@ backends/dotnet/
 ├── Directory.Build.props    shared build settings (net10.0, nullable, per-project lock files)
 ├── scripts/                 start/stop a throwaway local Postgres for integration tests
 ├── src/
-│   ├── Shared/               done — see below
-│   ├── Database/Postgres/    Npgsql wiring, migrations, seed data — done, see below
+│   ├── Shared/               cross-cutting plumbing — see below
+│   ├── Database/Postgres/    Npgsql wiring, migrations, seed data — see below
 │   ├── Features/Identity/
 │   │   ├── Domain/            entities, value objects, domain events — depends on nothing
 │   │   ├── Persistence/       DbContext, entity configuration, repositories — provider-agnostic
-│   │   ├── Contracts/         DTOs and requests mirroring contract/openapi.yaml — done
-│   │   ├── Application/       every Command and Query the contract needs — done, see below
-│   │   └── Endpoints/         scaffolded, empty — next
-│   └── Host/                 scaffolded — starts, serves only /health/live
+│   │   ├── Contracts/         DTOs and requests mirroring contract/openapi.yaml
+│   │   ├── Application/       every Command and Query the contract needs
+│   │   └── Endpoints/         the HTTP surface — minimal API, permission-gated
+│   └── Host/                 composition root — JWT, Serilog, health checks, DI wiring
 └── tests/
     ├── Shared.UnitTests/                 real tests, all passing
     ├── Features.Identity.UnitTests/      domain + application + mapping, all passing
     ├── Features.Identity.IntegrationTests/   real local Postgres, all passing — see its own README
-    └── ArchitectureTests/
+    └── ArchitectureTests/                 scaffolded, empty — next
 ```
 
-## What `Shared` actually does today
+## Conformance — the real evidence
+
+```
+$ CONFORMANCE_ADMIN_EMAIL="admin@stackbraid.local" CONFORMANCE_ADMIN_PASSWORD="<seeded>" \
+    node cli/run.mjs http://127.0.0.1:<port>
+
+34 passed, 0 failed, 0 skipped, 34 total.
+```
+
+Run against a genuinely fresh, empty local Postgres cluster (no Docker, no
+Testcontainers — see `scripts/start-local-postgres.sh`) migrated and seeded
+by this backend's own startup path, with a short-lived (40-second) access
+token configured so the suite's expiry check exercises a real expiry rather
+than skipping it. Every check in `contract/conformance` passes: schema
+shape, the RFC 9457 Problem envelope on every documented error, offset
+pagination arithmetic, `UtcDateTime`'s exact `Z`-suffixed format, both
+token-delivery paths (body and httpOnly cookie) for login/refresh/logout,
+refresh-token rotation and revocation, and permission-gated admin endpoints.
+The generated TypeScript and Dart clients (`clients/typescript`,
+`clients/dart`) both call this backend successfully with no hand edits —
+register, log in, and read the caller's own account, exercised directly
+against a running instance.
+
+Three real bugs this run caught and fixed, worth recording because this is
+exactly what the suite is for: the rate limit on auth endpoints was tight
+enough that the suite's own traffic tripped it; ASP.NET Core's default JWT
+challenge/forbid responses bypass the Problem-envelope pipeline entirely
+(bare 401/403, no body); and `HttpResponse.WriteAsJsonAsync`'s
+no-content-type overload silently stamps `application/json` over a
+content type already set, which broke the envelope's content type on every
+response written outside the normal `Results.Problem(...)` path.
+
+## What `Shared` does
 
 - **Persistence** — `AppDbContextBase`, a provider-agnostic `DbContext` base
   (a template-method save pipeline only — it knows nothing about any
@@ -38,15 +75,17 @@ backends/dotnet/
   `IRepository`/`RepositoryBase`/`IUnitOfWork` on top of it. No
   provider-specific type appears here — that is `Database/Postgres`'s job.
 - **Web** — the RFC 9457 Problem envelope the contract requires
-  (`ProblemDetailsMapper`, `GlobalExceptionHandler`), a correlation ID
-  middleware, and the one rate-limit policy every backend needs on day one
-  (`RateLimitingExtensions`).
+  (`ProblemDetailsMapper`, `GlobalExceptionHandler`, `ResultHttpExtensions`),
+  a correlation ID middleware, and the one rate-limit policy every backend
+  needs on day one (`RateLimitingExtensions`).
 - **Localization** — `IAppLocalizer`, backed by two embedded JSON catalogues
   (English and Spanish) — genuinely resolves per `Accept-Language`, not a
   stub.
-- **Security** — `IPasswordHasher`, PBKDF2-HMAC-SHA256 at OWASP's current
-  minimum (600,000 iterations), built on `Rfc2898DeriveBytes` — no
-  third-party dependency.
+- **Security** — `IPasswordHasher` (PBKDF2-HMAC-SHA256, OWASP's current
+  minimum) and `OpaqueTokenGenerator` (a fast SHA-256 hash for refresh
+  tokens — deliberately not PBKDF2, which would punish the read-heavy
+  per-request lookup a slow hash is not meant for). No third-party
+  dependency for either.
 - **Messaging, Jobs, Documents, Caching, Storage, Mailing** — one interface
   and one working implementation each, exactly as `docs/STRUCTURE.md`
   describes for this layer. Today's implementations are intentionally
@@ -70,7 +109,7 @@ backends/dotnet/
   [docs/DEPENDENCIES.md](../../docs/DEPENDENCIES.md) for what is and is not
   a dependency of this backend yet.
 
-## What the Identity feature's `Domain` and `Persistence` do today
+## What the Identity feature does
 
 - **`Domain`** — `User`, `Role`, `RefreshToken` and the `UserRole` link,
   each owning its own invariants (deactivating twice is a no-op, assigning
@@ -83,10 +122,26 @@ backends/dotnet/
 - **`Persistence`** — `IdentityDbContext` and every `IEntityTypeConfiguration<T>`,
   plus repository implementations. No `Npgsql` reference anywhere in this
   project — only `Microsoft.EntityFrameworkCore.Relational`, which is
-  relational-generic, not provider-specific (see
-  [docs/DEPENDENCIES.md](../../docs/DEPENDENCIES.md)).
+  relational-generic, not provider-specific.
+- **`Contracts`** — every DTO and request `contract/openapi.yaml` names for
+  Identity, as plain records with zero dependencies — the only surface
+  another feature (or `Endpoints`) may see.
+- **`Application`** — one `Command` or `Query` per contract operation
+  (register, login, refresh, logout, update profile, assign/revoke role,
+  deactivate, get user, list users, list roles), each with its own handler
+  in the same file — a reader follows one operation start to finish without
+  jumping between projects. Every expected failure returns a `Result`
+  carrying an `AppError`, never an exception. Mapping between entities and
+  DTOs is hand-written, with a test per DTO asserting every property is
+  populated.
+- **`Endpoints`** — one minimal-API file per sub-area (`AuthEndpoints`,
+  `UsersEndpoints`, `RolesEndpoints`), each mapping HTTP directly onto a
+  Command or Query and a `Result` onto either the response DTO or the
+  Problem envelope. Role-based authorization is a `permission` claim check
+  (`RequirePermissionExtensions`) against the access token, not a hard-coded
+  role name — a role is just a named bundle of permission codes.
 
-## What `Database/Postgres` does today
+## What `Database/Postgres` does
 
 The only project allowed to reference `Npgsql.EntityFrameworkCore.PostgreSQL`
 — see `docs/STRUCTURE.md`. `AddPostgresPersistence` wires `IdentityDbContext`
@@ -95,38 +150,24 @@ migrations at startup; `PostgresSeeder` seeds two roles (`admin`, `user`)
 and two accounts, idempotently (checked by the admin account's presence, so
 an ordinary restart is a no-op, not a duplicate-key error).
 
-Proven against a real, throwaway local Postgres cluster — no Docker, no
-Testcontainers (see `tests/Features.Identity.IntegrationTests/README.md`
-for why, and `scripts/start-local-postgres.sh` for how): migrations run
-from a genuinely empty database to fully current with no manual step,
-every mapped table exists afterward, and seeding, search/pagination/sort,
-role assignment and refresh-token rotation all round-trip correctly.
+## What `Host` does
 
-## What the Identity feature's `Contracts` and `Application` do today
+The composition root: reads `ConnectionStrings:Postgres` and the `Jwt`
+configuration section, wires every `Add...` extension the layers below
+expose, configures JWT bearer authentication (`Host/Security/JwtAccessTokenIssuer`
+implements Application's `IAccessTokenIssuer` port; `JwtProblemDetailsEvents`
+rewrites the default bearer-auth 401/403 into the contract's Problem
+envelope), configures Serilog to the console with the correlation ID
+attached to every log line, exposes `/health/live` and `/health/ready` (the
+latter checks Postgres connectivity), and migrates and seeds the database
+on startup.
 
-- **`Contracts`** — every DTO and request `contract/openapi.yaml` names for
-  Identity (`UserDto`, `RoleDto`, `TokenPairDto`, `UserPageDto`,
-  `RegisterRequest`, `LoginRequest`, `RefreshRequest`, `UpdateUserRequest`,
-  `AssignRoleRequest`), as plain records. Zero dependencies, same as
-  `Domain` — this is the only surface another feature (or `Endpoints`) may
-  see.
-- **`Application`** — one `Command` or `Query` per contract operation
-  (register, login, refresh, logout, update profile, assign/revoke role,
-  deactivate, get user, list users, list roles), each with its own handler
-  in the same file — a reader follows one operation start to finish without
-  jumping between projects. Every expected failure (invalid credentials, a
-  taken email, a missing user or role) returns a `Result` carrying an
-  `AppError`, never an exception — the same shape `Shared/Web` already maps
-  to the contract's Problem envelope. Mapping between entities and DTOs is
-  hand-written (`EntityMappingExtensions`), with a test per DTO in
-  `EntityMappingExtensionsTests` asserting every property is populated —
-  the cover for that approach's one real weakness, a forgotten line failing
-  silently.
-- Login and refresh depend on `IAccessTokenIssuer`, a port with no
-  implementation yet — JWT signing is explicitly the next step, not part of
-  this layer. Unit tests substitute it, so the orchestration (credential
-  checking, refresh-token rotation, revocation) is fully tested without a
-  real token yet existing.
+**The JWT signing key in `appsettings.Development.json` is a fixed, publicly
+known development default** — stated plainly in `Host/Security/JwtOptions.cs`
+and never used past local development; a real deployment supplies its own
+secret via configuration or environment, and `appsettings.json`'s own
+(production-facing) key is intentionally blank so a missing secret fails
+loudly at startup rather than silently signing tokens with nothing.
 
 ## Building and testing locally
 
@@ -141,4 +182,20 @@ dotnet test tests/Features.Identity.UnitTests/StackBraid.Features.Identity.UnitT
 export STACKBRAID_TEST_POSTGRES_CONNECTION_STRING="$(./scripts/start-local-postgres.sh)"
 dotnet test tests/Features.Identity.IntegrationTests
 ./scripts/stop-local-postgres.sh
+```
+
+### Running the server and the conformance suite together
+
+```bash
+cd backends/dotnet
+export STACKBRAID_TEST_POSTGRES_CONNECTION_STRING="$(./scripts/start-local-postgres.sh)"
+ConnectionStrings__Postgres="$STACKBRAID_TEST_POSTGRES_CONNECTION_STRING" \
+  Jwt__SigningKey="<any base64 32+ byte value for a local run>" \
+  dotnet run --project src/Host --urls http://127.0.0.1:8080 &
+
+cd ../../contract/conformance
+CONFORMANCE_ADMIN_EMAIL="admin@stackbraid.local" CONFORMANCE_ADMIN_PASSWORD="ChangeMe!123" \
+  node cli/run.mjs http://127.0.0.1:8080
+
+cd ../../backends/dotnet && ./scripts/stop-local-postgres.sh
 ```

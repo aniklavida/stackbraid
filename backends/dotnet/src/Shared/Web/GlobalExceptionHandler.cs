@@ -33,10 +33,7 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             with { Type = AppErrorType.Failure };
 
         var problem = ProblemDetailsMapper.Map(error, _localizer, culture, traceId, httpContext.Request.Path);
-
-        httpContext.Response.StatusCode = problem.Status ?? StatusCodes.Status500InternalServerError;
-        httpContext.Response.ContentType = "application/problem+json";
-        await httpContext.Response.WriteAsJsonAsync(problem, cancellationToken).ConfigureAwait(false);
+        await ProblemDetailsMapper.WriteAsync(httpContext, problem, cancellationToken).ConfigureAwait(false);
 
         return true;
     }

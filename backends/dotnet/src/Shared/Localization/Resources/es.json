@@ -18,8 +18,12 @@
   "problem.server_error.detail": "Algo salió mal al procesar esta solicitud. Se registró con el ID de seguimiento anterior.",
   "validation.email.invalid": "debe ser una dirección de correo electrónico válida",
   "validation.email.required": "el correo electrónico es obligatorio",
-  "validation.password.min_length": "debe tener al menos {minLength} caracteres",
+  "validation.password.min_length": "debe tener al menos 8 caracteres",
   "validation.password.required": "la contraseña es obligatoria",
   "validation.display_name.required": "el nombre para mostrar es obligatorio",
-  "validation.display_name.length": "debe tener entre 1 y 200 caracteres"
+  "validation.display_name.length": "debe tener entre 1 y 200 caracteres",
+  "validation.page.minimum": "debe ser al menos 1",
+  "validation.page_size.range": "debe estar entre 1 y 100",
+  "validation.sort.invalid": "debe ser uno de email, displayName, createdAt, status, opcionalmente precedido por -",
+  "validation.status.invalid": "debe ser uno de: active, inactive"
 }

@@ -18,8 +18,12 @@
   "problem.server_error.detail": "Something went wrong while processing this request. It has been logged with the trace ID above.",
   "validation.email.invalid": "must be a valid email address",
   "validation.email.required": "email is required",
-  "validation.password.min_length": "must be at least {minLength} characters",
+  "validation.password.min_length": "must be at least 8 characters",
   "validation.password.required": "password is required",
   "validation.display_name.required": "display name is required",
-  "validation.display_name.length": "must be between 1 and 200 characters"
+  "validation.display_name.length": "must be between 1 and 200 characters",
+  "validation.page.minimum": "must be at least 1",
+  "validation.page_size.range": "must be between 1 and 100",
+  "validation.sort.invalid": "must be one of email, displayName, createdAt, status, optionally prefixed with -",
+  "validation.status.invalid": "must be one of: active, inactive"
 }

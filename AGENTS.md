@@ -6,7 +6,7 @@ The canonical guide for humans and coding agents working in this repository. Too
 
 A multi-stack product skeleton. Users pick a backend, a database, a frontend and optionally mobile, and receive working codebases wired together by one OpenAPI contract.
 
-**Status: pre-implementation.** The specification, architecture and structure exist. Working code does not yet.
+**Status: early implementation.** The specification, architecture and structure exist, and the .NET backend's `Identity` feature is implemented, tested and passes contract conformance (see `backends/dotnet/README.md`). Nothing else — the Python backend, frontends, mobile — is built yet.
 
 ## The one rule that matters
 

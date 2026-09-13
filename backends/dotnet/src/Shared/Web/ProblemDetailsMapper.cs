@@ -50,6 +50,20 @@ public static class ProblemDetailsMapper
         _ => StatusCodes.Status500InternalServerError,
     };
 
+    /// <summary>
+    /// Writes a Problem body with the exact contract-required content type.
+    /// <c>HttpResponse.WriteAsJsonAsync</c>'s no-content-type overload always
+    /// stamps <c>application/json</c> over whatever was set beforehand — the
+    /// conformance suite catches this exact mistake wherever a response is
+    /// written outside the normal <c>Results.Problem(...)</c> path (a
+    /// middleware-level exception handler or an authentication challenge).
+    /// </summary>
+    public static Task WriteAsync(HttpContext httpContext, ProblemDetails problem, CancellationToken cancellationToken = default)
+    {
+        httpContext.Response.StatusCode = problem.Status ?? StatusCodes.Status500InternalServerError;
+        return httpContext.Response.WriteAsJsonAsync(problem, options: null, contentType: "application/problem+json", cancellationToken);
+    }
+
     private static string TitleKey(AppErrorType type) => type switch
     {
         AppErrorType.Validation => "problem.validation_failed.title",

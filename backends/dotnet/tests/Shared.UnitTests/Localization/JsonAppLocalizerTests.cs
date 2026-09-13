@@ -38,10 +38,14 @@ public class JsonAppLocalizerTests
     }
 
     [Fact]
-    public void GetString_substitutes_named_arguments()
+    public void GetString_substitutes_named_arguments_into_the_resolved_text()
     {
-        var text = _sut.GetString("validation.password.min_length", "en", new Dictionary<string, string> { ["minLength"] = "8" });
-        text.ShouldBe("must be at least 8 characters");
+        // No catalogue entry today needs a placeholder, so this exercises the
+        // substitution mechanism directly against the key-as-fallback path
+        // (see GetString_falls_back_to_the_key_itself_when_missing_everywhere)
+        // rather than a real message — the mechanism itself is what's under test.
+        var text = _sut.GetString("hello {name}", "en", new Dictionary<string, string> { ["name"] = "World" });
+        text.ShouldBe("hello World");
     }
 
     [Fact]

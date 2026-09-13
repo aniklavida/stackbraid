@@ -76,8 +76,12 @@ reads under the `nuget-dotnet-backend` ecosystem.
 | `Microsoft.Extensions.Primitives` | 10.0.12 | MIT |
 | `Microsoft.EntityFrameworkCore.Relational` | 10.0.12 | MIT |
 | `Npgsql` (+ `Npgsql.EntityFrameworkCore.PostgreSQL`) | 10.0.3 | PostgreSQL Licence — OSI-approved and permissive, textually BSD/MIT-style (see `postgres/postgres`'s own `COPYRIGHT`); the .NET *driver*, unrelated to which licence governs the Postgres *server* process itself (audited separately below, under infrastructure) |
+| `Microsoft.AspNetCore.Authentication.JwtBearer` | 10.0.12 | MIT |
+| `System.IdentityModel.Tokens.Jwt` (+ `Microsoft.IdentityModel.JsonWebTokens`, `.Tokens`, `.Protocols`, `.Protocols.OpenIdConnect`, `.Logging`, `.Abstractions`, `Microsoft.Bcl.Cryptography`) | 8.19.2–8.22.0 | MIT |
+| `Serilog` (+ `.AspNetCore`, `.Extensions.Hosting`, `.Extensions.Logging`, `.Formatting.Compact`, `.Settings.Configuration`) | 4.3.0 / 10.0.0 | Apache-2.0 |
+| `Serilog.Sinks.Console` (+ transitively pulled `.Sinks.Debug`, `.Sinks.File`, unused by this backend's own logging setup but resolved by `Serilog.AspNetCore`'s dependency tree) | 6.1.1 / 3.0.0 / 7.0.0 | Apache-2.0 |
 
-All ten are MIT, Apache-2.0 or the permissive PostgreSQL Licence — compliant with the compiled-into-user-code rule.
+All fourteen package families are MIT, Apache-2.0 or the permissive PostgreSQL Licence — compliant with the compiled-into-user-code rule. JWT signing/validation (`Host/Security/JwtAccessTokenIssuer`, wired in `Host/Program.cs`) and structured console logging with correlation IDs (`Host/Program.cs`'s `UseSerilog` call, consuming `Shared/Web/CorrelationIdMiddleware`'s logging scope) are what these two families exist for.
 `Microsoft.EntityFrameworkCore.Relational` is deliberately separate from `Npgsql.EntityFrameworkCore.PostgreSQL`:
 it is what `backends/dotnet/src/Features/Identity/Persistence` (entity configuration, provider-agnostic) references for
 relational concepts like `ToTable`/`HasColumnName` that apply to any relational database, while `Npgsql.*` is confined
@@ -133,7 +137,7 @@ Installed by `.github/workflows/*.yml` to check the repository itself. None of t
 
 ## Rejected packages — re-verified, not just re-recorded
 
-`docs/SPEC.md` and `AGENTS.md` already name five packages as banned. Re-checked today against current package metadata rather than trusting the earlier note, and confirmed **absent from every actual manifest in this repository** (no `.csproj`, `.sln`, or code references them — there is no .NET backend yet for them to appear in):
+`docs/SPEC.md` and `AGENTS.md` already name five packages as banned. Re-checked today against current package metadata rather than trusting the earlier note, and confirmed **absent from every actual manifest in this repository**, including the now-existing `backends/dotnet` — grepped across every `.csproj` and `packages.lock.json` in the solution:
 
 | Package | Licence today | Verified against |
 |---|---|---|

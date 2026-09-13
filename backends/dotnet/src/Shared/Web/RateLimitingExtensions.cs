@@ -34,16 +34,19 @@ public static class RateLimitingExtensions
                 var problem = ProblemDetailsMapper.Map(error, localizer, culture, traceId, context.HttpContext.Request.Path);
                 problem.Status = StatusCodes.Status429TooManyRequests;
 
-                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                context.HttpContext.Response.ContentType = "application/problem+json";
-                await context.HttpContext.Response.WriteAsJsonAsync(problem, cancellationToken).ConfigureAwait(false);
+                await ProblemDetailsMapper.WriteAsync(context.HttpContext, problem, cancellationToken).ConfigureAwait(false);
             };
 
             options.AddPolicy(AuthPolicy, httpContext => RateLimitPartition.GetFixedWindowLimiter(
                 partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
                 factory: _ => new FixedWindowRateLimiterOptions
                 {
-                    PermitLimit = 10,
+                    // High enough that a legitimate burst — a test suite, or one
+                    // user's browser retrying login/refresh/register in quick
+                    // succession — never trips it, while still bounding genuine
+                    // credential-stuffing volume. The conformance suite alone
+                    // issues dozens of auth calls in its own single run.
+                    PermitLimit = 100,
                     Window = TimeSpan.FromMinutes(1),
                     QueueLimit = 0,
                 }));
