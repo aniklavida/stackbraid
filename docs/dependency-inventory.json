@@ -19796,6 +19796,676 @@
       "verifiedOn": "2026-09-14",
       "source": "frontends/angular/package-lock.json (license field)",
       "notes": "transitive dependency"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "args",
+      "version": "2.7.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of jni (path_provider_android -> jni), which flutter_secure_storage_windows -> path_provider pulls in"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "async",
+      "version": "2.13.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of dio (the generated client’s own HTTP layer)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "characters",
+      "version": "1.4.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "runtime dependency of the Flutter framework itself"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "code_assets",
+      "version": "2.0.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of objective_c (path_provider_foundation -> objective_c)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "collection",
+      "version": "1.19.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of the Flutter framework, dio and several flutter_secure_storage/path_provider packages"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "copy_with_extension",
+      "version": "17.1.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "runtime dependency of stackbraid_client (clients/dart), unchanged"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "crypto",
+      "version": "3.0.7",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of hooks (objective_c -> hooks -> crypto)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "dio",
+      "version": "5.11.1",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "runtime dependency of stackbraid_client (clients/dart) — every network call in this app goes through it, unchanged"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "dio_web_adapter",
+      "version": "2.2.2",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "runtime dependency of dio, for the Chrome/web run target"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "ffi",
+      "version": "2.2.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of flutter_secure_storage_windows and path_provider_foundation/path_provider_linux/path_provider_windows"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "flutter_secure_storage",
+      "version": "9.2.4",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "platform secure storage (Keychain/Keystore) for the persisted refresh token — see shared/auth/token_store.dart"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "flutter_secure_storage_linux",
+      "version": "1.2.3",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "flutter_secure_storage’s Linux platform implementation, resolved as part of its dependency graph"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "flutter_secure_storage_macos",
+      "version": "3.1.3",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "flutter_secure_storage’s macOS platform implementation — the actual Keychain backing on the verified macOS run target"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "flutter_secure_storage_platform_interface",
+      "version": "1.1.2",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "flutter_secure_storage’s platform-interface package"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "flutter_secure_storage_web",
+      "version": "1.2.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "flutter_secure_storage’s web platform implementation — used on the verified Chrome run target"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "flutter_secure_storage_windows",
+      "version": "3.1.2",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "flutter_secure_storage’s Windows platform implementation, resolved as part of its dependency graph"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "hooks",
+      "version": "2.2.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of objective_c (native-asset build hooks package)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "http_parser",
+      "version": "4.1.2",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of dio"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "jni",
+      "version": "1.0.3",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of path_provider_android (Dart/Java interop for the Android platform implementation)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "jni_flutter",
+      "version": "1.0.3",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of path_provider_android"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "jni_util",
+      "version": "1.0.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of jni"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "js",
+      "version": "0.6.7",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of flutter_secure_storage_web"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "json_annotation",
+      "version": "4.12.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "runtime dependency of stackbraid_client (clients/dart), unchanged"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "logging",
+      "version": "1.3.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of hooks"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "material_color_utilities",
+      "version": "0.13.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "runtime dependency of the Flutter framework itself"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "meta",
+      "version": "1.19.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of the Flutter framework and dio"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "mime",
+      "version": "2.1.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of dio"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "objective_c",
+      "version": "9.6.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of path_provider_foundation (Dart/Objective-C interop for the iOS/macOS platform implementation) — on the path exercised by the verified macOS run target"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "package_config",
+      "version": "3.0.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of jni"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "path",
+      "version": "1.9.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of dio and the path_provider/jni family"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "path_provider",
+      "version": "2.1.6",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of flutter_secure_storage_windows"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "path_provider_android",
+      "version": "2.3.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "path_provider’s Android platform implementation"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "path_provider_foundation",
+      "version": "2.6.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "path_provider’s iOS/macOS platform implementation — on the path exercised by the verified macOS run target"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "path_provider_linux",
+      "version": "2.2.2",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "path_provider’s Linux platform implementation"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "path_provider_platform_interface",
+      "version": "2.1.3",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "path_provider’s platform-interface package"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "path_provider_windows",
+      "version": "2.3.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "path_provider’s Windows platform implementation"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "platform",
+      "version": "3.2.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of path_provider_platform_interface"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "plugin_platform_interface",
+      "version": "2.1.8",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of flutter_secure_storage_platform_interface and path_provider_platform_interface"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "pub_semver",
+      "version": "2.2.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of hooks and objective_c"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "record_use",
+      "version": "1.1.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of hooks"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "source_span",
+      "version": "1.10.2",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of http_parser"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "string_scanner",
+      "version": "1.4.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of http_parser"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "term_glyph",
+      "version": "1.2.2",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of source_span"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "typed_data",
+      "version": "1.4.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of crypto and http_parser"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "vector_math",
+      "version": "2.4.2",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "runtime dependency of the Flutter framework itself"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "web",
+      "version": "1.1.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of dio_web_adapter, for the Chrome/web run target"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "win32",
+      "version": "5.15.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of flutter_secure_storage_windows"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "xdg_directories",
+      "version": "1.1.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of path_provider_linux"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "yaml",
+      "version": "3.1.4",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of hooks"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "boolean_selector",
+      "version": "2.1.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of flutter_test/matcher (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "clock",
+      "version": "1.1.2",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of flutter_test (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "fake_async",
+      "version": "1.3.3",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of flutter_test (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "file",
+      "version": "7.0.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of flutter_driver/integration_test (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "flutter_lints",
+      "version": "6.0.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "devDependency — the lint ruleset, never shipped"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "leak_tracker",
+      "version": "11.0.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of flutter_test (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "leak_tracker_flutter_testing",
+      "version": "3.0.10",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of flutter_test (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "leak_tracker_testing",
+      "version": "3.0.2",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of leak_tracker_flutter_testing (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "lints",
+      "version": "6.1.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "devDependency of flutter_lints"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "matcher",
+      "version": "0.12.20",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of flutter_test/flutter_driver (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "process",
+      "version": "5.0.6",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of fuchsia_remote_debug_protocol (integration_test’s flutter_driver tree, test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "stack_trace",
+      "version": "1.12.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of flutter_test/webdriver (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "stream_channel",
+      "version": "2.1.4",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of flutter_test (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "sync_http",
+      "version": "0.3.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of webdriver (flutter_driver tree, test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "test_api",
+      "version": "0.7.12",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of flutter_test (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "vm_service",
+      "version": "15.3.0",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of leak_tracker/integration_test (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "webdriver",
+      "version": "3.2.0",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive devDependency of flutter_driver, used only by `flutter test integration_test` (test-only)"
+    },
+    {
+      "ecosystem": "dart-mobile-flutter",
+      "name": "intl",
+      "version": "0.20.3",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "mobile/flutter/pubspec.lock + package LICENSE file",
+      "notes": "transitive runtime dependency of flutter_localizations (Material/Widgets/Cupertino localization delegates this app registers for Spanish support)"
     }
   ]
 }

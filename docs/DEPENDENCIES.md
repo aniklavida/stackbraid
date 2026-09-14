@@ -13,7 +13,7 @@ Anything reciprocal-for-consumers — **RPL, SSPL, RSAL, BSL, or a revenue-gated
 
 This document is the narrative record. The machine-readable source of truth is `docs/dependency-inventory.json`, checked on every push by `scripts/check-dependency-licenses.mjs` (see "The CI gate" below). **A licence recorded from memory is not an audit** — every entry below was verified against the actual package's registry metadata or licence file on the date given, not carried forward from an earlier audit's notes.
 
-**Truthfulness note:** both backends' Identity feature are implemented and conformance-tested (see `docs/ROADMAP.md` step 3); the Next.js and Angular frontends' web and admin shells are both implemented and verified against both backends (see each one's own README). The Flutter mobile app does not exist yet. This inventory covers exactly what is genuinely shipped today. It will grow, stack by stack, as each is actually built. Nothing below pre-audits code that does not exist.
+**Truthfulness note:** both backends' Identity feature are implemented and conformance-tested (see `docs/ROADMAP.md` step 3); the Next.js and Angular frontends' web and admin shells are both implemented and verified against both backends (see each one's own README). The Flutter mobile shell's Identity feature (register, sign in, profile, sign out) is implemented and verified end-to-end against both backends on the macOS desktop run target only — not on an iOS or Android simulator, see `mobile/flutter/README.md`. This inventory covers exactly what is genuinely shipped today. It will grow, stack by stack, as each is actually built. Nothing below pre-audits code that does not exist.
 
 Last verified: **2026-09-14**.
 
@@ -53,6 +53,50 @@ Unlike the TypeScript client, the generated Dio-based Dart client **does** carry
 All eleven are MIT or BSD-3-Clause — compliant with the compiled-into-user-code rule.
 
 **Build tooling** (`dev_dependencies:` in `pubspec.yaml` — `build_runner`, `copy_with_extension_gen`, `json_serializable`, `test` — plus the 51 further packages their code generation and test-running pull in transitively). Every one of them is BSD-3-Clause, MIT or Apache-2.0 (`source_helper`), per `docs/dependency-inventory.json`, ecosystem `dart-client`. None are compiled into a consumer's app; they run only while regenerating the client or running `dart test`.
+
+## Flutter mobile — `mobile/flutter/`
+
+The Identity shell — register, sign in, a session that survives an app
+restart, profile, sign out — consuming `clients/dart` (above) via a
+`path:` dependency, the same unchanged-generated-client convention the
+frontends use for `clients/typescript`. `mobile/flutter/pubspec.lock` is
+read by `scripts/check-dependency-licenses.mjs` under the
+`dart-mobile-flutter` ecosystem (66 entries — every package resolved
+transitively too, since a compiled-into-user-code classification follows
+the whole dependency chain, not just the direct one).
+
+**Compiled into the app** (reachable from a `dependencies:` entry —
+`stackbraid_client`'s own runtime closure, `flutter_secure_storage`'s, and
+the Flutter framework's own):
+
+| Package | Licence | Why it's here |
+|---|---|---|
+| `dio`, `dio_web_adapter`, `copy_with_extension`, `json_annotation` | MIT / MIT / MIT / BSD-3-Clause | `stackbraid_client`'s own runtime dependencies — see the Dart client section above |
+| `flutter_secure_storage` (+ its `_linux`/`_macos`/`_platform_interface`/`_web`/`_windows` platform packages) | BSD-3-Clause | Platform secure storage for the persisted refresh token — see `mobile/flutter/README.md`, "Token storage" |
+| `path_provider` (+ its own platform packages), `jni`, `jni_flutter`, `jni_util`, `objective_c`, `ffi`, `win32`, `xdg_directories` | BSD-3-Clause | `flutter_secure_storage_windows`'s own dependency chain (path_provider) and, transitively, `path_provider_android`/`path_provider_foundation`'s own native-interop packages |
+| `code_assets`, `hooks`, `crypto`, `logging`, `pub_semver`, `record_use`, `yaml`, `package_config`, `args` | BSD-3-Clause | `objective_c`/`jni`'s own further dependency chain |
+| `characters`, `collection`, `material_color_utilities`, `meta`, `vector_math` | BSD-3-Clause / Apache-2.0 | Runtime dependencies of the Flutter framework itself |
+| `intl` | BSD-3-Clause | Runtime dependency of `flutter_localizations` (bundled with the Flutter SDK, no licence entry of its own) — backs the Material/Widgets/Cupertino localization delegates this app registers for Spanish |
+| `path`, `http_parser`, `source_span`, `string_scanner`, `term_glyph`, `typed_data`, `web` | BSD-3-Clause | Transitive runtime dependencies of `dio`/`http_parser` |
+
+All compliant with the compiled-into-user-code rule — MIT, Apache-2.0 or
+BSD-3-Clause throughout.
+
+**Build/test tooling** (`dev_dependencies:` and the transitive closure of
+`flutter_test`/`integration_test`/`flutter_lints` — never compiled into the
+shipped app): `flutter_lints`, `lints`, `matcher`, `test_api`,
+`boolean_selector`, `stream_channel`, `stack_trace`, `clock`, `fake_async`,
+`leak_tracker` (+ `_flutter_testing`, `_testing`), `vm_service`, `webdriver`,
+`sync_http`, `file`, `process` — all MIT, Apache-2.0 or BSD-3-Clause per
+`docs/dependency-inventory.json`.
+
+`flutter`, `flutter_test`, `flutter_localizations` and `integration_test`
+themselves are `source: sdk` in `pubspec.lock` — bundled with the Flutter
+SDK, not fetched from pub.dev, and carry no licence entry of their own,
+the same basis `Microsoft.AspNetCore.App`'s `FrameworkReference` is
+exempted on below. `stackbraid_client` is `source: path` — this
+repository's own package, not a third-party dependency, the same workspace
+exception `@stackbraid/client-typescript` gets in the npm ecosystems.
 
 ## .NET backend — `backends/dotnet/`
 

@@ -1,0 +1,13 @@
+// Copy this file to LocalSigning.xcconfig (gitignored, never committed) to
+// build/run this app locally with a real development-signing identity —
+// needed for flutter_secure_storage's Keychain access on macOS. Find your
+// own team ID with:
+//
+//   security find-identity -v -p codesigning
+//
+// Not needed for `flutter analyze`, `flutter test` (non-integration), or
+// CI — only for actually running/driving the macOS app (`flutter run -d
+// macos`, `flutter test integration_test -d macos`).
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+CODE_SIGN_IDENTITY = Apple Development
+CODE_SIGN_STYLE = Automatic

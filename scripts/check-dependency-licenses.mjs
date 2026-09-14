@@ -176,27 +176,63 @@ if (existsSync(angularLockPath)) {
   warn('frontends/angular/package-lock.json not found — skipping Angular frontend npm check.');
 }
 
-// --- Dart: clients/dart ---------------------------------------------------
-const pubspecLockPath = p('clients', 'dart', 'pubspec.lock');
-if (existsSync(pubspecLockPath)) {
-  const text = readFileSync(pubspecLockPath, 'utf8');
+// --- Dart: shared pubspec.lock parser --------------------------------------
+// Used for both clients/dart and mobile/flutter. A block's `source:` line
+// tells apart a real pub.dev package from something that carries no
+// licence entry of its own: `sdk` is the Flutter/Dart SDK itself (the same
+// basis .NET's FrameworkReference to Microsoft.AspNetCore.App is exempted
+// on, above), and `path` is an in-repo workspace reference — this
+// repository's own `clients/dart` package, consumed by `mobile/flutter` the
+// same way `@stackbraid/client-typescript` is a `file:` workspace
+// reference for the npm frontends, not a third-party dependency.
+function parseDartLock(text) {
   const resolved = [];
   let currentName = null;
+  let currentSource = null;
   for (const line of text.split('\n')) {
     const nameMatch = line.match(/^  ([a-zA-Z0-9_]+):\s*$/);
     if (nameMatch) {
       currentName = nameMatch[1];
+      currentSource = null;
+      continue;
+    }
+    const sourceMatch = line.match(/^    source:\s*(\S+)/);
+    if (sourceMatch && currentName) {
+      currentSource = sourceMatch[1];
       continue;
     }
     const versionMatch = line.match(/^    version:\s*"?([^"\s]+)"?/);
     if (versionMatch && currentName) {
-      resolved.push({ name: currentName, version: versionMatch[1] });
+      if (currentSource !== 'sdk' && currentSource !== 'path') {
+        resolved.push({ name: currentName, version: versionMatch[1] });
+      }
       currentName = null;
+      currentSource = null;
     }
   }
+  return resolved;
+}
+
+// --- Dart: clients/dart ---------------------------------------------------
+const pubspecLockPath = p('clients', 'dart', 'pubspec.lock');
+if (existsSync(pubspecLockPath)) {
+  const resolved = parseDartLock(readFileSync(pubspecLockPath, 'utf8'));
   checkResolved('dart-client', resolved, { sourceLabel: 'clients/dart/pubspec.lock' });
 } else {
   warn('clients/dart/pubspec.lock not found — skipping Dart check.');
+}
+
+// --- Dart: mobile/flutter --------------------------------------------------
+// `stackbraid_client` (this repository's own generated client, consumed via
+// a `path:` dependency on clients/dart) is excluded by parseDartLock above,
+// the same workspace exception as the npm frontends'
+// `@stackbraid/client-typescript`.
+const mobileLockPath = p('mobile', 'flutter', 'pubspec.lock');
+if (existsSync(mobileLockPath)) {
+  const resolved = parseDartLock(readFileSync(mobileLockPath, 'utf8'));
+  checkResolved('dart-mobile-flutter', resolved, { sourceLabel: 'mobile/flutter/pubspec.lock' });
+} else {
+  warn('mobile/flutter/pubspec.lock not found — skipping Flutter mobile check.');
 }
 
 // --- .NET: backends/dotnet ------------------------------------------------

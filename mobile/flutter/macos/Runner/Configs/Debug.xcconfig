@@ -1,0 +1,14 @@
+#include "../../Flutter/Flutter-Debug.xcconfig"
+#include "Warnings.xcconfig"
+
+// A real development-signing identity is required for the
+// keychain-access-groups entitlement flutter_secure_storage needs on macOS
+// (an ad hoc "-" identity fails every Keychain call with
+// "Unexpected security result code -34018"). Nobody's Apple Developer Team
+// ID belongs in a public repository, so it is never hardcoded here —
+// each developer's own machine supplies it locally, gitignored, via
+// LocalSigning.xcconfig (see LocalSigning.xcconfig.example next to this
+// file). `#include?` (with the "?") is Xcode's own syntax for "include if
+// present, otherwise skip silently" — a clean checkout with no local
+// signing configured just builds unsigned, exactly as before.
+#include? "LocalSigning.xcconfig"

@@ -1,0 +1,54 @@
+name: stackbraid_mobile
+description: >-
+  StackBraid's Flutter mobile shell — the same Identity feature the web
+  frontends ship (register, sign in, profile, sign out), speaking the
+  contract only through the generated Dart client in clients/dart.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  # Matches clients/dart's own floor (see clients/dart/README.md, "Toolchain"):
+  # build_runner/json_serializable there need >=3.11.0, and this app depends
+  # on that package directly, so it needs the same SDK.
+  sdk: ">=3.11.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Bundled with the Flutter SDK itself (source: sdk in pubspec.lock) — no
+  # separate pub.dev licence to audit, same basis as `flutter` and
+  # `flutter_test` below. Gives Flutter's own built-in widgets (back-button
+  # semantics, default tooltips, date/time pickers) their Spanish strings
+  # too, on top of this app's own `shared/i18n` registry.
+  flutter_localizations:
+    sdk: flutter
+
+  # The generated client from contract/openapi.yaml — used unchanged, never
+  # hand-edited, never copied. Every network call in this app goes through
+  # it; see AGENTS.md "Dependencies" for the path-dependency convention the
+  # web frontends already use for their own generated client.
+  stackbraid_client:
+    path: ../../clients/dart
+
+  # Already a transitive dependency of stackbraid_client — declared directly
+  # too because `shared/http`/`shared/errors` build a `Dio`-shaped request
+  # log and error mapper against its types. Same version, no new audit
+  # entry: already recorded under docs/dependency-inventory.json's
+  # `dart-mobile-flutter` ecosystem.
+  dio: ^5.11.1
+
+  # Platform secure storage (iOS/macOS Keychain, Android Keystore-backed
+  # EncryptedSharedPreferences) for the refresh token — the mobile half of
+  # the token-storage rule docs/SPEC.md states for every StackBraid client.
+  # See shared/auth/token_store.dart for the reasoning.
+  flutter_secure_storage: ^9.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

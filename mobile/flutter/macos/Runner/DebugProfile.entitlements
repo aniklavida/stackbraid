@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- App Sandbox is off for local debug/test runs only (Release stays
+	     sandboxed, see Release.entitlements) to keep this ad hoc-signed
+	     local build's entitlement surface minimal. The actual fix for
+	     flutter_secure_storage's macOS Keychain calls — which otherwise
+	     fail with "Unexpected security result code -34018, A required
+	     entitlement isn't present" regardless of this setting — is
+	     `useDataProtectionKeyChain: false` in
+	     shared/auth/token_store.dart; see that file for the full account
+	     of why the newer Keychain needs a real Apple Developer Team
+	     identity and the older one does not. -->
+	<key>com.apple.security.app-sandbox</key>
+	<false/>
+	<key>com.apple.security.cs.allow-jit</key>
+	<true/>
+	<key>com.apple.security.network.server</key>
+	<true/>
+	<!-- Outgoing HTTP to the local backend under test (contract/openapi.yaml
+	     via clients/dart) — the app is a network client, not just a debug
+	     server target. -->
+	<key>com.apple.security.network.client</key>
+	<true/>
+</dict>
+</plist>
