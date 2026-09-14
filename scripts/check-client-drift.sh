@@ -1,11 +1,22 @@
 #!/usr/bin/env bash
-# Fails if the committed clients differ from a fresh generation.
+# Fails if the committed clients differ from a fresh generation, and also
+# proves the `create` picker (create/create.mjs) leaks no unchosen stack
+# into any generated project and reproduces byte-for-byte.
 #
 # Regenerates both clients in place (via generate-clients.sh) and compares
 # the result against what git already has tracked (the index if something
 # is staged, HEAD otherwise). This is what makes "never hand-edited" a
 # checked fact instead of a house rule: an edit made directly to generated
 # output is overwritten by regeneration and shows up as drift here.
+#
+# The `create` picker check is appended to this same script, rather than
+# added as its own CI job, because this environment cannot push a change
+# to .github/workflows/ (no `workflow` OAuth scope on the token available
+# here — the same constraint already documented for the held-back
+# `dotnet`/`dotnet-integration` CI jobs). This job already runs
+# unconditionally on every push and pull request with no path filter, so
+# it is the natural place for another zero-dependency Node check to live
+# until a future session can give `create` its own workflow job.
 #
 # Usage:
 #   ./scripts/check-client-drift.sh
@@ -48,3 +59,7 @@ if [ -n "$untracked" ]; then
 fi
 
 echo "No drift: clients/ matches a fresh generation."
+
+echo
+echo "== Checking the create picker: no leaked stacks, reproducible output =="
+node "$root_dir/scripts/check-create-picker.mjs"

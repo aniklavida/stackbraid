@@ -50,6 +50,8 @@ SQL Server and MySQL, each with its own migrations.
 
 The picker, the agent playbooks, documentation, a demo, release automation and clean-install proof.
 
+**Status:** the picker (`create/create.mjs`) copies the chosen backend, database, frontend and mobile pieces and writes fresh, stack-scoped configuration, with no reference to an unchosen stack anywhere in its output — proven for every combination that exists today (see `create/README.md`). One combination per backend has been run natively (no Docker) against a throwaway local Postgres and passed the shared conformance suite. `docker compose up` has not yet been verified for any combination, and the agent playbooks referenced below do not exist yet.
+
 **Done:** a new user can install, run and demonstrate the whole promise without help.
 
 ## After v1.0
