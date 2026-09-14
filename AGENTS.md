@@ -6,7 +6,7 @@ The canonical guide for humans and coding agents working in this repository. Too
 
 A multi-stack product skeleton. Users pick a backend, a database, a frontend and optionally mobile, and receive working codebases wired together by one OpenAPI contract.
 
-**Status: early implementation.** The specification, architecture and structure exist, both backends' `Identity` feature is implemented, tested and passes contract conformance (see `backends/dotnet/README.md` and `backends/python/README.md`), and both the Next.js and Angular frontends' web and admin shells are implemented and verified against both backends, using the same Playwright script (see `frontends/nextjs/README.md` and `frontends/angular/README.md`). Mobile and remaining database providers are not built yet.
+**Status: early implementation.** The specification, architecture and structure exist, both backends' `Identity` feature is implemented, tested and passes contract conformance (see `backends/dotnet/README.md` and `backends/python/README.md`), and both the Next.js and Angular frontends' web and admin shells are implemented and verified against both backends, using the same Playwright script (see `frontends/nextjs/README.md` and `frontends/angular/README.md`). The Flutter mobile shell's `Identity` feature is implemented and verified against both backends on the macOS desktop target (see `mobile/flutter/README.md`); it has no admin surface by design and has not been verified on an iOS or Android simulator. Remaining database providers are not built yet.
 
 ## The one rule that matters
 

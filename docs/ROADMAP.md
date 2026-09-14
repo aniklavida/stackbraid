@@ -30,6 +30,8 @@ The same contract, the same folders, the other language.
 
 Angular and Next.js, each with the public site and the admin area. The Flutter shell.
 
+**Status:** Angular and Next.js are both done — register, sign in, and manage users and roles all work against both backends. The Flutter shell's `Identity` feature (register, sign in, a session surviving a restart, profile, sign out) is implemented and verified against both backends on the macOS desktop target, with no admin surface by design (`docs/STRUCTURE.md`); it has not been verified on an iOS or Android simulator.
+
 **Done:** register, log in and manage users work in every surface against both backends.
 
 ## 5 · The professional layer

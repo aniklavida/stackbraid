@@ -4,7 +4,7 @@
 
 StackBraid is a professional skeleton for building a real product. You choose your stack — backend, database, frontend, mobile — and get working, already-connected codebases with the plumbing a serious project needs already wired. You write business logic. Nothing else.
 
-> **Early implementation, no release yet.** Both backends' `Identity` feature is implemented and tested — register, log in, refresh, log out, manage users and roles, all proven against `contract/conformance`, unchanged between the two (see [`backends/dotnet/README.md`](backends/dotnet/README.md) and [`backends/python/README.md`](backends/python/README.md) for the real runs). Both the Next.js and Angular frontends' web and admin shells are implemented and verified end-to-end against both backends, unchanged, using the same Playwright script (see [`frontends/nextjs/README.md`](frontends/nextjs/README.md) and [`frontends/angular/README.md`](frontends/angular/README.md)). Flutter, remaining database providers, and every "professional" capability in the table below are still planned. Every capability below is planned unless explicitly marked implemented.
+> **Early implementation, no release yet.** Both backends' `Identity` feature is implemented and tested — register, log in, refresh, log out, manage users and roles, all proven against `contract/conformance`, unchanged between the two (see [`backends/dotnet/README.md`](backends/dotnet/README.md) and [`backends/python/README.md`](backends/python/README.md) for the real runs). Both the Next.js and Angular frontends' web and admin shells are implemented and verified end-to-end against both backends, unchanged, using the same Playwright script (see [`frontends/nextjs/README.md`](frontends/nextjs/README.md) and [`frontends/angular/README.md`](frontends/angular/README.md)). The Flutter mobile shell's `Identity` feature — register, sign in, a session surviving an app restart, profile, sign out — is implemented and verified end-to-end against both backends on the macOS desktop run target (not yet on an iOS or Android simulator; see [`mobile/flutter/README.md`](mobile/flutter/README.md)). Remaining database providers and every "professional" capability in the table below are still planned. Every capability below is planned unless explicitly marked implemented.
 
 ## The idea
 
@@ -64,6 +64,8 @@ A skeleton's real failure mode is people abandoning its conventions — month th
 | `@tanstack/react-query`, `next-intl` (Next.js frontend) | MIT | compiled into user code |
 | `radix-ui`, `cn`, `class-variance-authority` (Next.js frontend, shadcn/ui) | MIT | compiled into user code |
 | `vitest`, `@playwright/test`, `dependency-cruiser` (Next.js frontend, test/architecture-only) | MIT | build-tooling |
+| `flutter_secure_storage` (Flutter mobile) | BSD-3-Clause | compiled into user code |
+| `intl` (Flutter mobile, via `flutter_localizations`) | BSD-3-Clause | compiled into user code |
 | `postgres:16-alpine` | PostgreSQL Licence | separate process |
 | `rabbitmq:3.13-management-alpine` | MPL-2.0 | separate process |
 | `redis:7.2-alpine` | BSD-3-Clause | separate process |
