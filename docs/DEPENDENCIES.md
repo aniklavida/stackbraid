@@ -13,7 +13,7 @@ Anything reciprocal-for-consumers — **RPL, SSPL, RSAL, BSL, or a revenue-gated
 
 This document is the narrative record. The machine-readable source of truth is `docs/dependency-inventory.json`, checked on every push by `scripts/check-dependency-licenses.mjs` (see "The CI gate" below). **A licence recorded from memory is not an audit** — every entry below was verified against the actual package's registry metadata or licence file on the date given, not carried forward from an earlier audit's notes.
 
-**Truthfulness note:** the .NET backend is under construction (see `docs/ROADMAP.md` step 2); no frontend or mobile app exists yet. This inventory covers exactly what is genuinely shipped today — the two generated API clients, the infrastructure compose stack, the tooling CI installs, and the .NET backend's own resolved dependency graph. It will grow, stack by stack, as each is actually built. Nothing below pre-audits code that does not exist.
+**Truthfulness note:** both backends' Identity feature are implemented and conformance-tested (see `docs/ROADMAP.md` step 3); no frontend or mobile app exists yet. This inventory covers exactly what is genuinely shipped today — the two generated API clients, the infrastructure compose stack, the tooling CI installs, and both backends' own resolved dependency graphs. It will grow, stack by stack, as each is actually built. Nothing below pre-audits code that does not exist.
 
 Last verified: **2026-09-14**.
 
@@ -104,6 +104,57 @@ for that reason, the same basis as `Microsoft.EntityFrameworkCore.Design` below.
 
 **Deliberately not added yet:** `Hangfire.Core`, `QuestPDF` and `ClosedXML` — named in `docs/SPEC.md`'s dependency table as the intended real implementations behind `IJobScheduler`, `IPdfGenerator` and `IExcelExporter` — are not referenced by any `.csproj` today. Those interfaces currently ship with a minimal, dependency-free default (an in-process job queue, a hand-written PDF writer, and CSV export) so the layer compiles and is genuinely tested without auditing a library nothing yet depends on. They enter this document, with a verified date, the same day they enter a `.csproj` — the same rule already applied to them here before any backend existed.
 
+## Python backend — `backends/python/`
+
+`backends/python/requirements-lock.txt` (`uv pip freeze` output, committed) is
+this backend's analogue of `package-lock.json` / `pubspec.lock` /
+`packages.lock.json` — the exact resolved graph for both the runtime and
+dev/test dependency groups, read by `scripts/check-dependency-licenses.mjs`
+under the `pypi-python-backend` ecosystem.
+
+**Compiled into the running backend:**
+
+| Package | Version | Licence |
+|---|---|---|
+| `fastapi` | 0.141.1 | MIT |
+| `uvicorn` (+ `uvloop`, `httptools`, `watchfiles`, `websockets` — the `[standard]` extra) | 0.52.4 / 0.22.1 / 0.8.0 / 1.2.0 / 17.1 | MIT / MIT / MIT / MIT / BSD-3-Clause |
+| `pydantic` (+ `pydantic-core`, `annotated-types`, `typing-inspection`) | 2.13.5 | MIT |
+| `pydantic-settings` (+ `python-dotenv`) | 2.15.0 / 1.2.3 | MIT / BSD-3-Clause |
+| `sqlalchemy` (+ `greenlet`) | 2.0.52 / 3.5.5 | MIT / MIT AND PSF-2.0 |
+| `asyncpg` | 0.31.0 | Apache-2.0 |
+| `alembic` (+ `mako`) | 1.20.0 / 1.4.1 | MIT |
+| `pyjwt` | 2.14.0 | MIT |
+| `starlette`, `anyio`, `click`, `idna`, `markupsafe`, `pyyaml`, `typing-extensions`, `annotated-doc` | various | MIT / BSD-3-Clause / PSF-2.0 |
+
+Every one is MIT, Apache-2.0, BSD-3-Clause or PSF-2.0 — compliant with the
+compiled-into-user-code rule. Notably absent by deliberate choice: **no
+mediator library** — `application/` resolves command/query handlers directly
+from FastAPI's own dependency graph (see `AGENTS.md`'s "the only intended
+difference between the backends") — and **no ORM-adjacent Postgres driver
+beyond `asyncpg`**: `psycopg` was considered and rejected in favour of
+`asyncpg`'s clean Apache-2.0 licence over psycopg's LGPL-shaded one, since
+Apache-2.0 needs no further reasoning under the compiled-into-user-code rule.
+JWT signing/validation (`features/identity/endpoints/security.py`) and
+structured request correlation (`shared/web/correlation.py`) are what
+`pyjwt` and `starlette`'s middleware hooks exist for, respectively.
+
+**Build/test tooling** (installed only via the `dev` extra — `pytest`,
+`pytest-asyncio`, `httpx`, `import-linter` — plus their own transitive
+closure: `grimp`, `iniconfig`, `pluggy`, `pygments`, `markdown-it-py`,
+`mdurl`, `rich`, `certifi`, `httpcore`, `h11`, `packaging`): every one is
+MIT, Apache-2.0, BSD-2/3-Clause or MPL-2.0 (`certifi` — a CA bundle, only
+ever read by `httpx`'s test client, never linked into or shipped with the
+running server). None compile into the running backend.
+
+**Deliberately not added yet:** a background-job runner, a real PDF/Excel
+library, and a Redis client — named in `docs/SPEC.md`'s dependency table as
+the intended real implementations behind `JobScheduler`, `PdfGenerator`/
+`ExcelExporter` and `Cache`. Those interfaces currently ship with a minimal,
+dependency-free default (an in-process `asyncio.Queue`, a hand-written PDF
+writer, RFC 4180 CSV, and an in-process TTL cache) — the same pattern the
+.NET backend's `Shared` layer already established. They enter this document,
+with a verified date, the same day they enter `pyproject.toml`.
+
 ## Infrastructure — `infra/compose.yaml`
 
 **This is where the problem was found.** `redis:7-alpine` resolves to Redis 7.4+, dual-licensed **RSALv2/SSPLv1** — both on the reciprocal-for-consumers reject list, regardless of Redis running as a separate process the generated clients never link against. `infra/compose.yaml` already pins `redis:7.2-alpine`, the last release under the original BSD 3-Clause licence, with the reasoning recorded in a comment at the top of that file. **The rest of the compose file was audited at the same time — no other image had a rejected licence, but the pinned tags matter, so they are recorded exactly.**
@@ -163,14 +214,14 @@ The rule: an attribution obligation arises only from **actually reusing** third-
 
 ## The CI gate
 
-`scripts/check-dependency-licenses.mjs` (zero runtime dependencies — Node built-ins only) runs in `.github/workflows/ci.yml` on every push and pull request. It checks what is **actually resolved** today — `clients/typescript/package-lock.json`, `clients/dart/pubspec.lock`, every `backends/dotnet/**/packages.lock.json`, and every `image:` tag in `infra/compose.yaml` — against `docs/dependency-inventory.json`, and fails the build when:
+`scripts/check-dependency-licenses.mjs` (zero runtime dependencies — Node built-ins only) runs in `.github/workflows/ci.yml` on every push and pull request. It checks what is **actually resolved** today — `clients/typescript/package-lock.json`, `clients/dart/pubspec.lock`, every `backends/dotnet/**/packages.lock.json`, `backends/python/requirements-lock.txt`, and every `image:` tag in `infra/compose.yaml` — against `docs/dependency-inventory.json`, and fails the build when:
 
 - a resolved package/version has no matching entry in the inventory (**unaudited dependency**);
 - a resolved version differs from the version the inventory audited (**drift** — the exact shape of the Redis problem, generalised: something moved and nobody re-checked the licence);
 - any inventory entry's recorded licence contains RPL, SSPL, RSAL, BSL, "Commons Clause", or "proprietary" (**rejected regardless of class**);
 - a `compiled-into-user-code` entry is licensed anything other than MIT, Apache-2.0, BSD-2/3-Clause, ISC or 0BSD (**class violation**).
 
-Proven against three deliberately broken cases before being wired in: a bumped-but-unaudited npm version, a hand-added banned-licence entry, and (implicitly, by construction) an unaudited-new-package addition — each produced the expected non-zero exit with the offending package named. Restoring the clean state passes again.
+Proven against four deliberately broken cases before being wired in: a bumped-but-unaudited npm version, a hand-added banned-licence entry, a bumped-but-unaudited `requirements-lock.txt` version (`fastapi` hand-edited to a version the inventory never audited), and (implicitly, by construction) an unaudited-new-package addition — each produced the expected non-zero exit with the offending package named. Restoring the clean state passes again.
 
 ## Keeping this current
 

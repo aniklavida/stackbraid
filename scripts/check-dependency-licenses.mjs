@@ -42,7 +42,25 @@ const PERMISSIVE = new Set([
   // itself, which is audited separately in this file under the infra-image ecosystem on
   // the separate-process rule.
   'PostgreSQL',
+  // PSF-2.0 (Python Software Foundation Licence) — permissive, BSD-style;
+  // covers a handful of Python stdlib-adjacent packages (e.g. typing_extensions).
+  'PSF-2.0',
 ]);
+
+// Some PyPI packages report a compound SPDX expression (e.g. "MIT AND PSF-2.0",
+// "Apache-2.0 OR BSD-2-Clause") rather than a single identifier. For the
+// compiled-into-user-code rule this is permissive only if every "AND" branch,
+// or at least one "OR" branch, is itself permissive.
+function isPermissiveLicense(license) {
+  if (PERMISSIVE.has(license)) return true;
+  if (license.includes(' AND ')) {
+    return license.split(' AND ').every((part) => PERMISSIVE.has(part.trim()));
+  }
+  if (license.includes(' OR ')) {
+    return license.split(' OR ').some((part) => PERMISSIVE.has(part.trim()));
+  }
+  return false;
+}
 
 // Substrings checked case-insensitively against every recorded licence,
 // regardless of class. Presence anywhere is an automatic failure.
@@ -84,7 +102,7 @@ for (const entry of inventory.entries) {
     fail(`REJECTED LICENCE: ${entry.ecosystem} ${entry.name}@${entry.version} is "${entry.license}" — on the reciprocal-for-consumers reject list regardless of class.`);
     continue;
   }
-  if (entry.class === 'compiled-into-user-code' && !PERMISSIVE.has(entry.license)) {
+  if (entry.class === 'compiled-into-user-code' && !isPermissiveLicense(entry.license)) {
     fail(`CLASS VIOLATION: ${entry.ecosystem} ${entry.name}@${entry.version} is compiled-into-user-code but licensed "${entry.license}" (must be MIT, Apache-2.0, BSD-2/3-Clause, ISC or 0BSD).`);
   }
 }
@@ -185,6 +203,25 @@ if (existsSync(dotnetBackendRoot)) {
   }
 } else {
   warn('backends/dotnet not found — skipping .NET check.');
+}
+
+// --- Python: backends/python -----------------------------------------------
+// backends/python/requirements-lock.txt is `uv pip freeze` output, committed
+// as this backend's analogue of package-lock.json / pubspec.lock / packages.lock.json
+// — the exact resolved graph (name==version, PyPI's own normalized lowercase
+// names) for both the runtime and dev/test dependency groups.
+const pythonLockPath = p('backends', 'python', 'requirements-lock.txt');
+if (existsSync(pythonLockPath)) {
+  const text = readFileSync(pythonLockPath, 'utf8');
+  const resolved = [];
+  for (const line of text.split('\n')) {
+    const m = line.trim().match(/^([A-Za-z0-9._-]+)==([A-Za-z0-9.\-+!]+)$/);
+    if (!m) continue;
+    resolved.push({ name: m[1].toLowerCase(), version: m[2] });
+  }
+  checkResolved('pypi-python-backend', resolved, { sourceLabel: 'backends/python/requirements-lock.txt' });
+} else {
+  warn('backends/python/requirements-lock.txt not found — skipping Python check.');
 }
 
 // --- Docker images: infra/compose.yaml ------------------------------------

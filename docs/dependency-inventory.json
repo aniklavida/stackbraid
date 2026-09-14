@@ -2186,6 +2186,416 @@
       "verifiedOn": "2026-09-14",
       "source": "backends/dotnet/**/packages.lock.json (nuspec licenseUrl points to the MIT license text)",
       "notes": "test-only \u2014 NetArchTest.Rules' own IL-inspection dependency, never shipped"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "alembic",
+      "version": "1.20.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "annotated-doc",
+      "version": "0.0.5",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "anyio",
+      "version": "4.15.1",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "asyncpg",
+      "version": "0.31.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "certifi",
+      "version": "2026.7.22",
+      "license": "MPL-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "test-only transitive dependency"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "click",
+      "version": "8.5.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "fastapi",
+      "version": "0.141.1",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "greenlet",
+      "version": "3.5.5",
+      "license": "MIT AND PSF-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "grimp",
+      "version": "3.17",
+      "license": "BSD-2-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "test-only transitive dependency"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "h11",
+      "version": "0.16.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "test-only transitive dependency"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "httpcore",
+      "version": "1.0.9",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "test-only transitive dependency"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "httptools",
+      "version": "0.8.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "httpx",
+      "version": "0.28.1",
+      "license": "BSD-3-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "idna",
+      "version": "3.19",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "import-linter",
+      "version": "2.15",
+      "license": "BSD-2-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "iniconfig",
+      "version": "2.3.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "test-only transitive dependency"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "mako",
+      "version": "1.4.1",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "markdown-it-py",
+      "version": "4.2.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "test-only transitive dependency"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "markupsafe",
+      "version": "3.0.3",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "mdurl",
+      "version": "0.1.2",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "test-only transitive dependency"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "packaging",
+      "version": "26.3",
+      "license": "Apache-2.0 OR BSD-2-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "test-only transitive dependency"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "pluggy",
+      "version": "1.6.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "test-only transitive dependency"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "pydantic",
+      "version": "2.13.5",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "pydantic-settings",
+      "version": "2.15.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "pydantic-core",
+      "version": "2.46.5",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "pygments",
+      "version": "2.21.0",
+      "license": "BSD-2-Clause",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "test-only transitive dependency"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "pyjwt",
+      "version": "2.14.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "pytest",
+      "version": "8.4.2",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "pytest-asyncio",
+      "version": "0.26.0",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "python-dotenv",
+      "version": "1.2.3",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "pyyaml",
+      "version": "6.0.3",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "rich",
+      "version": "15.0.0",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "test-only transitive dependency"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "sqlalchemy",
+      "version": "2.0.52",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "starlette",
+      "version": "1.6.0",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "typing-inspection",
+      "version": "0.4.4",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "license": "PSF-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "uvicorn",
+      "version": "0.52.4",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "uvloop",
+      "version": "0.22.1",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "watchfiles",
+      "version": "1.2.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "websockets",
+      "version": "17.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of the Python backend"
     }
   ]
 }
