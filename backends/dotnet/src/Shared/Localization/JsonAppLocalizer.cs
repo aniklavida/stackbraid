@@ -46,10 +46,20 @@ public sealed class JsonAppLocalizer : IAppLocalizer
             return DefaultCulture;
         }
 
-        // "es-ES" falls back to the "es" bucket — this catalogue does not
-        // distinguish regional variants of a language.
-        var primary = culture.Split('-')[0].ToLowerInvariant();
-        return SupportedCultures.Contains(primary) ? primary : DefaultCulture;
+        // The one locale-negotiation rule shared with the Python backend
+        // (see app/shared/localization/localizer.py's `_normalize`):
+        // an `Accept-Language` header is a comma-separated list of language
+        // ranges, each optionally carrying a `;q=` weight (default 1.0 when
+        // absent or unparsable). Highest weight wins, ties keep header
+        // order, and each range's primary subtag ("es-MX" -> "es") is what
+        // is actually matched against what this catalogue ships — this
+        // catalogue does not distinguish regional variants of a language.
+        // The previous version only ever looked at the text before the
+        // first hyphen in the *whole* header, so a single-tag request like
+        // "es-MX" worked by accident but a real multi-value header such as
+        // "fr,es;q=0.8,en;q=0.6" fell straight through to the default
+        // culture instead of finding "es".
+        return AcceptLanguageNegotiator.Negotiate(culture, SupportedCultures, DefaultCulture);
     }
 
     private IReadOnlyDictionary<string, string> Load(string culture) =>

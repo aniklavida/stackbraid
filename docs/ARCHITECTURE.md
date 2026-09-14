@@ -43,6 +43,12 @@ Most of the value lives in the third layer, and that is precisely where multipli
 - Generated code is committed but never hand-edited.
 - Setup and migration are idempotent and preserve user data.
 
+## Localization
+
+Both backends negotiate a locale from the request's `Accept-Language` header with one shared rule: parse it as a comma-separated list of language ranges, each optionally weighted with `;q=`, pick the highest-weighted range this backend actually ships text for (ties keep the header's own order), and fall back to English when nothing matches. A malformed weight is treated as the default rather than dropping that range. Error titles and details returned in the `Problem` envelope are localized server-side from this negotiated locale — never hard-coded English.
+
+Every frontend (Angular, Next.js, Flutter) ships the same locale-switching experience: a language menu that switches instantly and persists the choice for the next visit, defaulting to English. `node scripts/check-translation-keys.mjs` is the completeness gate described above.
+
 ## The conformance suite
 
 One suite, run against every backend on every provider. If all pass, every generated client is guaranteed to work against every backend.

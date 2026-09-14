@@ -53,4 +53,29 @@ public class JsonAppLocalizerTests
     {
         _sut.SupportedCultures.ShouldBe(["en", "es"]);
     }
+
+    [Fact]
+    public void GetString_picks_the_highest_weighted_supported_language_in_a_multi_value_header()
+    {
+        // "fr" is unsupported and would be tried first under naive
+        // first-value parsing; "es" is the highest-weighted range this
+        // catalogue actually supports.
+        _sut.GetString("identity.invalid_credentials", "fr,es;q=0.8,en;q=0.6")
+            .ShouldBe("Correo electrónico o contraseña no válidos.");
+    }
+
+    [Fact]
+    public void GetString_respects_explicit_q_values_out_of_header_order()
+    {
+        // "en" is listed first but "es" carries the higher weight.
+        _sut.GetString("identity.invalid_credentials", "en;q=0.5,es;q=0.9")
+            .ShouldBe("Correo electrónico o contraseña no válidos.");
+    }
+
+    [Fact]
+    public void GetString_tolerates_a_malformed_q_value_by_treating_it_as_the_default_weight()
+    {
+        _sut.GetString("identity.invalid_credentials", "es;q=notanumber")
+            .ShouldBe("Correo electrónico o contraseña no válidos.");
+    }
 }

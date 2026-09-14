@@ -15,6 +15,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Mapping, Protocol, Sequence
 
+from app.shared.localization.accept_language import negotiate_accept_language
+
 
 class AppLocalizer(Protocol):
     def get_string(
@@ -56,14 +58,7 @@ class JsonAppLocalizer:
     def _normalize(self, culture: str | None) -> str:
         if not culture:
             return self.DEFAULT_CULTURE
-        # "es-ES" falls back to the "es" bucket — regional variants are not
-        # distinguished by this catalogue. An Accept-Language header may list
-        # several, comma-separated, in preference order.
-        for candidate in culture.split(","):
-            primary = candidate.split(";")[0].strip().split("-")[0].lower()
-            if primary in self._SUPPORTED:
-                return primary
-        return self.DEFAULT_CULTURE
+        return negotiate_accept_language(culture, self._SUPPORTED, self.DEFAULT_CULTURE)
 
     @lru_cache(maxsize=None)
     def _load(self, culture: str) -> Mapping[str, str]:

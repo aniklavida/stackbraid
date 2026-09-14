@@ -142,4 +142,4 @@ stackbraid/
 2. **`api/` is generated, committed and never hand-edited.** A hook regenerates it when the contract changes and fails the commit if it drifted.
 3. **`Shared` holds nothing with business meaning** and never imports a feature.
 4. **A feature never reaches another feature's internals** — only its `Contracts`.
-5. **Every feature ships its own translations.** No central file nobody updates.
+5. **Every feature ships its own translations.** No central file nobody updates. `node scripts/check-translation-keys.mjs` walks every catalogue this repository ships — both backends, both web frontends, and the mobile app — and fails if a key exists in one shipped locale but not another, naming the exact file and key.
