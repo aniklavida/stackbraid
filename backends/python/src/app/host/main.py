@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import AsyncIterator
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from app.database.postgres.engine import create_engine, create_session_factory
@@ -86,6 +87,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         await engine.dispose()
 
     app = FastAPI(title="StackBraid Identity API", version="1.0.0", lifespan=lifespan)
+
+    # No frontend origin is trusted by default — a frontend must be listed
+    # explicitly (STACKBRAID_CORS_ALLOWED_ORIGINS_RAW, e.g. the Next.js or
+    # Angular dev server) before its browser requests are allowed to carry
+    # the httpOnly refresh cookie.
+    if settings.cors_allowed_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=settings.cors_allowed_origins,
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
     app.add_middleware(CorrelationIdMiddleware)
     register_exception_handlers(app, localizer)

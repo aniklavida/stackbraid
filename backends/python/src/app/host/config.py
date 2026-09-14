@@ -24,3 +24,13 @@ class Settings(BaseSettings):
 
     run_migrations_on_startup: bool = True
     seed_on_startup: bool = True
+
+    # Comma-separated origins allowed to make cross-origin, credentialed
+    # requests (e.g. a Next.js or Angular dev server calling this API from
+    # a different port). Empty by default — no frontend origin is trusted
+    # until it is listed explicitly.
+    cors_allowed_origins_raw: str = ""
+
+    @property
+    def cors_allowed_origins(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_allowed_origins_raw.split(",") if origin.strip()]
