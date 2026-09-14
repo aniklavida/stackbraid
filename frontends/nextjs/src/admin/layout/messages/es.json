@@ -1,0 +1,8 @@
+{
+  "title": "Administración",
+  "nav": {
+    "users": "Usuarios",
+    "roles": "Roles",
+    "backToSite": "Volver al sitio"
+  }
+}

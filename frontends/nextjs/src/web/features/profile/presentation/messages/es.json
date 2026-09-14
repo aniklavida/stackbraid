@@ -1,0 +1,14 @@
+{
+  "title": "Tu perfil",
+  "email": "Correo electrónico",
+  "displayName": "Nombre para mostrar",
+  "status": "Estado",
+  "status_active": "Activo",
+  "status_inactive": "Inactivo",
+  "roles": "Roles",
+  "memberSince": "Miembro desde",
+  "lastLogin": "Último inicio de sesión",
+  "lastLogin_never": "Nunca",
+  "loading": "Cargando tu perfil…",
+  "error": "No pudimos cargar tu perfil. Inténtalo de nuevo."
+}

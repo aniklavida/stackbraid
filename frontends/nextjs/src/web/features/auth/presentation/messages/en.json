@@ -1,0 +1,31 @@
+{
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Use the account you registered with.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Create one"
+  },
+  "register": {
+    "title": "Create your account",
+    "subtitle": "Takes less than a minute.",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "displayName": "Display name",
+    "submit": "Create account",
+    "hasAccount": "Already have an account?",
+    "loginLink": "Sign in"
+  },
+  "errors": {
+    "IDENTITY": {
+      "INVALID_CREDENTIALS": "That email and password don't match.",
+      "EMAIL_ALREADY_REGISTERED": "An account with that email already exists.",
+      "VALIDATION_FAILED": "Check the highlighted fields.",
+      "RATE_LIMITED": "Too many attempts. Wait a moment and try again."
+    },
+    "generic": "Something went wrong. Please try again."
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "login": {
+    "title": "Iniciar sesión",
+    "subtitle": "Usa la cuenta con la que te registraste.",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "submit": "Iniciar sesión",
+    "noAccount": "¿No tienes una cuenta?",
+    "registerLink": "Crea una"
+  },
+  "register": {
+    "title": "Crea tu cuenta",
+    "subtitle": "Toma menos de un minuto.",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "passwordHint": "Al menos 8 caracteres.",
+    "displayName": "Nombre para mostrar",
+    "submit": "Crear cuenta",
+    "hasAccount": "¿Ya tienes una cuenta?",
+    "loginLink": "Inicia sesión"
+  },
+  "errors": {
+    "IDENTITY": {
+      "INVALID_CREDENTIALS": "Ese correo y esa contraseña no coinciden.",
+      "EMAIL_ALREADY_REGISTERED": "Ya existe una cuenta con ese correo.",
+      "VALIDATION_FAILED": "Revisa los campos resaltados.",
+      "RATE_LIMITED": "Demasiados intentos. Espera un momento e inténtalo de nuevo."
+    },
+    "generic": "Algo salió mal. Inténtalo de nuevo."
+  }
+}

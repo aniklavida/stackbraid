@@ -1,0 +1,14 @@
+{
+  "title": "Your profile",
+  "email": "Email",
+  "displayName": "Display name",
+  "status": "Status",
+  "status_active": "Active",
+  "status_inactive": "Inactive",
+  "roles": "Roles",
+  "memberSince": "Member since",
+  "lastLogin": "Last sign-in",
+  "lastLogin_never": "Never",
+  "loading": "Loading your profile…",
+  "error": "We couldn't load your profile. Please try again."
+}
