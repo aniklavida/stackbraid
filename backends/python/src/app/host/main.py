@@ -94,8 +94,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     instrument_app(app)
 
     # No frontend origin is trusted by default — a frontend must be listed
-    # explicitly (STACKBRAID_CORS_ALLOWED_ORIGINS_RAW, e.g. the Next.js or
-    # Angular dev server) before its browser requests are allowed to carry
+    # explicitly (STACKBRAID_CORS_ALLOWED_ORIGINS_RAW, e.g. a frontend's
+    # local dev server) before its browser requests are allowed to carry
     # the httpOnly refresh cookie.
     if settings.cors_allowed_origins:
         app.add_middleware(

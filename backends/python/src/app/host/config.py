@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     seed_on_startup: bool = True
 
     # Comma-separated origins allowed to make cross-origin, credentialed
-    # requests (e.g. a Next.js or Angular dev server calling this API from
+    # requests (e.g. a frontend's dev server calling this API from
     # a different port). Empty by default — no frontend origin is trusted
     # until it is listed explicitly.
     cors_allowed_origins_raw: str = ""

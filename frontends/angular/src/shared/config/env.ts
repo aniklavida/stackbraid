@@ -3,8 +3,8 @@
  *
  * Unlike a build-time env var, this reads a value injected by `public/env.js`
  * (loaded from `index.html` before the app bundle) so the same compiled build
- * can be pointed at the .NET backend or the Python backend by editing one
- * static file, never the source: `apiBaseUrl()` is the one place every
+ * can be pointed at a different backend by editing one static file, never
+ * the source: `apiBaseUrl()` is the one place every
  * generated-client call goes through, via `shared/http/api-client.ts`.
  */
 interface StackBraidRuntimeEnv {

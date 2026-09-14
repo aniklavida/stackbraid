@@ -1,10 +1,10 @@
 // The same Identity happy path the shared Playwright script
 // (e2e/identity-flow.ts) proves for both web frontends, run here as a real
 // Flutter integration test against a real running backend — changing only
-// --dart-define=API_BASE_URL between the .NET and Python runs, the same
-// contract-first proof `contract/conformance/` already applies to every
-// backend on every provider: if every backend passes the same suite, every
-// generated client is guaranteed to work against every backend.
+// --dart-define=API_BASE_URL between backend runs, the same contract-first
+// proof `contract/conformance/` already applies to every backend on every
+// provider: if every backend passes the same suite, every generated client
+// is guaranteed to work against every backend.
 //
 // Run target: the macOS desktop app (`flutter test integration_test -d
 // macos`) — no iOS/Android simulator or emulator is installed or downloaded

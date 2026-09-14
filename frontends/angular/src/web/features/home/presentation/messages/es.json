@@ -7,7 +7,7 @@
   },
   "signedOut": {
     "heading": "Una función de Identidad funcional, lista para construir sobre ella.",
-    "body": "Regístrate o inicia sesión para ver el flujo completo: tokens de acceso JWT, una cookie de renovación httpOnly y acceso basado en roles al área de administración, funcionando tanto con el backend de .NET como con el de Python sin cambiar código.",
+    "body": "Regístrate o inicia sesión para ver el flujo completo: tokens de acceso JWT, una cookie de renovación httpOnly y acceso basado en roles al área de administración, funcionando con el backend elegido sin cambiar código.",
     "loginCta": "Iniciar sesión",
     "registerCta": "Crear una cuenta"
   }

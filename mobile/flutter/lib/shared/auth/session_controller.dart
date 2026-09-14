@@ -18,8 +18,8 @@ enum AuthStatus { loading, authenticated, anonymous }
 /// button).
 ///
 /// Talks to `AuthApi` (the generated client) directly for refresh and
-/// "who am I" — the same split the Next.js/Angular `AuthProvider`/session
-/// service make between session housekeeping (shared, generic) and the
+/// "who am I" — the same split a web frontend's `AuthProvider`/session
+/// service makes between session housekeeping (shared, generic) and the
 /// feature's own register/login/logout calls
 /// (`features/auth/data/auth_repository.dart`).
 class SessionController extends ChangeNotifier implements SessionPort {

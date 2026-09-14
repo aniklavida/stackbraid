@@ -5,7 +5,7 @@ export type ClientOptions = {
 };
 
 /**
- * RFC 3339, UTC, always suffixed `Z` — never a numeric offset such as `+00:00`. A spike caught .NET emitting the offset form while Python emitted `Z` for the same instant; this pattern makes the offset form fail validation instead of merely looking inconsistent.
+ * RFC 3339, UTC, always suffixed `Z` — never a numeric offset such as `+00:00`. A spike caught one backend emitting the offset form while another emitted `Z` for the same instant; this pattern makes the offset form fail validation instead of merely looking inconsistent.
  */
 export type UtcDateTime = string;
 
@@ -136,7 +136,7 @@ export type UserPage = Page & {
 };
 
 /**
- * Every message either backend pushes over realtime, whatever the transport. SignalR (.NET) and native WebSockets (Python) differ in how a client subscribes; the JSON on the wire is this schema, identical on both. See the `x-realtime-channels` section of this document for the two subscription mechanics.
+ * Every message either backend pushes over realtime, whatever the transport. Each backend's own realtime mechanism differs in how a client subscribes; the JSON on the wire is this schema, identical on both. See the `x-realtime-channels` section of this document for the subscription mechanics.
  */
 export type RealtimeMessage = ({
     type: 'user.deactivated';

@@ -7,7 +7,7 @@
   },
   "signedOut": {
     "heading": "A working Identity feature, ready to build on.",
-    "body": "Register or sign in to see the full flow: JWT access tokens, an httpOnly refresh cookie, and role-based access to the admin area — running against either the .NET or the Python backend with no code change.",
+    "body": "Register or sign in to see the full flow: JWT access tokens, an httpOnly refresh cookie, and role-based access to the admin area — running against your chosen backend with no code change.",
     "loginCta": "Sign in",
     "registerCta": "Create an account"
   }

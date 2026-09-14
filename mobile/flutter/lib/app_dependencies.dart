@@ -6,7 +6,7 @@ import 'shared/http/api_client.dart';
 import 'shared/i18n/locale_controller.dart';
 
 /// The composition root — the mobile equivalent of a backend's `Host` or
-/// Angular's `app.config.ts` providers list: the one place allowed to
+/// a web frontend's `app.config.ts` providers list: the one place allowed to
 /// import across `shared/` **and** `features/` at once and wire concrete
 /// implementations together. Neither `shared/` nor `features/auth/` may
 /// import this file or one another the way this file imports both of them

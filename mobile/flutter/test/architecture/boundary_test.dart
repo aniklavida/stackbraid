@@ -1,5 +1,5 @@
 // Enforces docs/STRUCTURE.md's Clean Architecture rule for this app, the
-// same way dependency-cruiser does for Angular/Next.js and NetArchTest/
+// same way dependency-cruiser does for the web frontends and NetArchTest/
 // import-linter do for the two backends: "Domain knows nothing. Application
 // knows Domain. Data and Delivery know Application. Nothing points inward
 // from the edge," plus "`shared` never imports a feature."
@@ -12,8 +12,8 @@
 // the other four stacks' own architecture guards.
 //
 // `lib/app.dart`, `lib/app_dependencies.dart` and `lib/main.dart` are the
-// composition root (this app's equivalent of a backend's `Host` or
-// Angular's `app.config.ts`) and are deliberately NOT scanned — a
+// composition root (this app's equivalent of a backend's `Host` or a web
+// frontend's `app.config.ts`) and are deliberately NOT scanned — a
 // composition root is allowed to depend on everything, the same exemption
 // `docs/STRUCTURE.md` gives every stack's own `Host`/`app` layer.
 import 'dart:io';

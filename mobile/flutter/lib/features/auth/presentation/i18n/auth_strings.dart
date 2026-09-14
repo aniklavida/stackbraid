@@ -1,8 +1,8 @@
 import '../../../../shared/i18n/translations.dart';
 
 /// This feature's own translations — ships with the feature that owns it,
-/// the same rule the Angular (`@jsverse/transloco` scoped loader) and
-/// Next.js (`next-intl` per-feature messages) frontends already follow.
+/// the same rule this project's web frontends already follow, each with
+/// its own scoped-per-feature translation loader.
 const Translations authStrings = {
   'en': {
     'auth.signInTitle': 'Sign in',

@@ -80,7 +80,7 @@ builder.Services.AddHealthChecks()
     .AddCheck<DatabaseHealthCheck>("postgres", tags: ["ready"]);
 
 // No frontend origin is trusted by default — a frontend must be listed
-// explicitly (Cors:AllowedOrigins, e.g. the Next.js or Angular dev server)
+// explicitly (Cors:AllowedOrigins, e.g. a frontend's local dev server)
 // before its browser requests are allowed to carry the httpOnly refresh
 // cookie. An empty list keeps today's behaviour: no cross-origin access.
 var corsAllowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];

@@ -1,6 +1,6 @@
 /// Validation rules — the one thing this layer owns that no other layer
 /// should. Mirrors the contract exactly (`RegisterRequest`/`LoginRequest` in
-/// `contract/openapi.yaml`, the same rule the Angular and Next.js frontends'
+/// `contract/openapi.yaml`, the same rule this project's web frontends'
 /// own `domain/validation` follow) so a form never lets through what the
 /// backend would reject anyway. The backend still re-validates
 /// independently — this exists only for a fast, local error message.
