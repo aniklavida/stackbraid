@@ -13,7 +13,7 @@ Anything reciprocal-for-consumers — **RPL, SSPL, RSAL, BSL, or a revenue-gated
 
 This document is the narrative record. The machine-readable source of truth is `docs/dependency-inventory.json`, checked on every push by `scripts/check-dependency-licenses.mjs` (see "The CI gate" below). **A licence recorded from memory is not an audit** — every entry below was verified against the actual package's registry metadata or licence file on the date given, not carried forward from an earlier audit's notes.
 
-**Truthfulness note:** both backends' Identity feature are implemented and conformance-tested (see `docs/ROADMAP.md` step 3); the Next.js frontend's web and admin shells are implemented and verified against both backends (see its own README). The Angular frontend and the Flutter mobile app do not exist yet. This inventory covers exactly what is genuinely shipped today. It will grow, stack by stack, as each is actually built. Nothing below pre-audits code that does not exist.
+**Truthfulness note:** both backends' Identity feature are implemented and conformance-tested (see `docs/ROADMAP.md` step 3); the Next.js and Angular frontends' web and admin shells are both implemented and verified against both backends (see each one's own README). The Flutter mobile app does not exist yet. This inventory covers exactly what is genuinely shipped today. It will grow, stack by stack, as each is actually built. Nothing below pre-audits code that does not exist.
 
 Last verified: **2026-09-14**.
 
@@ -213,6 +213,38 @@ which is exactly the basis `build-tooling` already applies to elsewhere in
 this document (RabbitMQ's MPL-2.0 licence, audited below under
 infrastructure, is the same licence family accepted there for the same
 reason: it never reaches a consumer's own code).
+
+## Angular frontend — `frontends/angular/`
+
+`frontends/angular/package-lock.json` is the exact resolved graph, read by
+`scripts/check-dependency-licenses.mjs` under the `npm-angular-frontend`
+ecosystem (805 entries in `docs/dependency-inventory.json`). Same workspace
+exception as the Next.js frontend above: `@stackbraid/client-typescript`
+(`file:../../clients/typescript`) carries no licence entry of its own.
+
+**Compiled into the shipped app** (top-level `dependencies` in `package.json`):
+
+| Package | Licence |
+|---|---|
+| `@angular/core`, `@angular/common`, `@angular/compiler`, `@angular/forms`, `@angular/platform-browser`, `@angular/router`, `@angular/animations` | MIT |
+| `@angular/material`, `@angular/cdk` | MIT |
+| `@jsverse/transloco` | MIT |
+| `@tanstack/angular-query-experimental` | MIT |
+| `rxjs`, `tslib` | Apache-2.0, 0BSD |
+
+Every one of the 38 packages resolved into the compiled-into-user-code class
+is MIT, Apache-2.0, BSD-2-Clause, ISC, 0BSD or Python-2.0 — all permissive,
+no exceptions and nothing flagged. Angular Material was chosen specifically
+because it needs no separate licence review the way some commercial Angular
+UI kits do (checked against the actual `LICENSE`/`license` field in each
+candidate's own package metadata before adding it, per the rule in
+`AGENTS.md` §7 — not carried forward from general reputation).
+
+**Build/test tooling** (`devDependencies`): `@angular/cli`, `@angular/build`,
+`@angular/compiler-cli`, `typescript`, `tailwindcss` (+ `postcss`,
+`autoprefixer`), `eslint` (+ `angular-eslint`, `typescript-eslint`),
+`@playwright/test`, `dependency-cruiser`, `jsdom`, `vitest`. All MIT,
+Apache-2.0, BSD or ISC; none are bundled into anything shipped to a browser.
 
 ## Infrastructure — `infra/compose.yaml`
 

@@ -158,6 +158,24 @@ if (existsSync(nextjsLockPath)) {
   warn('frontends/nextjs/package-lock.json not found — skipping Next.js frontend npm check.');
 }
 
+// --- npm: frontends/angular ------------------------------------------------
+// Same workspace-path exception as the Next.js frontend above —
+// `@stackbraid/client-typescript` is skipped, not audited as a dependency.
+const angularLockPath = p('frontends', 'angular', 'package-lock.json');
+if (existsSync(angularLockPath)) {
+  const lock = JSON.parse(readFileSync(angularLockPath, 'utf8'));
+  const resolved = [];
+  for (const [pkgPath, meta] of Object.entries(lock.packages || {})) {
+    if (pkgPath === '') continue;
+    const name = meta.name || pkgPath.split('node_modules/').pop();
+    if (name === '@stackbraid/client-typescript') continue;
+    resolved.push({ name, version: meta.version });
+  }
+  checkResolved('npm-angular-frontend', resolved, { sourceLabel: 'frontends/angular/package-lock.json' });
+} else {
+  warn('frontends/angular/package-lock.json not found — skipping Angular frontend npm check.');
+}
+
 // --- Dart: clients/dart ---------------------------------------------------
 const pubspecLockPath = p('clients', 'dart', 'pubspec.lock');
 if (existsSync(pubspecLockPath)) {
