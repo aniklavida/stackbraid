@@ -226,3 +226,17 @@ CONFORMANCE_ADMIN_EMAIL="admin@stackbraid.local" CONFORMANCE_ADMIN_PASSWORD="Cha
 
 cd ../../backends/dotnet && ./scripts/stop-local-postgres.sh
 ```
+
+### Calling this from a browser-based frontend
+
+No origin is trusted by default — a browser's cross-origin request (every
+local frontend dev server, since it runs on a different port) is refused
+until its origin is listed explicitly:
+
+```bash
+Cors__AllowedOrigins__0="http://127.0.0.1:3000" \
+  dotnet run --project src/Host --urls http://127.0.0.1:8080
+```
+
+See [`frontends/nextjs/README.md`](../../frontends/nextjs/README.md) for a
+frontend that actually depends on this.

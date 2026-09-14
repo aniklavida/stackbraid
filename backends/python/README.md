@@ -204,3 +204,17 @@ Migrations and seeding run automatically on startup
 (`STACKBRAID_RUN_MIGRATIONS_ON_STARTUP` / `STACKBRAID_SEED_ON_STARTUP`,
 both default `true`) — no manual step between starting the server and
 calling it.
+
+### Calling this from a browser-based frontend
+
+No origin is trusted by default — a browser's cross-origin request (every
+local frontend dev server, since it runs on a different port) is refused
+until its origin is listed explicitly:
+
+```bash
+STACKBRAID_CORS_ALLOWED_ORIGINS_RAW="http://127.0.0.1:3000" \
+  PYTHONPATH=src uvicorn app.host.main:app --port 8080
+```
+
+See [`frontends/nextjs/README.md`](../../frontends/nextjs/README.md) for a
+frontend that actually depends on this.

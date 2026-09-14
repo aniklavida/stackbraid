@@ -6,7 +6,7 @@ The canonical guide for humans and coding agents working in this repository. Too
 
 A multi-stack product skeleton. Users pick a backend, a database, a frontend and optionally mobile, and receive working codebases wired together by one OpenAPI contract.
 
-**Status: early implementation.** The specification, architecture and structure exist, and both backends' `Identity` feature is implemented, tested and passes contract conformance (see `backends/dotnet/README.md` and `backends/python/README.md`). Nothing else — the frontends, mobile, remaining database providers — is built yet.
+**Status: early implementation.** The specification, architecture and structure exist, both backends' `Identity` feature is implemented, tested and passes contract conformance (see `backends/dotnet/README.md` and `backends/python/README.md`), and the Next.js frontend's web and admin shells are implemented and verified against both backends (see `frontends/nextjs/README.md`). The Angular frontend, mobile, and remaining database providers are not built yet.
 
 ## The one rule that matters
 
