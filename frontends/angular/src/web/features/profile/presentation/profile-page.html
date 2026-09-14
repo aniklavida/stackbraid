@@ -1,0 +1,42 @@
+@if (profile.isPending()) {
+  <mat-card class="w-full max-w-lg">
+    <mat-card-content>
+      <mat-progress-bar mode="indeterminate" />
+    </mat-card-content>
+  </mat-card>
+} @else if (profile.isError() || !profile.data()) {
+  <p role="alert" class="text-red-600">{{ "profile.error" | transloco }}</p>
+} @else {
+  @let data = profile.data()!;
+  <mat-card class="w-full max-w-lg">
+    <mat-card-header class="flex flex-row items-center gap-4">
+      <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 font-medium">{{ initials(data.displayName) }}</div>
+      <div>
+        <mat-card-title><h1>{{ data.displayName }}</h1></mat-card-title>
+        <p class="text-sm text-gray-500">{{ data.email }}</p>
+      </div>
+    </mat-card-header>
+    <mat-card-content class="flex flex-col gap-4">
+      <mat-divider />
+      <dl class="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-3 text-sm">
+        <dt class="text-gray-500">{{ "profile.status" | transloco }}</dt>
+        <dd>
+          <mat-chip [highlighted]="data.status === 'active'">{{ (data.status === "active" ? "profile.status_active" : "profile.status_inactive") | transloco }}</mat-chip>
+        </dd>
+
+        <dt class="text-gray-500">{{ "profile.roles" | transloco }}</dt>
+        <dd class="flex flex-wrap gap-1">
+          @for (name of roleNames(data); track name) {
+            <mat-chip>{{ name }}</mat-chip>
+          }
+        </dd>
+
+        <dt class="text-gray-500">{{ "profile.memberSince" | transloco }}</dt>
+        <dd>{{ formatDate(data.createdAt) }}</dd>
+
+        <dt class="text-gray-500">{{ "profile.lastLogin" | transloco }}</dt>
+        <dd>{{ data.lastLoginAt ? formatDate(data.lastLoginAt) : ("profile.lastLogin_never" | transloco) }}</dd>
+      </dl>
+    </mat-card-content>
+  </mat-card>
+}

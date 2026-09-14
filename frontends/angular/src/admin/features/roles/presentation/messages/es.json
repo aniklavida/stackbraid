@@ -1,0 +1,11 @@
+{
+  "title": "Roles",
+  "subtitle": "El catálogo de permisos del que depende cada cuenta. Se administra aquí y se asigna por usuario desde la pantalla de Usuarios.",
+  "columns": {
+    "name": "Rol",
+    "description": "Descripción",
+    "permissions": "Permisos"
+  },
+  "loading": "Cargando roles…",
+  "error": "No pudimos cargar el catálogo de roles."
+}

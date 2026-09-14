@@ -1,0 +1,33 @@
+import { defineConfig, devices } from "@playwright/test";
+
+/**
+ * One happy-path Identity flow, run against whichever backend this app's
+ * `public/env.js` was pointed at when `ng serve`/the built app under test
+ * was started — this file has no backend-specific knowledge, the same way
+ * `contract/conformance/` doesn't. Chromium only: the point is proving the
+ * flow works against each backend, not cross-browser coverage, and no
+ * browser beyond what is already installed on this machine is downloaded
+ * to run it.
+ *
+ * This project's `e2e/identity-flow.spec.ts` is a three-line wrapper around
+ * the shared test body in `../../e2e/identity-flow.ts` — see
+ * `../../e2e/README.md`.
+ */
+export default defineConfig({
+  testDir: "./e2e",
+  fullyParallel: false,
+  retries: 0,
+  workers: 1,
+  reporter: "list",
+  use: {
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:4200",
+    trace: "retain-on-failure",
+    screenshot: "off",
+  },
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+    },
+  ],
+});

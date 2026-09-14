@@ -1,0 +1,25 @@
+{
+  "appName": "StackBraid",
+  "nav": {
+    "home": "Home",
+    "profile": "Profile",
+    "login": "Sign in",
+    "register": "Create account",
+    "logout": "Sign out",
+    "admin": "Admin"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "es": "Español"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "retry": "Try again"
+  },
+  "footer": {
+    "tagline": "An open-source skeleton for the Identity feature every product needs."
+  }
+}

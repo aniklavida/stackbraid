@@ -1,0 +1,11 @@
+{
+  "title": "Roles",
+  "subtitle": "The permission catalogue every account draws from. Managed here, assigned per user from the Users screen.",
+  "columns": {
+    "name": "Role",
+    "description": "Description",
+    "permissions": "Permissions"
+  },
+  "loading": "Loading roles…",
+  "error": "We couldn't load the roles catalogue."
+}

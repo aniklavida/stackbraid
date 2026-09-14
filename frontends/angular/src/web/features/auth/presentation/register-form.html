@@ -1,0 +1,72 @@
+<mat-card class="flex w-full max-w-sm flex-col">
+  <form (ngSubmit)="submit()" novalidate>
+    <mat-card-header>
+      <mat-card-title>
+        <h1>{{ "auth.register.title" | transloco }}</h1>
+      </mat-card-title>
+      <mat-card-subtitle>{{ "auth.register.subtitle" | transloco }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content class="flex flex-col gap-4 pt-4">
+      @if (formError()) {
+        <p role="alert" class="text-sm text-red-600">{{ formError() }}</p>
+      }
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ "auth.register.displayName" | transloco }}</mat-label>
+        <input
+          matInput
+          id="register-display-name"
+          autocomplete="name"
+          [ngModel]="values().displayName"
+          (ngModelChange)="setField('displayName', $event)"
+          name="displayName"
+          [attr.aria-invalid]="!!fieldErrors().displayName"
+        />
+        @if (fieldErrors().displayName) {
+          <mat-error>{{ fieldErrors().displayName }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ "auth.register.email" | transloco }}</mat-label>
+        <input
+          matInput
+          id="register-email"
+          type="email"
+          autocomplete="email"
+          [ngModel]="values().email"
+          (ngModelChange)="setField('email', $event)"
+          name="email"
+          [attr.aria-invalid]="!!fieldErrors().email"
+        />
+        @if (fieldErrors().email) {
+          <mat-error>{{ fieldErrors().email }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ "auth.register.password" | transloco }}</mat-label>
+        <input
+          matInput
+          id="register-password"
+          type="password"
+          autocomplete="new-password"
+          [ngModel]="values().password"
+          (ngModelChange)="setField('password', $event)"
+          name="password"
+          [attr.aria-invalid]="!!fieldErrors().password"
+        />
+        <mat-hint>{{ fieldErrors().password ?? ("auth.register.passwordHint" | transloco) }}</mat-hint>
+      </mat-form-field>
+    </mat-card-content>
+    <mat-card-actions class="flex flex-col items-stretch gap-3 px-4 pb-4">
+      <button mat-flat-button color="primary" type="submit" [disabled]="submitting()">
+        {{ "auth.register.submit" | transloco }}
+      </button>
+      <p class="text-center text-sm text-gray-500">
+        {{ "auth.register.hasAccount" | transloco }}
+        <a routerLink="/login" class="font-medium underline underline-offset-4">{{ "auth.register.loginLink" | transloco }}</a>
+      </p>
+    </mat-card-actions>
+  </form>
+</mat-card>

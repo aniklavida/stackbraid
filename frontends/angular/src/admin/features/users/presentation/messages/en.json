@@ -1,0 +1,42 @@
+{
+  "title": "Users",
+  "subtitle": "Every account, searchable and paginated.",
+  "searchPlaceholder": "Search by name or email…",
+  "statusAll": "All statuses",
+  "statusActive": "Active",
+  "statusInactive": "Inactive",
+  "columns": {
+    "name": "Name",
+    "email": "Email",
+    "status": "Status",
+    "roles": "Roles",
+    "actions": "Actions"
+  },
+  "actions": {
+    "view": "View",
+    "deactivate": "Deactivate",
+    "deactivated": "Deactivated {{name}}."
+  },
+  "pagination": {
+    "summary": "Page {{page}} of {{totalPages}} — {{totalItems}} accounts",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "empty": "No accounts match your search.",
+  "loading": "Loading users…",
+  "error": "We couldn't load the user list.",
+  "detail": {
+    "back": "Back to users",
+    "roles": "Roles",
+    "assignRole": "Assign a role",
+    "assign": "Assign",
+    "revoke": "Revoke",
+    "revoked": "{{name}} revoked.",
+    "assigned": "{{name}} assigned.",
+    "noRoles": "This account holds no roles yet.",
+    "account": "Account details",
+    "createdAt": "Created",
+    "lastLoginAt": "Last sign-in",
+    "lastLoginAt_never": "Never"
+  }
+}

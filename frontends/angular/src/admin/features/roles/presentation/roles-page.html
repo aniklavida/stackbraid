@@ -1,0 +1,40 @@
+<div class="flex flex-col gap-6">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">{{ "roles.title" | transloco }}</h1>
+    <p class="text-gray-500">{{ "roles.subtitle" | transloco }}</p>
+  </div>
+
+  @if (roles.isPending()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+  @if (roles.isError()) {
+    <p role="alert" class="text-red-600">{{ "roles.error" | transloco }}</p>
+  }
+
+  @if (roles.data(); as data) {
+    <table class="w-full border-collapse text-sm">
+      <thead>
+        <tr class="border-b text-left">
+          <th class="py-2 font-medium">{{ "roles.columns.name" | transloco }}</th>
+          <th class="py-2 font-medium">{{ "roles.columns.description" | transloco }}</th>
+          <th class="py-2 font-medium">{{ "roles.columns.permissions" | transloco }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (role of data; track role.id) {
+          <tr class="border-b">
+            <td class="py-2 font-medium">{{ role.name }}</td>
+            <td class="py-2 text-gray-500">{{ role.description }}</td>
+            <td class="py-2">
+              <div class="flex flex-wrap gap-1">
+                @for (permission of role.permissions; track permission) {
+                  <span class="rounded-full border px-2 py-0.5 text-xs">{{ permission }}</span>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

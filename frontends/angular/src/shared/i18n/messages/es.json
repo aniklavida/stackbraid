@@ -1,0 +1,25 @@
+{
+  "appName": "StackBraid",
+  "nav": {
+    "home": "Inicio",
+    "profile": "Perfil",
+    "login": "Iniciar sesión",
+    "register": "Crear cuenta",
+    "logout": "Cerrar sesión",
+    "admin": "Administración"
+  },
+  "language": {
+    "label": "Idioma",
+    "en": "English",
+    "es": "Español"
+  },
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "retry": "Reintentar"
+  },
+  "footer": {
+    "tagline": "Un esqueleto de código abierto para la función de Identidad que todo producto necesita."
+  }
+}

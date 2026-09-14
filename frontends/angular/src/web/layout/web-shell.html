@@ -1,0 +1,29 @@
+<div class="flex min-h-screen flex-1 flex-col">
+  <header class="border-b border-gray-200">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+      <a routerLink="/" class="text-lg font-semibold tracking-tight">{{ "appName" | transloco }}</a>
+      <nav role="navigation" class="flex items-center gap-2">
+        <a mat-button routerLink="/">{{ "nav.home" | transloco }}</a>
+        @if (auth.status() === "authenticated") {
+          <a mat-button routerLink="/profile">{{ "nav.profile" | transloco }}</a>
+        }
+        @if (auth.status() === "authenticated" && auth.hasPermission("users:read")) {
+          <a mat-button routerLink="/admin">{{ "nav.admin" | transloco }}</a>
+        }
+        @if (auth.status() === "authenticated") {
+          <button mat-stroked-button (click)="logout()">{{ "nav.logout" | transloco }}</button>
+        } @else {
+          <a mat-button routerLink="/login">{{ "nav.login" | transloco }}</a>
+          <a mat-flat-button color="primary" routerLink="/register">{{ "nav.register" | transloco }}</a>
+        }
+        <app-locale-switcher />
+      </nav>
+    </div>
+  </header>
+  <main class="mx-auto flex w-full max-w-5xl flex-1 items-start justify-center px-6 py-16">
+    <router-outlet />
+  </main>
+  <footer class="border-t border-gray-200">
+    <div class="mx-auto max-w-5xl px-6 py-6 text-sm text-gray-500">{{ "footer.tagline" | transloco }}</div>
+  </footer>
+</div>

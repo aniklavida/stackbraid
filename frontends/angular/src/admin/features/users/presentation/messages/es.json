@@ -1,0 +1,42 @@
+{
+  "title": "Usuarios",
+  "subtitle": "Todas las cuentas, con búsqueda y paginación.",
+  "searchPlaceholder": "Buscar por nombre o correo…",
+  "statusAll": "Todos los estados",
+  "statusActive": "Activo",
+  "statusInactive": "Inactivo",
+  "columns": {
+    "name": "Nombre",
+    "email": "Correo",
+    "status": "Estado",
+    "roles": "Roles",
+    "actions": "Acciones"
+  },
+  "actions": {
+    "view": "Ver",
+    "deactivate": "Desactivar",
+    "deactivated": "Se desactivó a {{name}}."
+  },
+  "pagination": {
+    "summary": "Página {{page}} de {{totalPages}} — {{totalItems}} cuentas",
+    "previous": "Anterior",
+    "next": "Siguiente"
+  },
+  "empty": "Ninguna cuenta coincide con tu búsqueda.",
+  "loading": "Cargando usuarios…",
+  "error": "No pudimos cargar la lista de usuarios.",
+  "detail": {
+    "back": "Volver a usuarios",
+    "roles": "Roles",
+    "assignRole": "Asignar un rol",
+    "assign": "Asignar",
+    "revoke": "Revocar",
+    "revoked": "{{name}} revocado.",
+    "assigned": "{{name}} asignado.",
+    "noRoles": "Esta cuenta aún no tiene roles.",
+    "account": "Detalles de la cuenta",
+    "createdAt": "Creado",
+    "lastLoginAt": "Último inicio de sesión",
+    "lastLoginAt_never": "Nunca"
+  }
+}

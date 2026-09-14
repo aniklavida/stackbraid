@@ -1,0 +1,18 @@
+@if (auth.status() === "loading") {
+  <p class="text-gray-500">{{ "home.loading" | transloco }}</p>
+} @else if (auth.status() === "authenticated" && auth.user(); as user) {
+  <div class="flex max-w-xl flex-col gap-4">
+    <h1 class="text-3xl font-semibold tracking-tight">{{ "home.signedIn.greeting" | transloco: { name: user.displayName } }}</h1>
+    <p class="text-gray-500">{{ "home.signedIn.body" | transloco }}</p>
+    <a mat-flat-button color="primary" class="w-fit" routerLink="/profile">{{ "home.signedIn.profileCta" | transloco }}</a>
+  </div>
+} @else {
+  <div class="flex max-w-xl flex-col gap-4">
+    <h1 class="text-3xl font-semibold tracking-tight">{{ "home.signedOut.heading" | transloco }}</h1>
+    <p class="text-gray-500">{{ "home.signedOut.body" | transloco }}</p>
+    <div class="flex gap-3">
+      <a mat-flat-button color="primary" routerLink="/login">{{ "home.signedOut.loginCta" | transloco }}</a>
+      <a mat-stroked-button routerLink="/register">{{ "home.signedOut.registerCta" | transloco }}</a>
+    </div>
+  </div>
+}

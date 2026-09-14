@@ -1,0 +1,22 @@
+<div class="flex min-h-screen flex-1">
+  <aside class="flex w-56 flex-col border-r border-gray-200 px-4 py-6">
+    <span class="mb-6 text-lg font-semibold tracking-tight">{{ "admin.title" | transloco }}</span>
+    <nav class="flex flex-col gap-1">
+      <a routerLink="/admin/users" routerLinkActive="bg-gray-100" class="rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100">
+        {{ "admin.nav.users" | transloco }}
+      </a>
+      <a routerLink="/admin/roles" routerLinkActive="bg-gray-100" class="rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100">
+        {{ "admin.nav.roles" | transloco }}
+      </a>
+    </nav>
+    <a routerLink="/" class="mt-auto text-sm text-gray-500 hover:underline">{{ "admin.nav.backToSite" | transloco }}</a>
+  </aside>
+  <div class="flex flex-1 flex-col">
+    <header class="flex justify-end border-b border-gray-200 px-6 py-3">
+      <app-locale-switcher />
+    </header>
+    <main class="flex-1 px-6 py-8">
+      <router-outlet />
+    </main>
+  </div>
+</div>
