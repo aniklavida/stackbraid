@@ -5,9 +5,31 @@ Generated from `contract/openapi.yaml` by [`@hey-api/openapi-ts`](https://heyapi
 instead. A hand-edit is exactly what the drift check (`scripts/check-client-drift.sh`
 at the repository root) exists to catch, and the pre-commit hook runs it.
 
-**Status:** compiles (`tsc --noEmit` passes). It has never called a real
-server — no backend exists yet (see `docs/SPEC.md`). Generating a client is
-not the same claim as a working integration.
+**Status:** compiles (`tsc --noEmit` passes) and has called both real
+backends successfully (see `backends/dotnet/README.md` and
+`backends/python/README.md` for the conformance evidence).
+
+## Realtime — `src/realtime.ts`
+
+The one hand-written file in this package. OpenAPI has no concept of a
+push channel, so there is nothing for the generator to produce for
+`contract/openapi.yaml`'s `x-realtime-channels` section — this module
+connects to whichever transport the target backend actually speaks
+(SignalR for .NET, a native WebSocket for Python, auto-detected) and hands
+back every `RealtimeMessage`, a type still imported from the generated
+output rather than redeclared here. Import it via the package's `./realtime`
+subpath:
+
+```ts
+import { connectRealtimeChannel } from '@stackbraid/client-typescript/realtime';
+
+const connection = await connectRealtimeChannel(baseUrl, 'notifications', accessToken);
+connection.onMessage((message) => {
+  if (message.type === 'user.deactivated') {
+    // ...
+  }
+});
+```
 
 ## Regenerate
 

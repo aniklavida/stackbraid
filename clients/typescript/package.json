@@ -2,10 +2,14 @@
   "name": "@stackbraid/client-typescript",
   "version": "0.1.0",
   "private": true,
-  "description": "TypeScript client for the StackBraid Identity API, generated from contract/openapi.yaml. Never hand-edited — see README.md.",
+  "description": "TypeScript client for the StackBraid Identity API, generated from contract/openapi.yaml. Never hand-edited — see README.md. src/realtime.ts is the one hand-written exception, documented there and in README.md.",
   "type": "module",
   "types": "./src/generated/index.ts",
   "main": "./src/generated/index.ts",
+  "exports": {
+    ".": "./src/generated/index.ts",
+    "./realtime": "./src/realtime.ts"
+  },
   "engines": {
     "node": ">=18.17.0"
   },
