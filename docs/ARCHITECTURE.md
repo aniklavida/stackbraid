@@ -43,6 +43,14 @@ Most of the value lives in the third layer, and that is precisely where multipli
 - Generated code is committed but never hand-edited.
 - Setup and migration are idempotent and preserve user data.
 
+## Observability
+
+One instrumentation layer the operator can point anywhere, rather than a hard wiring to one vendor. Both backends export OpenTelemetry traces and metrics to the console by default — verifiable locally with no collector, no dashboard and no container — and *additionally* export over OTLP only when an endpoint is actually configured (`Otel:OtlpEndpoint` in .NET, the standard `OTEL_EXPORTER_OTLP_ENDPOINT` env var in Python); neither backend ever dials a collector nobody asked it to.
+
+Every request's correlation ID (`X-Correlation-Id`) is stamped onto that request's own span as `app.correlation_id`, and every structured log line written while handling that request carries the same correlation ID plus the span's trace/span id — so a trace and a log line can each be found from the other, and a request's whole story is retrievable from either side.
+
+Both backends carry a test proving no secret — a password, a refresh token, an `Authorization` header — ever reaches a log line or a span attribute, run against the real Identity flow with real instrumentation, not a mock.
+
 ## Localization
 
 Both backends negotiate a locale from the request's `Accept-Language` header with one shared rule: parse it as a comma-separated list of language ranges, each optionally weighted with `;q=`, pick the highest-weighted range this backend actually ships text for (ties keep the header's own order), and fall back to English when nothing matches. A malformed weight is treated as the default rather than dropping that range. Error titles and details returned in the `Problem` envelope are localized server-side from this negotiated locale — never hard-coded English.

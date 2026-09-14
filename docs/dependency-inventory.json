@@ -1950,22 +1950,22 @@
     {
       "ecosystem": "nuget-dotnet-backend",
       "name": "Microsoft.Extensions.Configuration",
-      "version": "10.0.0",
+      "version": "10.0.12",
       "license": "MIT",
-      "class": "build-tooling",
+      "class": "compiled-into-user-code",
       "verifiedOn": "2026-09-14",
       "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
-      "notes": "test-only — never shipped"
+      "notes": "shipped in Host — read by OpenTelemetry's Otel:OtlpEndpoint conditional wiring and every other configuration section"
     },
     {
       "ecosystem": "nuget-dotnet-backend",
       "name": "Microsoft.Extensions.Configuration.Binder",
-      "version": "10.0.0",
+      "version": "10.0.12",
       "license": "MIT",
-      "class": "build-tooling",
+      "class": "compiled-into-user-code",
       "verifiedOn": "2026-09-14",
       "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
-      "notes": "test-only — never shipped"
+      "notes": "shipped in Host — binds configuration sections (Jwt, Cors, Otel) to typed options"
     },
     {
       "ecosystem": "nuget-dotnet-backend",
@@ -1980,32 +1980,32 @@
     {
       "ecosystem": "nuget-dotnet-backend",
       "name": "Microsoft.Extensions.Diagnostics.Abstractions",
-      "version": "10.0.0",
+      "version": "10.0.12",
       "license": "MIT",
-      "class": "build-tooling",
+      "class": "compiled-into-user-code",
       "verifiedOn": "2026-09-14",
       "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
-      "notes": "test-only — never shipped"
+      "notes": "shipped in Host — part of the OpenTelemetry.Extensions.Hosting integration"
     },
     {
       "ecosystem": "nuget-dotnet-backend",
       "name": "Microsoft.Extensions.FileProviders.Abstractions",
-      "version": "10.0.0",
+      "version": "10.0.12",
       "license": "MIT",
-      "class": "build-tooling",
+      "class": "compiled-into-user-code",
       "verifiedOn": "2026-09-14",
       "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
-      "notes": "test-only — never shipped"
+      "notes": "shipped in Host — transitive dependency of the ASP.NET Core hosting stack"
     },
     {
       "ecosystem": "nuget-dotnet-backend",
       "name": "Microsoft.Extensions.Hosting.Abstractions",
-      "version": "10.0.0",
+      "version": "10.0.12",
       "license": "MIT",
-      "class": "build-tooling",
+      "class": "compiled-into-user-code",
       "verifiedOn": "2026-09-14",
       "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
-      "notes": "test-only — never shipped"
+      "notes": "shipped in Host — OpenTelemetry.Extensions.Hosting registers against IHostedService/IHostBuilder from this package"
     },
     {
       "ecosystem": "nuget-dotnet-backend",
@@ -2070,12 +2070,12 @@
     {
       "ecosystem": "nuget-dotnet-backend",
       "name": "Serilog",
-      "version": "4.3.0",
+      "version": "4.4.0",
       "license": "Apache-2.0",
       "class": "compiled-into-user-code",
       "verifiedOn": "2026-09-14",
       "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
-      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication and structured-logging wiring in Host)"
+      "notes": "direct or transitive dependency of the .NET backend (JWT bearer authentication, structured-logging wiring, and OpenTelemetry trace/span-id log enrichment in Host)"
     },
     {
       "ecosystem": "nuget-dotnet-backend",
@@ -20466,6 +20466,426 @@
       "verifiedOn": "2026-09-14",
       "source": "mobile/flutter/pubspec.lock + package LICENSE file",
       "notes": "transitive runtime dependency of flutter_localizations (Material/Widgets/Cupertino localization delegates this app registers for Spanish support)"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "OpenTelemetry",
+      "version": "1.18.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "traces/metrics instrumentation and console (always-on) / OTLP (only when Otel:OtlpEndpoint is configured) export, wired in Host/Observability/OpenTelemetryExtensions.cs"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "OpenTelemetry.Api",
+      "version": "1.18.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "traces/metrics instrumentation and console (always-on) / OTLP (only when Otel:OtlpEndpoint is configured) export, wired in Host/Observability/OpenTelemetryExtensions.cs"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "OpenTelemetry.Api.ProviderBuilderExtensions",
+      "version": "1.18.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "traces/metrics instrumentation and console (always-on) / OTLP (only when Otel:OtlpEndpoint is configured) export, wired in Host/Observability/OpenTelemetryExtensions.cs"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "OpenTelemetry.Exporter.Console",
+      "version": "1.18.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "traces/metrics instrumentation and console (always-on) / OTLP (only when Otel:OtlpEndpoint is configured) export, wired in Host/Observability/OpenTelemetryExtensions.cs"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "OpenTelemetry.Exporter.OpenTelemetryProtocol",
+      "version": "1.18.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "traces/metrics instrumentation and console (always-on) / OTLP (only when Otel:OtlpEndpoint is configured) export, wired in Host/Observability/OpenTelemetryExtensions.cs"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "OpenTelemetry.Extensions.Hosting",
+      "version": "1.18.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "traces/metrics instrumentation and console (always-on) / OTLP (only when Otel:OtlpEndpoint is configured) export, wired in Host/Observability/OpenTelemetryExtensions.cs"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "OpenTelemetry.Instrumentation.AspNetCore",
+      "version": "1.18.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "traces/metrics instrumentation and console (always-on) / OTLP (only when Otel:OtlpEndpoint is configured) export, wired in Host/Observability/OpenTelemetryExtensions.cs"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "OpenTelemetry.Instrumentation.Http",
+      "version": "1.18.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "traces/metrics instrumentation and console (always-on) / OTLP (only when Otel:OtlpEndpoint is configured) export, wired in Host/Observability/OpenTelemetryExtensions.cs"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Configuration.EnvironmentVariables",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Logging.Configuration",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Options.ConfigurationExtensions",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Configuration.CommandLine",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Configuration.FileExtensions",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Configuration.Json",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Configuration.UserSecrets",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Diagnostics",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.FileProviders.Physical",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.FileSystemGlobbing",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Hosting",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Logging.Console",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Logging.Debug",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Logging.EventLog",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.Extensions.Logging.EventSource",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "shipped in Host — transitive dependency of OpenTelemetry.Extensions.Hosting's Generic Host integration"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.AspNetCore.Mvc.Testing",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only — never shipped, used by Features.Identity.IntegrationTests' WebApplicationFactory-based secret-redaction test"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.AspNetCore.TestHost",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "test-only — never shipped, used by Features.Identity.IntegrationTests' WebApplicationFactory-based secret-redaction test"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "opentelemetry-api",
+      "version": "1.44.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "OpenTelemetry tracing/metrics API, wired in shared/observability/tracing.py"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "opentelemetry-sdk",
+      "version": "1.44.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "OpenTelemetry SDK — TracerProvider/MeterProvider, console exporters always on, wired in shared/observability/tracing.py"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "opentelemetry-instrumentation",
+      "version": "0.65b0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "base instrumentation machinery, direct dependency of opentelemetry-instrumentation-fastapi"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "opentelemetry-instrumentation-asgi",
+      "version": "0.65b0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "ASGI-level instrumentation, direct dependency of opentelemetry-instrumentation-fastapi"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "opentelemetry-instrumentation-fastapi",
+      "version": "0.65b0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "auto-instruments the FastAPI app for HTTP server spans/metrics, wired in shared/observability/tracing.py"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "opentelemetry-semantic-conventions",
+      "version": "0.65b0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "shared attribute-naming constants used by the instrumentation packages above"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "opentelemetry-util-http",
+      "version": "0.65b0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "HTTP-specific instrumentation helpers, transitive dependency of opentelemetry-instrumentation-fastapi"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "opentelemetry-exporter-otlp-proto-http",
+      "version": "1.44.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "OTLP exporter, registered in code but only actually added to the tracing/metrics pipeline when OTEL_EXPORTER_OTLP_ENDPOINT is configured — this process never dials a collector nobody asked it to"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "opentelemetry-exporter-otlp-proto-common",
+      "version": "1.44.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "shared OTLP wire-format helpers, transitive dependency of opentelemetry-exporter-otlp-proto-http"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "opentelemetry-proto",
+      "version": "1.44.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "generated OTLP protobuf message classes, transitive dependency of opentelemetry-exporter-otlp-proto-http"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "protobuf",
+      "version": "7.36.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of opentelemetry-exporter-otlp-proto-http / googleapis-common-protos"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "googleapis-common-protos",
+      "version": "1.75.3",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of opentelemetry-exporter-otlp-proto-http (shared .proto definitions)"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "requests",
+      "version": "2.34.2",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "HTTP transport used by opentelemetry-exporter-otlp-proto-http to actually send OTLP-over-HTTP requests when configured"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "urllib3",
+      "version": "2.7.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of requests"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "charset-normalizer",
+      "version": "3.5.1",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of requests"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "asgiref",
+      "version": "3.12.1",
+      "license": "BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "transitive dependency of opentelemetry-instrumentation-asgi"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "wrapt",
+      "version": "2.4.1",
+      "license": "BSD-2-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "generic decorator/wrapper library, transitive dependency of opentelemetry-instrumentation"
     }
   ]
 }

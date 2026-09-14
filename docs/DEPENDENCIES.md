@@ -122,10 +122,14 @@ reads under the `nuget-dotnet-backend` ecosystem.
 | `Npgsql` (+ `Npgsql.EntityFrameworkCore.PostgreSQL`) | 10.0.3 | PostgreSQL Licence — OSI-approved and permissive, textually BSD/MIT-style (see `postgres/postgres`'s own `COPYRIGHT`); the .NET *driver*, unrelated to which licence governs the Postgres *server* process itself (audited separately below, under infrastructure) |
 | `Microsoft.AspNetCore.Authentication.JwtBearer` | 10.0.12 | MIT |
 | `System.IdentityModel.Tokens.Jwt` (+ `Microsoft.IdentityModel.JsonWebTokens`, `.Tokens`, `.Protocols`, `.Protocols.OpenIdConnect`, `.Logging`, `.Abstractions`, `Microsoft.Bcl.Cryptography`) | 8.19.2–8.22.0 | MIT |
-| `Serilog` (+ `.AspNetCore`, `.Extensions.Hosting`, `.Extensions.Logging`, `.Formatting.Compact`, `.Settings.Configuration`) | 4.3.0 / 10.0.0 | Apache-2.0 |
+| `Serilog` (+ `.AspNetCore`, `.Extensions.Hosting`, `.Extensions.Logging`, `.Formatting.Compact`, `.Settings.Configuration`) | 4.4.0 / 10.0.0 | Apache-2.0 |
 | `Serilog.Sinks.Console` (+ transitively pulled `.Sinks.Debug`, `.Sinks.File`, unused by this backend's own logging setup but resolved by `Serilog.AspNetCore`'s dependency tree) | 6.1.1 / 3.0.0 / 7.0.0 | Apache-2.0 |
+| `OpenTelemetry` (+ `.Api`, `.Api.ProviderBuilderExtensions`, `.Extensions.Hosting`) | 1.18.0 | Apache-2.0 |
+| `OpenTelemetry.Instrumentation.AspNetCore` (+ `.Instrumentation.Http`) | 1.18.0 | Apache-2.0 |
+| `OpenTelemetry.Exporter.Console` | 1.18.0 | Apache-2.0 |
+| `OpenTelemetry.Exporter.OpenTelemetryProtocol` (registered unconditionally in code, but only actually added to the tracing/metrics pipeline — see `Host/Observability/OpenTelemetryExtensions.cs` — when `Otel:OtlpEndpoint` is configured; this process never dials a collector nobody asked it to) | 1.18.0 | Apache-2.0 |
 
-All fourteen package families are MIT, Apache-2.0 or the permissive PostgreSQL Licence — compliant with the compiled-into-user-code rule. JWT signing/validation (`Host/Security/JwtAccessTokenIssuer`, wired in `Host/Program.cs`) and structured console logging with correlation IDs (`Host/Program.cs`'s `UseSerilog` call, consuming `Shared/Web/CorrelationIdMiddleware`'s logging scope) are what these two families exist for.
+All eighteen package families are MIT, Apache-2.0 or the permissive PostgreSQL Licence — compliant with the compiled-into-user-code rule. JWT signing/validation (`Host/Security/JwtAccessTokenIssuer`, wired in `Host/Program.cs`), structured console logging with correlation IDs (`Host/Program.cs`'s `UseSerilog` call, consuming `Shared/Web/CorrelationIdMiddleware`'s logging scope), and traces/metrics instrumentation (`Host/Observability/OpenTelemetryExtensions.cs`, also consuming the same correlation ID as a span attribute) are what these three families exist for.
 `Microsoft.EntityFrameworkCore.Relational` is deliberately separate from `Npgsql.EntityFrameworkCore.PostgreSQL`:
 it is what `backends/dotnet/src/Features/Identity/Persistence` (entity configuration, provider-agnostic) references for
 relational concepts like `ToTable`/`HasColumnName` that apply to any relational database, while `Npgsql.*` is confined
@@ -144,7 +148,7 @@ for that reason, the same basis as `Microsoft.EntityFrameworkCore.Design` below.
 
 **Design-time only, never shipped** (`Microsoft.EntityFrameworkCore.Design`, referenced with `PrivateAssets="all"` in `Database/Postgres` — it powers `dotnet ef migrations add` and is not copied into the built output): `Microsoft.EntityFrameworkCore.Design` itself plus its own transitive closure — the Roslyn `Microsoft.CodeAnalysis.*` packages, `Microsoft.Build.Framework`, `Microsoft.VisualStudio.SolutionPersistence`, `Mono.TextTemplating`, the `System.Composition.*` family, `Humanizer.Core`, and this one path's own `Newtonsoft.Json` 13.0.4 (the test projects separately resolve 13.0.3 — both versions are audited, both MIT). Classified `build-tooling`, the same basis as a CI-only linter: installed to generate code at development time, never linked into or redistributed with the running server.
 
-**Build/test tooling** (referenced only by a `tests/` project — xUnit, Shouldly and NSubstitute, matching `docs/SPEC.md`'s test-dependency table — plus their own transitive closure): `xunit` and its `xunit.*` satellite packages, `xunit.runner.visualstudio`, `xunit.abstractions` (Apache-2.0 — its nuspec `licenseUrl` points at xunit's own `license.txt`, read directly rather than assumed), `Microsoft.NET.Test.Sdk`, `Microsoft.TestPlatform.*`, `coverlet.collector`, `Shouldly` (BSD-3-Clause) and its `DiffEngine`/`EmptyFiles` dependencies, `NSubstitute` (BSD-3-Clause) and its `Castle.Core` (Apache-2.0) dependency, `NetArchTest.Rules` (MIT — its nuspec carries no `license`/`licenseUrl` tag at all; verified directly against the `LICENSE` file in `BenMorris/NetArchTest` on GitHub) and its own `Mono.Cecil` dependency (MIT), plus `Newtonsoft.Json` 13.0.3, `System.CodeDom`, `System.Diagnostics.EventLog` and `System.Management` pulled in transitively. None of these compile into the running server; every one is MIT, Apache-2.0 or BSD-3-Clause regardless.
+**Build/test tooling** (referenced only by a `tests/` project — xUnit, Shouldly and NSubstitute, matching `docs/SPEC.md`'s test-dependency table — plus their own transitive closure): `xunit` and its `xunit.*` satellite packages, `xunit.runner.visualstudio`, `xunit.abstractions` (Apache-2.0 — its nuspec `licenseUrl` points at xunit's own `license.txt`, read directly rather than assumed), `Microsoft.NET.Test.Sdk`, `Microsoft.TestPlatform.*`, `coverlet.collector`, `Shouldly` (BSD-3-Clause) and its `DiffEngine`/`EmptyFiles` dependencies, `NSubstitute` (BSD-3-Clause) and its `Castle.Core` (Apache-2.0) dependency, `NetArchTest.Rules` (MIT — its nuspec carries no `license`/`licenseUrl` tag at all; verified directly against the `LICENSE` file in `BenMorris/NetArchTest` on GitHub) and its own `Mono.Cecil` dependency (MIT), `Microsoft.AspNetCore.Mvc.Testing` (+ `Microsoft.AspNetCore.TestHost`, MIT) — the in-process `WebApplicationFactory<Program>` the secret-redaction test drives the real Identity flow through — plus `Newtonsoft.Json` 13.0.3, `System.CodeDom`, `System.Diagnostics.EventLog` and `System.Management` pulled in transitively. None of these compile into the running server; every one is MIT, Apache-2.0 or BSD-3-Clause regardless.
 
 **Deliberately not added yet:** `Hangfire.Core`, `QuestPDF` and `ClosedXML` — named in `docs/SPEC.md`'s dependency table as the intended real implementations behind `IJobScheduler`, `IPdfGenerator` and `IExcelExporter` — are not referenced by any `.csproj` today. Those interfaces currently ship with a minimal, dependency-free default (an in-process job queue, a hand-written PDF writer, and CSV export) so the layer compiles and is genuinely tested without auditing a library nothing yet depends on. They enter this document, with a verified date, the same day they enter a `.csproj` — the same rule already applied to them here before any backend existed.
 
@@ -169,8 +173,13 @@ under the `pypi-python-backend` ecosystem.
 | `alembic` (+ `mako`) | 1.20.0 / 1.4.1 | MIT |
 | `pyjwt` | 2.14.0 | MIT |
 | `starlette`, `anyio`, `click`, `idna`, `markupsafe`, `pyyaml`, `typing-extensions`, `annotated-doc` | various | MIT / BSD-3-Clause / PSF-2.0 |
+| `opentelemetry-api` (+ `.sdk`, `.instrumentation`, `.instrumentation-asgi`, `.instrumentation-fastapi`, `.semantic-conventions`, `.util-http`) | 1.44.0 / 0.65b0 | Apache-2.0 |
+| `opentelemetry-exporter-otlp-proto-http` (+ `.exporter-otlp-proto-common`, `.proto`) — registered in code but only actually added to the tracing/metrics pipeline when `OTEL_EXPORTER_OTLP_ENDPOINT` is configured; this process never dials a collector nobody asked it to | 1.44.0 | Apache-2.0 |
+| `protobuf`, `googleapis-common-protos` (transitive, OTLP wire format) | 7.36.1 / 1.75.3 | BSD-3-Clause / Apache-2.0 |
+| `requests`, `urllib3`, `charset-normalizer` (transitive, the HTTP transport `opentelemetry-exporter-otlp-proto-http` actually sends over) | 2.34.2 / 2.7.0 / 3.5.1 | Apache-2.0 / MIT / MIT |
+| `asgiref`, `wrapt` (transitive, instrumentation plumbing) | 3.12.1 / 2.4.1 | BSD-3-Clause / BSD-2-Clause |
 
-Every one is MIT, Apache-2.0, BSD-3-Clause or PSF-2.0 — compliant with the
+Every one is MIT, Apache-2.0, BSD-2/3-Clause or PSF-2.0 — compliant with the
 compiled-into-user-code rule. Notably absent by deliberate choice: **no
 mediator library** — `application/` resolves command/query handlers directly
 from FastAPI's own dependency graph (see `AGENTS.md`'s "the only intended
@@ -178,9 +187,12 @@ difference between the backends") — and **no ORM-adjacent Postgres driver
 beyond `asyncpg`**: `psycopg` was considered and rejected in favour of
 `asyncpg`'s clean Apache-2.0 licence over psycopg's LGPL-shaded one, since
 Apache-2.0 needs no further reasoning under the compiled-into-user-code rule.
-JWT signing/validation (`features/identity/endpoints/security.py`) and
-structured request correlation (`shared/web/correlation.py`) are what
-`pyjwt` and `starlette`'s middleware hooks exist for, respectively.
+JWT signing/validation (`features/identity/endpoints/security.py`),
+structured request correlation (`shared/web/correlation.py`), and
+traces/metrics instrumentation (`shared/observability/tracing.py`, also
+consuming the same correlation ID as a span attribute) are what `pyjwt`,
+`starlette`'s middleware hooks, and the `opentelemetry-*` family exist for,
+respectively.
 
 **Build/test tooling** (installed only via the `dev` extra — `pytest`,
 `pytest-asyncio`, `httpx`, `import-linter` — plus their own transitive

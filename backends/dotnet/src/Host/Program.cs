@@ -5,6 +5,7 @@ using StackBraid.Database.Postgres;
 using StackBraid.Features.Identity.Application.Abstractions;
 using StackBraid.Features.Identity.Endpoints;
 using StackBraid.Host.HealthChecks;
+using StackBraid.Host.Observability;
 using StackBraid.Host.Security;
 using StackBraid.Shared;
 using StackBraid.Shared.Web;
@@ -20,6 +21,8 @@ builder.Host.UseSerilog((_, loggerConfiguration) => loggerConfiguration
     .Enrich.FromLogContext()
     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}"));
 
+builder.Services.AddStackBraidObservability(builder.Configuration);
+
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 
 var connectionString = builder.Configuration.GetConnectionString("Postgres")
@@ -27,7 +30,20 @@ var connectionString = builder.Configuration.GetConnectionString("Postgres")
 
 builder.Services.AddShared();
 builder.Services.AddPostgresPersistence(connectionString);
-builder.Services.AddMediator();
+// Every handler here takes a Scoped repository (itself backed by a Scoped
+// DbContext) through its constructor. The library's own default is
+// Singleton — its README recommends it for raw throughput — but a
+// singleton handler is constructed once and holds whatever Scoped
+// repository was active at that moment forever after, so every later
+// request reuses the same DbContext concurrently. That is exactly what
+// surfaced, twice, as an intermittent
+// "a second operation was started on this context instance" exception
+// under concurrent load, and is also why `WebApplicationFactory`-based
+// tests (which validate the service graph on build, unlike a plain
+// `dotnet run`) failed outright the moment one was tried. Handlers hold no
+// state of their own beyond what DI gives them, so Scoped is free of that
+// problem and correct for this graph.
+builder.Services.AddMediator(options => options.ServiceLifetime = ServiceLifetime.Scoped);
 builder.Services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()

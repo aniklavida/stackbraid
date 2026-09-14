@@ -29,6 +29,8 @@ from app.features.identity.endpoints.security import (
 from app.features.identity.endpoints.router import router as identity_router
 from app.host.config import Settings
 from app.shared.localization.localizer import JsonAppLocalizer
+from app.shared.observability.logging_setup import configure_logging
+from app.shared.observability.tracing import configure_opentelemetry, instrument_app
 from app.shared.security.password_hasher import Pbkdf2PasswordHasher
 from app.shared.web.correlation import CorrelationIdMiddleware
 from app.shared.web.exception_handling import register_exception_handlers
@@ -57,6 +59,8 @@ def _path_env() -> str:
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings()
+    configure_logging()
+    configure_opentelemetry(settings.otel_otlp_endpoint)
     localizer = JsonAppLocalizer()
 
     @asynccontextmanager
@@ -87,6 +91,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         await engine.dispose()
 
     app = FastAPI(title="StackBraid Identity API", version="1.0.0", lifespan=lifespan)
+    instrument_app(app)
 
     # No frontend origin is trusted by default — a frontend must be listed
     # explicitly (STACKBRAID_CORS_ALLOWED_ORIGINS_RAW, e.g. the Next.js or

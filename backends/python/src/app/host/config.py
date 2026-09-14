@@ -4,6 +4,7 @@ concern, never imported by a feature.
 
 from __future__ import annotations
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -34,3 +35,14 @@ class Settings(BaseSettings):
     @property
     def cors_allowed_origins(self) -> list[str]:
         return [origin.strip() for origin in self.cors_allowed_origins_raw.split(",") if origin.strip()]
+
+    # One instrumentation layer this process can point anywhere, rather
+    # than a hard wiring to one vendor: traces and metrics always go to
+    # the console (verifiable locally with no collector), and are
+    # *additionally* exported over OTLP only when this is actually set —
+    # this process never guesses at or dials a collector nobody asked it
+    # to. Read directly from the standard `OTEL_EXPORTER_OTLP_ENDPOINT`
+    # env var (no `STACKBRAID_` prefix — `validation_alias` reads this
+    # exact name, bypassing the class-wide prefix below) since that is the
+    # name every OpenTelemetry SDK, in any language, already agrees on.
+    otel_otlp_endpoint: str = Field(default="", validation_alias="OTEL_EXPORTER_OTLP_ENDPOINT")
