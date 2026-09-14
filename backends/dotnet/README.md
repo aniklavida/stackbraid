@@ -41,31 +41,57 @@ backends/dotnet/
 $ CONFORMANCE_ADMIN_EMAIL="admin@stackbraid.local" CONFORMANCE_ADMIN_PASSWORD="<seeded>" \
     node cli/run.mjs http://127.0.0.1:<port>
 
-34 passed, 0 failed, 0 skipped, 34 total.
+36 passed, 0 failed, 1 skipped, 37 total.
 ```
 
 Run against a genuinely fresh, empty local Postgres cluster (no Docker, no
 Testcontainers — see `scripts/start-local-postgres.sh`) migrated and seeded
-by this backend's own startup path, with a short-lived (40-second) access
-token configured so the suite's expiry check exercises a real expiry rather
-than skipping it. Every check in `contract/conformance` passes: schema
-shape, the RFC 9457 Problem envelope on every documented error, offset
-pagination arithmetic, `UtcDateTime`'s exact `Z`-suffixed format, both
-token-delivery paths (body and httpOnly cookie) for login/refresh/logout,
-refresh-token rotation and revocation, and permission-gated admin endpoints.
+by this backend's own startup path. Every check in `contract/conformance`
+passes: schema shape, the RFC 9457 Problem envelope on every documented
+error, offset pagination arithmetic, `UtcDateTime`'s exact `Z`-suffixed
+format, both token-delivery paths (body and httpOnly cookie) for
+login/refresh/logout, refresh-token rotation and revocation, permission-gated
+admin endpoints, and the realtime payloads below. The one skip is the
+expiry check, which needs a short-lived access token TTL
+(`Jwt:AccessTokenLifetimeSeconds`) configured to exercise for real rather
+than wait out the default 900 seconds.
 The generated TypeScript and Dart clients (`clients/typescript`,
 `clients/dart`) both call this backend successfully with no hand edits —
 register, log in, and read the caller's own account, exercised directly
 against a running instance.
 
-Three real bugs this run caught and fixed, worth recording because this is
-exactly what the suite is for: the rate limit on auth endpoints was tight
-enough that the suite's own traffic tripped it; ASP.NET Core's default JWT
-challenge/forbid responses bypass the Problem-envelope pipeline entirely
+Three real bugs an earlier run caught and fixed, worth recording because
+this is exactly what the suite is for: the rate limit on auth endpoints was
+tight enough that the suite's own traffic tripped it; ASP.NET Core's default
+JWT challenge/forbid responses bypass the Problem-envelope pipeline entirely
 (bare 401/403, no body); and `HttpResponse.WriteAsJsonAsync`'s
 no-content-type overload silently stamps `application/json` over a
 content type already set, which broke the envelope's content type on every
 response written outside the normal `Results.Problem(...)` path.
+
+## Realtime
+
+`Host/Realtime/NotificationsHub.cs` (`/v1/hubs/notifications`) and
+`Host/Realtime/JobsHub.cs` (`/v1/hubs/jobs`) push the `RealtimeMessage`
+shapes `contract/openapi.yaml` defines. A client authenticates with
+`?access_token=` on the connection (a browser WebSocket handshake carries no
+custom headers) and is placed in group `user:{userId}` on connect for
+notifications, or joins `job:{jobId}` itself for the jobs channel.
+`Shared/Realtime/IRealtimePublisher` is the port the existing
+deactivate/assign-role/revoke-role command handlers call — no new feature,
+no new REST endpoint. `Host/Realtime/SignalRRealtimePublisher` is the only
+implementation and never names a backplane technology itself.
+
+A Redis (or Valkey — the client library speaks the plain wire protocol,
+so either works unchanged) backplane is layered underneath only when
+`Realtime:BackplaneConnectionString` is configured; left unset, delivery is
+still correct for a single instance. **Proven for real**, both here and in
+`contract/conformance`'s `checks/realtime.mjs`: two instances of this
+backend behind the same Valkey process, a client connected to instance A
+receiving a `user.role_changed`, `user.deactivated` and `job.progress`
+raised through a REST call or a job start on instance B —
+`scripts/verify-realtime-fanout.mjs` at the repository root reproduces this
+against any two running instances.
 
 ## What `Shared` does
 

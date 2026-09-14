@@ -46,32 +46,55 @@ mediator library. Same folders, same names, same flow, each idiomatic (see
 
 ```
 $ CONFORMANCE_ADMIN_EMAIL="admin@stackbraid.local" CONFORMANCE_ADMIN_PASSWORD="<seeded>" \
-    CONFORMANCE_MAX_EXPIRY_WAIT_MS=65000 node cli/run.mjs http://127.0.0.1:<port>
+    node cli/run.mjs http://127.0.0.1:<port>
 
-34 passed, 0 failed, 0 skipped, 34 total.
+36 passed, 0 failed, 1 skipped, 37 total.
 ```
 
 Run against a genuinely fresh, empty local Postgres cluster (no Docker, no
 Testcontainers — see `scripts/start-local-postgres.sh`) migrated and seeded
-by this backend's own startup path, with a short-lived (5-second) access
-token configured (`STACKBRAID_JWT_ACCESS_TOKEN_LIFETIME_SECONDS`) so the
-suite's expiry check exercises a real expiry rather than skipping it. Every
-check in `contract/conformance` passes: schema shape, the RFC 9457 Problem
-envelope on every documented error, offset pagination arithmetic,
-`UtcDateTime`'s exact `Z`-suffixed format, both token-delivery paths (body
-and httpOnly cookie) for login/refresh/logout, refresh-token rotation and
-revocation, and permission-gated admin endpoints. Both generated clients
-(`clients/typescript`, `clients/dart`) called this backend successfully with
-no hand edits — register, log in, and read the caller's own account,
-exercised directly against a running instance, with only the base URL
-changed from the .NET run.
+by this backend's own startup path. Every check in `contract/conformance`
+passes: schema shape, the RFC 9457 Problem envelope on every documented
+error, offset pagination arithmetic, `UtcDateTime`'s exact `Z`-suffixed
+format, both token-delivery paths (body and httpOnly cookie) for
+login/refresh/logout, refresh-token rotation and revocation, permission-gated
+admin endpoints, and the realtime payloads below — byte-identical in shape
+to the .NET run with only the base URL changed. The one skip is the expiry
+check, which needs a short-lived access token TTL
+(`STACKBRAID_JWT_ACCESS_TOKEN_LIFETIME_SECONDS`) configured to exercise for
+real. Both generated clients (`clients/typescript`, `clients/dart`) called
+this backend successfully with no hand edits — register, log in, and read
+the caller's own account, exercised directly against a running instance.
 
-One real bug this run caught and fixed: Pydantic's `EmailStr` pulls in
+One real bug an earlier run caught and fixed: Pydantic's `EmailStr` pulls in
 `email-validator`'s deliverability/special-use-domain checks, which reject a
 `.local` address outright — locking the seeded `admin@stackbraid.local`
 account out of its own login endpoint. Replaced with a plain pattern
 matching the domain's own `Email` value object and the contract's
 `format: email`, removing a dependency in the process.
+
+## Realtime
+
+`features/identity/endpoints/realtime.py` (`/v1/ws/notifications`,
+`/v1/ws/jobs/{jobId}`) pushes the same `RealtimeMessage` shapes the .NET
+SignalR hubs emit, over a native WebSocket instead — the access token
+travels as an `access_token` query parameter here too, the same
+accommodation for a browser `WebSocket` carrying no custom headers.
+`shared/realtime/publisher.py`'s `RealtimePublisher` Protocol is what the
+existing deactivate/assign-role/revoke-role command handlers call; no new
+feature, no new REST endpoint.
+
+`InProcessRealtimePublisher` delivers to this process's own connections
+with no package call at all. `RedisRealtimePublisher` publishes through
+`redis.asyncio` only when `STACKBRAID_REALTIME_REDIS_URL` is configured — a
+Redis or Valkey URL both work unchanged, since the client speaks the plain
+wire protocol. **Proven for real**, both here and in
+`contract/conformance`'s `checks/realtime.mjs`: two instances of this
+backend behind the same Valkey process, a client connected to instance A
+receiving a `user.role_changed`, `user.deactivated` and `job.progress`
+raised through a REST call or a job start on instance B —
+`scripts/verify-realtime-fanout.mjs` at the repository root reproduces this
+against any two running instances.
 
 ## What `shared/` does
 

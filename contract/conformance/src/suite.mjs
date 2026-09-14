@@ -6,10 +6,13 @@ import { registerAuthChecks } from './checks/auth.mjs';
 import { registerErrorEnvelopeChecks } from './checks/errors.mjs';
 import { registerUserChecks } from './checks/users.mjs';
 import { registerRoleChecks } from './checks/roles.mjs';
+import { registerRealtimeChecks } from './checks/realtime.mjs';
 
 // Order matters: auth registers the primary test user and hands off a live
-// session (`ctx.primaryUser.activeTokens`) that users/roles checks reuse.
-const CHECK_GROUPS = [registerAuthChecks, registerErrorEnvelopeChecks, registerUserChecks, registerRoleChecks];
+// session (`ctx.primaryUser.activeTokens`) that users/roles/realtime checks
+// reuse. Realtime runs last — its own checks deactivate and reassign roles
+// on the primary user, which nothing after it depends on being untouched.
+const CHECK_GROUPS = [registerAuthChecks, registerErrorEnvelopeChecks, registerUserChecks, registerRoleChecks, registerRealtimeChecks];
 
 export async function runConformanceSuite(baseUrl) {
   try {

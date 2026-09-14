@@ -58,6 +58,16 @@ check failed — so CI can gate on it.
   (mobile/API clients) *and* via the httpOnly `refreshToken` cookie with no
   body (browser clients), including that the cookie carries
   `HttpOnly; Secure; SameSite=Strict` and the same token value as the body.
+- **Realtime payloads** — `checks/realtime.mjs` connects to whichever
+  transport the target backend actually answers on (a SignalR hub or a
+  native WebSocket — `src/realtime.mjs` probes both documented paths rather
+  than being told which one to expect), triggers each event the contract's
+  `RealtimeMessage` union covers through the existing REST endpoints that
+  already cause it (deactivating a user, assigning/revoking a role) or a
+  small simulated job started over the connection itself, and validates the
+  JSON that arrives field-by-field — the same schema validators the REST
+  checks above use, so a `user.deactivated` payload from .NET and from
+  Python are checked against the identical rules.
 
 ## What this does not (and cannot) do
 
@@ -68,6 +78,12 @@ returned and either waits for genuine expiry (if that fits within
 reason. Run the backend under test with a short-lived access token TTL to
 exercise it for real; the stub fixture (see `fixtures/stub-server/`) does
 exactly that by default so the check always runs there.
+
+Realtime checks skip, rather than fail, when neither documented realtime
+path answers at all — that is what a backend with no realtime layer built
+yet (or the stub fixture, whose own job is REST envelope-shape detection,
+not realtime) looks like. Only a connection that succeeds and then
+misbehaves is treated as a real conformance failure.
 
 ## Proving it works
 

@@ -201,3 +201,79 @@ export function validatePageEnvelope(value, field, violations) {
     }
   }
 }
+
+/**
+ * `RealtimeMessage` — the discriminated union both backends push over
+ * their own realtime transport (SignalR for .NET, a native WebSocket for
+ * Python; see `contract/openapi.yaml`'s `x-realtime-channels`). The two
+ * transports are deliberately different; this validator is what proves the
+ * JSON on the wire is not.
+ */
+export function validateRealtimeMessage(value, field, violations) {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    violations.push(violation(field, 'object (RealtimeMessage)', typeName(value)));
+    return;
+  }
+  if (!('type' in value) || typeof value.type !== 'string') {
+    violations.push(violation(`${field}.type`, "string discriminator ('user.deactivated' | 'user.role_changed' | 'job.progress')", typeName(value.type)));
+    return;
+  }
+  switch (value.type) {
+    case 'user.deactivated':
+      validateUserDeactivatedMessage(value, field, violations);
+      return;
+    case 'user.role_changed':
+      validateUserRoleChangedMessage(value, field, violations);
+      return;
+    case 'job.progress':
+      validateJobProgressMessage(value, field, violations);
+      return;
+    default:
+      violations.push(violation(`${field}.type`, "'user.deactivated' | 'user.role_changed' | 'job.progress'", JSON.stringify(value.type)));
+  }
+}
+
+export function validateUserDeactivatedMessage(value, field, violations) {
+  for (const key of ['type', 'userId', 'occurredAt']) {
+    if (!(key in value)) violations.push(violation(`${field}.${key}`, 'present (required)', 'missing'));
+  }
+  if ('userId' in value && typeof value.userId !== 'string') {
+    violations.push(violation(`${field}.userId`, 'string (uuid)', `type ${typeName(value.userId)}`));
+  }
+  if ('occurredAt' in value) validateUtcDateTime(value.occurredAt, `${field}.occurredAt`, violations);
+}
+
+export function validateUserRoleChangedMessage(value, field, violations) {
+  for (const key of ['type', 'userId', 'roles', 'occurredAt']) {
+    if (!(key in value)) violations.push(violation(`${field}.${key}`, 'present (required)', 'missing'));
+  }
+  if ('userId' in value && typeof value.userId !== 'string') {
+    violations.push(violation(`${field}.userId`, 'string (uuid)', `type ${typeName(value.userId)}`));
+  }
+  if ('roles' in value) {
+    if (!Array.isArray(value.roles)) {
+      violations.push(violation(`${field}.roles`, 'array of Role', `type ${typeName(value.roles)}`));
+    } else {
+      value.roles.forEach((r, i) => validateRole(r, `${field}.roles[${i}]`, violations));
+    }
+  }
+  if ('occurredAt' in value) validateUtcDateTime(value.occurredAt, `${field}.occurredAt`, violations);
+}
+
+export function validateJobProgressMessage(value, field, violations) {
+  for (const key of ['type', 'jobId', 'status', 'progress', 'occurredAt']) {
+    if (!(key in value)) violations.push(violation(`${field}.${key}`, 'present (required)', 'missing'));
+  }
+  if ('jobId' in value && typeof value.jobId !== 'string') {
+    violations.push(violation(`${field}.jobId`, 'string (uuid)', `type ${typeName(value.jobId)}`));
+  }
+  if ('status' in value && !['queued', 'running', 'succeeded', 'failed'].includes(value.status)) {
+    violations.push(violation(`${field}.status`, "'queued' | 'running' | 'succeeded' | 'failed'", JSON.stringify(value.status)));
+  }
+  if ('progress' in value) {
+    if (!Number.isInteger(value.progress) || value.progress < 0 || value.progress > 100) {
+      violations.push(violation(`${field}.progress`, 'integer 0-100', JSON.stringify(value.progress)));
+    }
+  }
+  if ('occurredAt' in value) validateUtcDateTime(value.occurredAt, `${field}.occurredAt`, violations);
+}
