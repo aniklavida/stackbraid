@@ -8,6 +8,10 @@ import { defineConfig, devices } from "@playwright/test";
  * the point is proving the flow works against each backend, not cross-
  * browser coverage, and no browser beyond what is already installed on
  * this machine is downloaded to run it.
+ *
+ * This project's `e2e/identity-flow.spec.ts` is a three-line wrapper around
+ * the shared test body in `../../e2e/identity-flow.ts` — see
+ * `../../e2e/README.md`.
  */
 export default defineConfig({
   testDir: "./e2e",

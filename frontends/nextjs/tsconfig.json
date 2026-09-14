@@ -21,7 +21,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@stackbraid/client-typescript": ["../../clients/typescript/src/generated/index.ts"],
-      "@stackbraid/client-typescript/*": ["../../clients/typescript/*"]
+      "@stackbraid/client-typescript/*": ["../../clients/typescript/*"],
+      "@playwright/test": ["./node_modules/@playwright/test"]
     }
   },
   "include": [
