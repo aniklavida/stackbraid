@@ -6,11 +6,11 @@ from it, never the other way round. See `docs/SPEC.md` for why this project
 is contract-first at all, and `docs/ARCHITECTURE.md` for where the contract
 sits relative to everything else.
 
-**Status:** the .NET backend (`backends/dotnet`) implements this contract and
-passes `contract/conformance` in full — see `backends/dotnet/README.md` for
-the real run. The Python backend does not exist yet. Read this file as the
-specification every backend is judged against, not as a description of any
-one backend's current behaviour.
+**Status:** both backends (`backends/dotnet`, `backends/python`) implement
+this contract and pass `contract/conformance` in full — see
+`backends/dotnet/README.md` and `backends/python/README.md` for the real
+runs. Read this file as the specification every backend is judged against,
+not as a description of any one backend's current behaviour.
 
 ## Changing it safely
 
@@ -132,10 +132,12 @@ python -m openapi_spec_validator contract/openapi.yaml
 The two Redocly warnings are deliberate, not overlooked:
 
 - `no-server-example.com` — the `servers` entry is `http://localhost:8080`
-  with a description stating plainly that no backend exists yet. Pointing it
-  at a real host would be a claim this repository doesn't get to make (see
-  the root `AGENTS.md` truthfulness rule); pointing it at nothing was worse
-  for anyone opening this file in a viewer.
+  with a description stating plainly that this is a local development
+  placeholder, not a hosted instance. This project ships as a skeleton a
+  user runs themselves, so there is no one canonical host to name here —
+  pointing at a real host would be a claim this repository doesn't get to
+  make (see the root `AGENTS.md` truthfulness rule); pointing it at nothing
+  was worse for anyone opening this file in a viewer.
 - `no-unused-components` on `RealtimeMessage` — it's referenced from
   `x-realtime-channels`, a vendor extension Redocly's usage-checker doesn't
   walk. It is not actually unused; it's exactly what §"Realtime shapes"

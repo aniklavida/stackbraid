@@ -5,13 +5,13 @@ backend on any database provider. It takes a base URL and nothing else — it
 has no knowledge of which backend is running.
 
 **Status:** the runner, every check, and a stub fixture that proves the
-checks actually fail (and fail for the right reasons) all exist, and the
-.NET backend (`backends/dotnet`) now passes this suite in full — 34 of 34
-checks, against a real Postgres database (see `backends/dotnet/README.md`
-for the run). The Python backend does not exist yet, so this suite has
-nothing to run against there. A clean run against `fixtures/stub-server/`
-alone is still evidence only that the suite works, never that a backend
-conforms — that claim now has a real backend and a real run behind it.
+checks actually fail (and fail for the right reasons) all exist, and both
+backends (`backends/dotnet`, `backends/python`) now pass this suite in
+full — 34 of 34 checks, unchanged between them, against a real Postgres
+database (see each backend's own README for the run). A clean run against
+`fixtures/stub-server/` alone is still evidence only that the suite works,
+never that a backend conforms — that claim now has two real backends and
+two real runs behind it.
 
 ## Usage
 

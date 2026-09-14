@@ -9,10 +9,10 @@ field, wrong timestamp format, wrong error shape, wrong pagination.
 **This is not, and must never be read as, a real backend.** It has no
 persistence, no permission enforcement, no localization, and skips whole
 classes of behaviour (rate limiting, most validation) the real .NET and
-Python backends will implement. A clean run of the conformance suite
-against this stub is evidence the *suite* works. It is not evidence any
-real backend conforms to anything — no backend exists yet (see
-`docs/SPEC.md`).
+Python backends implement. A clean run of the conformance suite against
+this stub is evidence the *suite* works, never a substitute for running it
+against a real backend — see `backends/dotnet/README.md` and
+`backends/python/README.md` for those actual runs.
 
 ## Running it
 

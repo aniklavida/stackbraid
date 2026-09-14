@@ -28,9 +28,12 @@ info:
 servers:
   - url: http://localhost:8080
     description: >-
-      Placeholder only — no backend exists yet (see `docs/SPEC.md`). Every
-      path below already carries `/v1/`, so the eventual real host needs no
-      version prefix of its own.
+      A local development placeholder, not a hosted instance — this project
+      ships as a skeleton a user runs themselves (see `docs/SPEC.md`), so
+      there is no one canonical host to name here. Both backends (.NET,
+      Python) run on whatever host and port a developer chooses. Every path
+      below already carries `/v1/`, so the real host needs no version
+      prefix of its own.
 
 externalDocs:
   description: Product specification

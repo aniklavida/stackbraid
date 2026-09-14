@@ -4,7 +4,7 @@
 
 StackBraid is a professional skeleton for building a real product. You choose your stack — backend, database, frontend, mobile — and get working, already-connected codebases with the plumbing a serious project needs already wired. You write business logic. Nothing else.
 
-> **Early implementation, no release yet.** The .NET backend's `Identity` feature is implemented and tested — register, log in, refresh, log out, manage users and roles, all proven against `contract/conformance` (see [`backends/dotnet/README.md`](backends/dotnet/README.md) for the real run). The Python backend, both frontends, Flutter, remaining database providers, and every "professional" capability in the table below are still planned. Every capability below is planned unless explicitly marked implemented.
+> **Early implementation, no release yet.** Both backends' `Identity` feature is implemented and tested — register, log in, refresh, log out, manage users and roles, all proven against `contract/conformance`, unchanged between the two (see [`backends/dotnet/README.md`](backends/dotnet/README.md) and [`backends/python/README.md`](backends/python/README.md) for the real runs). Both frontends, Flutter, remaining database providers, and every "professional" capability in the table below are still planned. Every capability below is planned unless explicitly marked implemented.
 
 ## The idea
 
