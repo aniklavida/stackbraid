@@ -1,0 +1,94 @@
+[project]
+name = "stackbraid-backend"
+version = "0.1.0"
+description = "StackBraid Identity backend — Python (FastAPI + SQLAlchemy + Postgres)."
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+  "fastapi>=0.115,<1.0",
+  "uvicorn[standard]>=0.32,<1.0",
+  "pydantic>=2.9,<3.0",
+  "pydantic-settings>=2.6,<3.0",
+  "sqlalchemy[asyncio]>=2.0,<3.0",
+  "asyncpg>=0.30,<1.0",
+  "alembic>=1.14,<2.0",
+  "pyjwt>=2.9,<3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9.0",
+  "pytest-asyncio>=0.24,<1.0",
+  "httpx>=0.27,<1.0",
+  "import-linter>=2.1,<3.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/app"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+testpaths = ["tests"]
+
+[tool.importlinter]
+root_package = "app"
+include_external_packages = true
+
+# 1. Shared never imports a feature — the plumbing folder must stay reusable.
+[[tool.importlinter.contracts]]
+name = "Shared never imports a feature"
+type = "forbidden"
+source_modules = ["app.shared"]
+forbidden_modules = ["app.features"]
+
+# 2. Identity's own layers, inner to outer. Domain depends on nothing of its
+#    own feature; application depends on domain; persistence and endpoints
+#    sit on the outside and must not be depended on by anything inward.
+[[tool.importlinter.contracts]]
+name = "Identity feature layers (domain -> application -> {persistence, endpoints})"
+type = "layers"
+layers = [
+  "app.features.identity.endpoints",
+  "app.features.identity.persistence",
+  "app.features.identity.application",
+  "app.features.identity.domain",
+]
+
+# 3. Domain depends on nothing at all outside the standard library — no
+#    Shared, no SQLAlchemy, no Pydantic. This is what makes a future
+#    MongoDB persistence layer able to reuse the same domain untouched.
+[[tool.importlinter.contracts]]
+name = "Identity domain depends on nothing"
+type = "forbidden"
+source_modules = ["app.features.identity.domain"]
+forbidden_modules = [
+  "app.shared",
+  "app.database",
+  "app.host",
+  "sqlalchemy",
+  "pydantic",
+  "fastapi",
+  "app.features.identity.application",
+  "app.features.identity.persistence",
+  "app.features.identity.contracts",
+  "app.features.identity.endpoints",
+]
+
+# 4. Contracts (DTOs/requests) are what another feature is allowed to see —
+#    they must not reach back into this feature's own internals.
+[[tool.importlinter.contracts]]
+name = "Identity contracts depend on nothing feature-internal"
+type = "forbidden"
+source_modules = ["app.features.identity.contracts"]
+forbidden_modules = [
+  "app.features.identity.domain",
+  "app.features.identity.application",
+  "app.features.identity.persistence",
+  "app.features.identity.endpoints",
+]
