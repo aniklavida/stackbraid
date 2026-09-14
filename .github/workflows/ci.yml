@@ -1,9 +1,9 @@
 name: CI
 
 # Build, test and lint for everything that exists today — the infra compose
-# file and the two generated clients. There is no backend, frontend or mobile app yet (see
-# AGENTS.md), so there is nothing else to build, test or lint. Contract
-# conformance is covered separately by conformance.yml.
+# file, the two generated clients, and both the .NET and Python backends
+# (see docs/ROADMAP.md step 3). There is no frontend or mobile app yet (see
+# AGENTS.md). Contract conformance is covered separately by conformance.yml.
 #
 # The client-drift job closes a known gap: the drift check previously ran
 # only through an opt-in local pre-commit hook
@@ -110,6 +110,132 @@ jobs:
 
       - name: Check generated clients for drift against the contract
         run: ./scripts/check-client-drift.sh
+
+  dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.100'
+
+      - name: Restore (locked mode — fails on any drift from packages.lock.json)
+        working-directory: backends/dotnet
+        run: dotnet restore StackBraid.sln --locked-mode
+
+      - name: Build
+        working-directory: backends/dotnet
+        run: dotnet build StackBraid.sln --no-restore --configuration Release
+
+      - name: Run unit and architecture tests
+        working-directory: backends/dotnet
+        run: |
+          dotnet test tests/Shared.UnitTests/StackBraid.Shared.UnitTests.csproj --no-restore --configuration Release
+          dotnet test tests/Features.Identity.UnitTests/StackBraid.Features.Identity.UnitTests.csproj --no-restore --configuration Release
+          dotnet test tests/ArchitectureTests/StackBraid.ArchitectureTests.csproj --no-restore --configuration Release
+
+  dotnet-integration:
+    runs-on: ubuntu-latest
+    # A real Postgres, via a GitHub Actions service container — not
+    # Testcontainers, not the repository's own start-local-postgres.sh
+    # (that script exists for a contributor's machine; CI already has a
+    # container engine, so a service container is the natural equivalent).
+    # Same image and tag as infra/compose.yaml, so what CI tests against
+    # matches what a real deployment runs.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stackbraid_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.100'
+
+      - name: Restore (locked mode — fails on any drift from packages.lock.json)
+        working-directory: backends/dotnet
+        run: dotnet restore StackBraid.sln --locked-mode
+
+      - name: Run integration tests against the service-container Postgres
+        working-directory: backends/dotnet
+        env:
+          STACKBRAID_TEST_POSTGRES_CONNECTION_STRING: "Host=localhost;Port=5432;Database=stackbraid_test;Username=postgres;Password=postgres"
+        run: dotnet test tests/Features.Identity.IntegrationTests/StackBraid.Features.Identity.IntegrationTests.csproj --no-restore --configuration Release
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies (locked — from the committed requirements-lock.txt)
+        working-directory: backends/python
+        run: uv pip install --system -r requirements-lock.txt
+
+      - name: Run unit tests
+        working-directory: backends/python
+        run: PYTHONPATH=src pytest tests/shared tests/features
+
+      - name: Run import-linter architecture contracts
+        working-directory: backends/python/src
+        run: lint-imports --config ../pyproject.toml
+
+  python-integration:
+    runs-on: ubuntu-latest
+    # Same reasoning as dotnet-integration above: a GitHub Actions service
+    # container standing in for the repository's own no-Docker
+    # scripts/start-local-postgres.sh, same image and tag as infra/compose.yaml.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stackbraid_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies (locked — from the committed requirements-lock.txt)
+        working-directory: backends/python
+        run: uv pip install --system -r requirements-lock.txt
+
+      - name: Run integration tests against the service-container Postgres
+        working-directory: backends/python
+        env:
+          STACKBRAID_POSTGRES_DSN: "postgresql+asyncpg://postgres:postgres@localhost:5432/stackbraid_test"
+        run: PYTHONPATH=src pytest tests/integration
 
   dependency-licences:
     runs-on: ubuntu-latest

@@ -5,10 +5,14 @@ on:
     branches: [main]
     paths:
       - 'contract/**'
+      - 'backends/dotnet/**'
+      - 'backends/python/**'
       - '.github/workflows/conformance.yml'
   pull_request:
     paths:
       - 'contract/**'
+      - 'backends/dotnet/**'
+      - 'backends/python/**'
       - '.github/workflows/conformance.yml'
   workflow_dispatch:
 
@@ -29,9 +33,130 @@ jobs:
         working-directory: contract/conformance
         run: |
           set -euo pipefail
-          echo "No backend exists yet (see docs/SPEC.md). This job runs the"
-          echo "conformance suite only against its own stub fixture — proving"
-          echo "the suite catches wrong types, missing fields, wrong timestamp"
-          echo "formats, wrong error shapes and wrong pagination — not that any"
-          echo "real backend conforms."
+          echo "This job runs the conformance suite only against its own stub"
+          echo "fixture — proving the suite catches wrong types, missing"
+          echo "fields, wrong timestamp formats, wrong error shapes and wrong"
+          echo "pagination — not that either real backend conforms. The jobs"
+          echo "below run the same suite against each real backend instead."
           npm run demo:violations
+
+  dotnet-conformance:
+    runs-on: ubuntu-latest
+    # Same image and tag as infra/compose.yaml; the default database name
+    # from the .NET backend's own appsettings.Development.json, so the
+    # backend starts with no configuration beyond what a contributor's own
+    # local Postgres already needs.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stackbraid
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.100'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Restore and build (locked mode — fails on any drift from packages.lock.json)
+        working-directory: backends/dotnet
+        run: |
+          dotnet restore StackBraid.sln --locked-mode
+          dotnet build StackBraid.sln --no-restore --configuration Release
+
+      - name: Start the backend against the service-container Postgres
+        working-directory: backends/dotnet
+        # ASPNETCORE_ENVIRONMENT defaults to Development for `dotnet run`
+        # (see Properties/launchSettings.json), which already points
+        # ConnectionStrings:Postgres at this same host/port/database and
+        # carries the fixed, publicly-known development JWT signing key
+        # documented in appsettings.Development.json and this project's
+        # README — only the access-token lifetime is shortened here, so the
+        # suite's expiry check exercises a real expiry instead of skipping it.
+        env:
+          Jwt__AccessTokenLifetimeSeconds: '5'
+        run: |
+          nohup dotnet run --no-restore --no-build --configuration Release --project src/Host --urls http://127.0.0.1:8080 > dotnet-backend.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8080/health/ready > /dev/null 2>&1; then exit 0; fi
+            sleep 1
+          done
+          echo "Backend did not become ready in time:"; cat dotnet-backend.log; exit 1
+
+      - name: Run contract/conformance against the .NET backend
+        working-directory: contract/conformance
+        env:
+          CONFORMANCE_ADMIN_EMAIL: admin@stackbraid.local
+          CONFORMANCE_ADMIN_PASSWORD: ChangeMe!123
+        run: node cli/run.mjs http://127.0.0.1:8080
+
+  python-conformance:
+    runs-on: ubuntu-latest
+    # Same image, tag and database name as the dotnet-conformance job above.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: stackbraid_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies (locked — from the committed requirements-lock.txt)
+        working-directory: backends/python
+        run: uv pip install --system -r requirements-lock.txt
+
+      - name: Start the backend against the service-container Postgres
+        working-directory: backends/python
+        env:
+          STACKBRAID_POSTGRES_DSN: "postgresql+asyncpg://postgres:postgres@localhost:5432/stackbraid_test"
+          # A short-lived access token so the suite's expiry check exercises
+          # a real expiry instead of skipping it — same technique as this
+          # backend's own README section on running the conformance suite.
+          STACKBRAID_JWT_ACCESS_TOKEN_LIFETIME_SECONDS: '5'
+        run: |
+          nohup env PYTHONPATH=src uvicorn app.host.main:app --host 127.0.0.1 --port 8080 > python-backend.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8080/health/ready > /dev/null 2>&1; then exit 0; fi
+            sleep 1
+          done
+          echo "Backend did not become ready in time:"; cat python-backend.log; exit 1
+
+      - name: Run contract/conformance against the Python backend
+        working-directory: contract/conformance
+        env:
+          CONFORMANCE_ADMIN_EMAIL: admin@stackbraid.local
+          CONFORMANCE_ADMIN_PASSWORD: ChangeMe!123
+        run: node cli/run.mjs http://127.0.0.1:8080
