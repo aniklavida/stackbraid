@@ -4,7 +4,7 @@
 
 StackBraid is a professional skeleton for building a real product. You choose your stack — backend, database, frontend, mobile — and get working, already-connected codebases with the plumbing a serious project needs already wired. You write business logic. Nothing else.
 
-> **Early implementation, no release yet.** Both backends' `Identity` feature is implemented and tested — register, log in, refresh, log out, manage users and roles, all proven against `contract/conformance`, unchanged between the two (see [`backends/dotnet/README.md`](backends/dotnet/README.md) and [`backends/python/README.md`](backends/python/README.md) for the real runs). Both frontends, Flutter, remaining database providers, and every "professional" capability in the table below are still planned. Every capability below is planned unless explicitly marked implemented.
+> **Early implementation, no release yet.** Both backends' `Identity` feature is implemented and tested — register, log in, refresh, log out, manage users and roles, all proven against `contract/conformance`, unchanged between the two (see [`backends/dotnet/README.md`](backends/dotnet/README.md) and [`backends/python/README.md`](backends/python/README.md) for the real runs). The Next.js frontend's web and admin shells are implemented and verified end-to-end against both backends unchanged (see [`frontends/nextjs/README.md`](frontends/nextjs/README.md)). The Angular frontend, Flutter, remaining database providers, and every "professional" capability in the table below are still planned. Every capability below is planned unless explicitly marked implemented.
 
 ## The idea
 
@@ -60,6 +60,10 @@ A skeleton's real failure mode is people abandoning its conventions — month th
 | `Microsoft.EntityFrameworkCore` (.NET backend) | MIT | compiled into user code |
 | `Npgsql.EntityFrameworkCore.PostgreSQL` (.NET backend, `Database/Postgres` only) | PostgreSQL Licence (permissive) | compiled into user code |
 | `xunit`, `Shouldly`, `NSubstitute` (.NET backend, test-only) | Apache-2.0 / BSD-3-Clause | build-tooling |
+| `next`, `react`, `react-dom` (Next.js frontend) | MIT | compiled into user code |
+| `@tanstack/react-query`, `next-intl` (Next.js frontend) | MIT | compiled into user code |
+| `radix-ui`, `cn`, `class-variance-authority` (Next.js frontend, shadcn/ui) | MIT | compiled into user code |
+| `vitest`, `@playwright/test`, `dependency-cruiser` (Next.js frontend, test/architecture-only) | MIT | build-tooling |
 | `postgres:16-alpine` | PostgreSQL Licence | separate process |
 | `rabbitmq:3.13-management-alpine` | MPL-2.0 | separate process |
 | `redis:7.2-alpine` | BSD-3-Clause | separate process |

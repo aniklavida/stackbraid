@@ -138,6 +138,26 @@ if (existsSync(npmLockPath)) {
   warn('clients/typescript/package-lock.json not found — skipping npm check.');
 }
 
+// --- npm: frontends/nextjs -------------------------------------------------
+// `@stackbraid/client-typescript` is this repository's own generated client,
+// linked in via `file:../../clients/typescript` — a workspace path, not a
+// third-party package, so it carries no licence entry of its own and is
+// skipped here the same way a .NET in-solution `ProjectReference` is below.
+const nextjsLockPath = p('frontends', 'nextjs', 'package-lock.json');
+if (existsSync(nextjsLockPath)) {
+  const lock = JSON.parse(readFileSync(nextjsLockPath, 'utf8'));
+  const resolved = [];
+  for (const [pkgPath, meta] of Object.entries(lock.packages || {})) {
+    if (pkgPath === '') continue;
+    const name = meta.name || pkgPath.split('node_modules/').pop();
+    if (name === '@stackbraid/client-typescript') continue;
+    resolved.push({ name, version: meta.version });
+  }
+  checkResolved('npm-nextjs-frontend', resolved, { sourceLabel: 'frontends/nextjs/package-lock.json' });
+} else {
+  warn('frontends/nextjs/package-lock.json not found — skipping Next.js frontend npm check.');
+}
+
 // --- Dart: clients/dart ---------------------------------------------------
 const pubspecLockPath = p('clients', 'dart', 'pubspec.lock');
 if (existsSync(pubspecLockPath)) {

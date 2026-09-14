@@ -13,7 +13,7 @@ Anything reciprocal-for-consumers — **RPL, SSPL, RSAL, BSL, or a revenue-gated
 
 This document is the narrative record. The machine-readable source of truth is `docs/dependency-inventory.json`, checked on every push by `scripts/check-dependency-licenses.mjs` (see "The CI gate" below). **A licence recorded from memory is not an audit** — every entry below was verified against the actual package's registry metadata or licence file on the date given, not carried forward from an earlier audit's notes.
 
-**Truthfulness note:** both backends' Identity feature are implemented and conformance-tested (see `docs/ROADMAP.md` step 3); no frontend or mobile app exists yet. This inventory covers exactly what is genuinely shipped today — the two generated API clients, the infrastructure compose stack, the tooling CI installs, and both backends' own resolved dependency graphs. It will grow, stack by stack, as each is actually built. Nothing below pre-audits code that does not exist.
+**Truthfulness note:** both backends' Identity feature are implemented and conformance-tested (see `docs/ROADMAP.md` step 3); the Next.js frontend's web and admin shells are implemented and verified against both backends (see its own README). The Angular frontend and the Flutter mobile app do not exist yet. This inventory covers exactly what is genuinely shipped today. It will grow, stack by stack, as each is actually built. Nothing below pre-audits code that does not exist.
 
 Last verified: **2026-09-14**.
 
@@ -154,6 +154,65 @@ dependency-free default (an in-process `asyncio.Queue`, a hand-written PDF
 writer, RFC 4180 CSV, and an in-process TTL cache) — the same pattern the
 .NET backend's `Shared` layer already established. They enter this document,
 with a verified date, the same day they enter `pyproject.toml`.
+
+## Next.js frontend — `frontends/nextjs/`
+
+`frontends/nextjs/package-lock.json` is the exact resolved graph, read by
+`scripts/check-dependency-licenses.mjs` under the `npm-nextjs-frontend`
+ecosystem (915 entries in `docs/dependency-inventory.json` — by far the
+largest single ecosystem here, because a full framework's own transitive
+tree dwarfs a single generated API client's). `@stackbraid/client-typescript`
+itself (linked in via `file:../../clients/typescript`, this repository's own
+generated client — see above) is excluded from the count: it is a workspace
+path, not a third-party package, and carries no licence entry of its own.
+
+**Compiled into the shipped app** (top-level `dependencies` in `package.json`):
+
+| Package | Licence |
+|---|---|
+| `next`, `react`, `react-dom` | MIT |
+| `@tanstack/react-query` | MIT |
+| `next-intl` | MIT |
+| `radix-ui` (shadcn/ui's underlying primitives), `class-variance-authority`, `cn` (shadcn/ui's own class-merge helper, not the general-purpose npm package of the same name from a different author — verified against `shadcn-ui/cn`'s own repository), `lucide-react`, `next-themes`, `sonner`, `tw-animate-css` | MIT |
+
+All top-level runtime dependencies are MIT. The full transitive closure —
+including React's own dependency-free runtime, Radix UI's per-primitive
+packages, and Tailwind's CSS engine pulled in through the PostCSS plugin —
+is MIT, Apache-2.0, BSD-2/3-Clause or ISC, with one documented exception:
+
+**Flagged for Anik, not decided — `sharp` and its bundled `@img/sharp-libvips-*` binaries.**
+`sharp` is not something this project asked for: it is an *optional*
+dependency `next` itself declares (image optimization for `next/image`),
+and npm installs a matching platform build by default. This app never
+calls `next/image` anywhere in `src/`, so it is present but genuinely
+unused. `sharp` itself is Apache-2.0; the native `libvips` binary it bundles
+per-platform (`@img/sharp-libvips-*`) is **LGPL-3.0-or-later** — not on the
+rejected-regardless-of-class list (RPL/SSPL/RSAL/BSL/Commons-Clause/
+revenue-gated), but also not MIT/Apache/BSD, so it does not clear the
+compiled-into-user-code bar by the letter of the rule either. It is recorded
+in the inventory as `separate-process` (a native addon invoked in-process
+through Node's N-API, never statically linked into the JavaScript bundle
+served to a browser or into the Node server bundle itself) rather than
+silently passed through as compliant — the same honest treatment the Redis
+Valkey question already received below. Removing it outright risks taking
+`@next/swc-*`/`@parcel/watcher-*` down with it (also `optionalDependencies`,
+but genuinely required for the build on any given platform, unlike `sharp`);
+the safer fix, if one is wanted, is a scoped `overrides` entry or dropping
+`next/image` support from the skeleton's own documentation. Anik's call.
+
+**Build/test tooling** (`devDependencies` — never bundled into anything shipped
+to a browser or a deployed server): `typescript`, `tailwindcss` (+ `@tailwindcss/postcss`),
+`eslint` (+ `eslint-config-next`), `shadcn` (the component-registry CLI, used only to
+add components at development time), `vitest` (+ `@vitejs/plugin-react`, `jsdom`),
+`@testing-library/react` (+ `@testing-library/dom`), `@playwright/test`,
+`dependency-cruiser`, and `@types/*`. Two MPL-2.0 packages appear here
+(`lightningcss`, Tailwind v4's CSS parser, and `axe-core`, pulled in
+transitively by the Playwright/testing toolchain) — both run only at build
+or test time, never linked into or redistributed with the deployed app,
+which is exactly the basis `build-tooling` already applies to elsewhere in
+this document (RabbitMQ's MPL-2.0 licence, audited below under
+infrastructure, is the same licence family accepted there for the same
+reason: it never reaches a consumer's own code).
 
 ## Infrastructure — `infra/compose.yaml`
 
