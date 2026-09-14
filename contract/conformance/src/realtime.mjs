@@ -5,12 +5,16 @@
 // still takes one positional argument (a base URL) and nothing else, the
 // same rule the rest of the runner follows (see `contract/README.md`).
 //
-// Node's built-in `WebSocket` is enough — no `ws` package, no SignalR
-// client library. SignalR's own wire format (the JSON Hub Protocol) is a
-// handful of JSON objects separated by the ASCII record separator
-// (`\x1e`), documented and stable; hand-rolling the handshake and the one
-// message shape this suite needs keeps the suite's own zero-runtime-
-// dependency rule intact for its realtime coverage too.
+// Uses this package's own `ws-client.mjs` (a minimal, hand-rolled RFC 6455
+// client — no `ws` package; see that file for why Node's global
+// `WebSocket` cannot be relied on at package.json's own declared engine
+// floor). SignalR's own wire format (the JSON Hub Protocol) is a handful
+// of JSON objects separated by the ASCII record separator (`\x1e`),
+// documented and stable; hand-rolling the handshake and the one message
+// shape this suite needs keeps the suite's own zero-runtime-dependency
+// rule intact for its realtime coverage too.
+
+import { MinimalWebSocket } from './ws-client.mjs';
 
 const RECORD_SEPARATOR = '\x1e';
 const OPEN_TIMEOUT_MS = 4_000;
@@ -24,7 +28,7 @@ function toWsUrl(baseUrl, path, accessToken) {
 
 function openSocket(url) {
   return new Promise((resolve, reject) => {
-    const ws = new WebSocket(url);
+    const ws = new MinimalWebSocket(url);
     const timer = setTimeout(() => {
       cleanup();
       try {
@@ -37,25 +41,25 @@ function openSocket(url) {
 
     function cleanup() {
       clearTimeout(timer);
-      ws.removeEventListener('open', onOpen);
-      ws.removeEventListener('error', onError);
-      ws.removeEventListener('close', onClose);
+      ws.off('open', onOpen);
+      ws.off('error', onError);
+      ws.off('close', onClose);
     }
     function onOpen() {
       cleanup();
       resolve(ws);
     }
-    function onError() {
+    function onError(err) {
       cleanup();
-      reject(new Error(`could not open ${url}`));
+      reject(err instanceof Error ? err : new Error(`could not open ${url}`));
     }
-    function onClose(event) {
+    function onClose() {
       cleanup();
-      reject(new Error(`closed before opening ${url} (code ${event.code})`));
+      reject(new Error(`closed before opening ${url}`));
     }
-    ws.addEventListener('open', onOpen);
-    ws.addEventListener('error', onError);
-    ws.addEventListener('close', onClose);
+    ws.on('open', onOpen);
+    ws.on('error', onError);
+    ws.on('close', onClose);
   });
 }
 
@@ -63,22 +67,21 @@ function performSignalRHandshake(ws) {
   ws.send(JSON.stringify({ protocol: 'json', version: 1 }) + RECORD_SEPARATOR);
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
-      ws.removeEventListener('message', onMessage);
+      ws.off('message', onMessage);
       reject(new Error('SignalR handshake timed out'));
     }, OPEN_TIMEOUT_MS);
 
-    function onMessage(event) {
-      const text = typeof event.data === 'string' ? event.data : event.data.toString();
+    function onMessage(text) {
       const idx = text.indexOf(RECORD_SEPARATOR);
       if (idx === -1) return;
       clearTimeout(timer);
-      ws.removeEventListener('message', onMessage);
+      ws.off('message', onMessage);
       const raw = text.slice(0, idx);
       const parsed = raw.length ? JSON.parse(raw) : {};
       if (parsed.error) reject(new Error(`SignalR handshake rejected: ${parsed.error}`));
       else resolve();
     }
-    ws.addEventListener('message', onMessage);
+    ws.on('message', onMessage);
   });
 }
 
@@ -113,8 +116,7 @@ export async function connectRealtimeChannel(httpBaseUrl, channel, accessToken, 
     else messageQueue.push(payload);
   }
 
-  ws.addEventListener('message', (event) => {
-    const text = typeof event.data === 'string' ? event.data : event.data.toString();
+  ws.on('message', (text) => {
     if (transport === 'signalr') {
       buffer += text;
       let idx;
