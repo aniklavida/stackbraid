@@ -9,11 +9,18 @@ from uuid import UUID
 
 from app.features.identity.application.mapping import user_to_dto
 from app.features.identity.contracts.dtos import UserDto
+from app.features.identity.domain.entities import Role, UserStatus
 from app.features.identity.domain.repositories import RoleRepository, UserRepository
 from app.features.identity.domain.value_objects import Email
 from app.shared.persistence.unit_of_work import UnitOfWork
+from app.shared.realtime.messages import RoleSummary, UserDeactivatedMessage, UserRoleChangedMessage
+from app.shared.realtime.publisher import RealtimePublisher
 from app.shared.web.errors import AppError
 from app.shared.web.result import Result
+
+
+def _role_to_summary(role: Role) -> RoleSummary:
+    return RoleSummary(id=role.id, name=role.name, description=role.description, permissions=list(role.permissions))
 
 
 def _utc_now() -> datetime:
@@ -66,19 +73,27 @@ class DeactivateUserCommand:
     """Idempotent — deactivating an already-inactive user returns the
     current state, not an error."""
 
-    def __init__(self, users: UserRepository, unit_of_work: UnitOfWork) -> None:
+    def __init__(self, users: UserRepository, unit_of_work: UnitOfWork, realtime: RealtimePublisher) -> None:
         self._users = users
         self._unit_of_work = unit_of_work
+        self._realtime = realtime
 
     async def handle(self, user_id: UUID) -> Result[UserDto]:
         user = await self._users.get_by_id(user_id)
         if user is None:
             return Result.failure(_user_not_found())
 
+        was_already_inactive = user.status == UserStatus.INACTIVE
         user.deactivate(_utc_now())
         user.updated_at = _utc_now()
         await self._users.save_changes(user)
         await self._unit_of_work.commit()
+
+        # Idempotent per the class summary above — only a real transition notifies.
+        if not was_already_inactive:
+            await self._realtime.publish_to_user(
+                user.id, UserDeactivatedMessage(user_id=user.id, occurred_at=_utc_now())
+            )
 
         return Result.success(user_to_dto(user))
 
@@ -87,10 +102,11 @@ class AssignRoleCommand:
     """No-op if the user already holds the role — ``User.assign_role`` owns
     that invariant."""
 
-    def __init__(self, users: UserRepository, roles: RoleRepository, unit_of_work: UnitOfWork) -> None:
+    def __init__(self, users: UserRepository, roles: RoleRepository, unit_of_work: UnitOfWork, realtime: RealtimePublisher) -> None:
         self._users = users
         self._roles = roles
         self._unit_of_work = unit_of_work
+        self._realtime = realtime
 
     async def handle(self, user_id: UUID, role_id: UUID) -> Result[UserDto]:
         user = await self._users.get_by_id(user_id)
@@ -106,6 +122,15 @@ class AssignRoleCommand:
         await self._users.save_changes(user)
         await self._unit_of_work.commit()
 
+        await self._realtime.publish_to_user(
+            user.id,
+            UserRoleChangedMessage(
+                user_id=user.id,
+                roles=[_role_to_summary(r) for r in user.roles],
+                occurred_at=_utc_now(),
+            ),
+        )
+
         return Result.success(user_to_dto(user))
 
 
@@ -115,10 +140,11 @@ class RevokeRoleCommand:
     The user or the role not existing at all is the only 404 case.
     """
 
-    def __init__(self, users: UserRepository, roles: RoleRepository, unit_of_work: UnitOfWork) -> None:
+    def __init__(self, users: UserRepository, roles: RoleRepository, unit_of_work: UnitOfWork, realtime: RealtimePublisher) -> None:
         self._users = users
         self._roles = roles
         self._unit_of_work = unit_of_work
+        self._realtime = realtime
 
     async def handle(self, user_id: UUID, role_id: UUID) -> Result[None]:
         user = await self._users.get_by_id(user_id)
@@ -133,5 +159,14 @@ class RevokeRoleCommand:
         user.updated_at = _utc_now()
         await self._users.save_changes(user)
         await self._unit_of_work.commit()
+
+        await self._realtime.publish_to_user(
+            user.id,
+            UserRoleChangedMessage(
+                user_id=user.id,
+                roles=[_role_to_summary(r) for r in user.roles],
+                occurred_at=_utc_now(),
+            ),
+        )
 
         return Result.success(None)

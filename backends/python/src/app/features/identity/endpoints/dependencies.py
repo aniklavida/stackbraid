@@ -36,6 +36,7 @@ from app.features.identity.persistence.repositories import (
 )
 from app.shared.localization.localizer import AppLocalizer
 from app.shared.persistence.unit_of_work import SqlAlchemyUnitOfWork, UnitOfWork
+from app.shared.realtime.publisher import RealtimePublisher
 from app.shared.security.password_hasher import PasswordHasher
 
 
@@ -71,6 +72,10 @@ def get_password_hasher(request: Request) -> PasswordHasher:
 
 def get_access_token_issuer(request: Request) -> AccessTokenIssuer:
     return request.app.state.access_token_issuer  # type: ignore[no-any-return]
+
+
+def get_realtime_publisher(request: Request) -> RealtimePublisher:
+    return request.app.state.realtime_publisher  # type: ignore[no-any-return]
 
 
 def get_register_user_command(
@@ -117,24 +122,27 @@ def get_update_user_command(
 def get_deactivate_user_command(
     users: SqlAlchemyUserRepository = Depends(get_user_repository),
     unit_of_work: UnitOfWork = Depends(get_unit_of_work),
+    realtime: RealtimePublisher = Depends(get_realtime_publisher),
 ) -> DeactivateUserCommand:
-    return DeactivateUserCommand(users, unit_of_work)
+    return DeactivateUserCommand(users, unit_of_work, realtime)
 
 
 def get_assign_role_command(
     users: SqlAlchemyUserRepository = Depends(get_user_repository),
     roles: SqlAlchemyRoleRepository = Depends(get_role_repository),
     unit_of_work: UnitOfWork = Depends(get_unit_of_work),
+    realtime: RealtimePublisher = Depends(get_realtime_publisher),
 ) -> AssignRoleCommand:
-    return AssignRoleCommand(users, roles, unit_of_work)
+    return AssignRoleCommand(users, roles, unit_of_work, realtime)
 
 
 def get_revoke_role_command(
     users: SqlAlchemyUserRepository = Depends(get_user_repository),
     roles: SqlAlchemyRoleRepository = Depends(get_role_repository),
     unit_of_work: UnitOfWork = Depends(get_unit_of_work),
+    realtime: RealtimePublisher = Depends(get_realtime_publisher),
 ) -> RevokeRoleCommand:
-    return RevokeRoleCommand(users, roles, unit_of_work)
+    return RevokeRoleCommand(users, roles, unit_of_work, realtime)
 
 
 def get_get_user_query(users: SqlAlchemyUserRepository = Depends(get_user_repository)) -> GetUserQuery:

@@ -6,6 +6,7 @@ by any feature; everything here imports features.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import subprocess
 import sys
 from contextlib import asynccontextmanager
@@ -28,9 +29,11 @@ from app.features.identity.endpoints.security import (
 )
 from app.features.identity.endpoints.router import router as identity_router
 from app.host.config import Settings
+from app.shared.jobs.scheduler import InProcessJobScheduler
 from app.shared.localization.localizer import JsonAppLocalizer
 from app.shared.observability.logging_setup import configure_logging
 from app.shared.observability.tracing import configure_opentelemetry, instrument_app
+from app.shared.realtime.publisher import ConnectionRegistry, InProcessRealtimePublisher, RedisRealtimePublisher
 from app.shared.security.password_hasher import Pbkdf2PasswordHasher
 from app.shared.web.correlation import CorrelationIdMiddleware
 from app.shared.web.exception_handling import register_exception_handlers
@@ -80,6 +83,28 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.access_token_issuer = JwtAccessTokenIssuer(app.state.jwt_options)
         app.state.auth_rate_limiter = FixedWindowRateLimiter(permit_limit=settings.auth_rate_limit_permits_per_minute)
 
+        # Realtime: a ConnectionRegistry always holds this process's own
+        # WebSocket connections. A Redis (or Valkey) URL layers a backplane
+        # underneath so a message published on one instance reaches a
+        # client connected to another; left unset, publishing still
+        # delivers to every client connected to *this* process — correct
+        # for one instance, and needs nothing running.
+        app.state.realtime_registry = ConnectionRegistry()
+        background_tasks: list[asyncio.Task] = []
+        redis_client = None
+        if settings.realtime_redis_url:
+            from redis.asyncio import from_url as redis_from_url
+
+            redis_client = redis_from_url(settings.realtime_redis_url)
+            realtime_publisher = RedisRealtimePublisher(redis_client, app.state.realtime_registry)
+            background_tasks.append(asyncio.create_task(realtime_publisher.subscribe_forever()))
+            app.state.realtime_publisher = realtime_publisher
+        else:
+            app.state.realtime_publisher = InProcessRealtimePublisher(app.state.realtime_registry)
+
+        app.state.job_scheduler = InProcessJobScheduler()
+        background_tasks.append(asyncio.create_task(app.state.job_scheduler.run_forever()))
+
         if settings.run_migrations_on_startup:
             await asyncio.to_thread(_run_migrations, settings.postgres_dsn)
 
@@ -88,6 +113,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
         yield
 
+        for task in background_tasks:
+            task.cancel()
+        for task in background_tasks:
+            with contextlib.suppress(asyncio.CancelledError):
+                await task
+        if redis_client is not None:
+            await redis_client.aclose()
         await engine.dispose()
 
     app = FastAPI(title="StackBraid Identity API", version="1.0.0", lifespan=lifespan)

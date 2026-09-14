@@ -23,6 +23,13 @@ class Settings(BaseSettings):
 
     auth_rate_limit_permits_per_minute: int = 100
 
+    # Left empty by default — the realtime layer delivers to clients
+    # connected to *this* process with no backplane at all, correct for
+    # one instance. Set to a Redis (or Valkey — both speak the same wire
+    # protocol) connection URL, e.g. "redis://127.0.0.1:6379", to fan a
+    # message out to every instance behind the same one.
+    realtime_redis_url: str = ""
+
     run_migrations_on_startup: bool = True
     seed_on_startup: bool = True
 

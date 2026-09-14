@@ -13,6 +13,7 @@ from app.features.identity.application.abstractions import IssuedAccessToken
 from app.features.identity.domain.entities import RefreshToken, Role, User
 from app.features.identity.domain.repositories import UserSearchQuery, UserSearchResult
 from app.features.identity.domain.value_objects import Email
+from app.shared.realtime.messages import RealtimeMessage
 from app.shared.security.password_hasher import Pbkdf2PasswordHasher
 
 
@@ -86,3 +87,19 @@ class FakeAccessTokenIssuer:
 
 def fake_password_hasher() -> Pbkdf2PasswordHasher:
     return Pbkdf2PasswordHasher()
+
+
+class FakeRealtimePublisher:
+    """Records every message published instead of delivering it anywhere —
+    a command-handler test asserts against `.to_user`/`.to_job`, the same
+    way it asserts against a fake repository's own in-memory state."""
+
+    def __init__(self) -> None:
+        self.to_user: list[tuple[UUID, RealtimeMessage]] = []
+        self.to_job: list[tuple[UUID, RealtimeMessage]] = []
+
+    async def publish_to_user(self, user_id: UUID, message: RealtimeMessage) -> None:
+        self.to_user.append((user_id, message))
+
+    async def publish_to_job(self, job_id: UUID, message: RealtimeMessage) -> None:
+        self.to_job.append((job_id, message))
