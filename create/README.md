@@ -49,8 +49,6 @@ wrapper around the same logic is planned for v1.0 (see
 - `docker compose up` has not been run for any combination — the picker's
   output has only been verified by starting the backend natively against a
   throwaway local Postgres cluster, for one combination per backend.
-- The shared Playwright end-to-end suite (`e2e/`) is not copied into
-  generated projects yet; a frontend's own unit and architecture tests are.
 - Dependency lockfiles are copied as committed, not re-audited per project;
   a generated project inherits this repository's own licence audit as of
   the commit it was generated from.

@@ -171,12 +171,21 @@ export function generate(repoRoot, choices, targetDir) {
       path.join(repoRoot, 'frontends', choices.frontend),
       path.join(targetDir, 'frontends', choices.frontend),
       {
-        skip: (rel) => isReadme(rel) || rel === 'e2e',
+        skip: isReadme,
         forbidden,
         stats,
       },
     );
     copyTree(path.join(repoRoot, 'clients/typescript'), path.join(targetDir, 'clients/typescript'), {
+      skip: isReadme,
+      forbidden,
+      stats,
+    });
+    // The shared end-to-end identity spec both frontends' own
+    // `e2e/identity-flow.spec.ts` import via a relative path
+    // (`../../../e2e/identity-flow`) — copying it at the same relative
+    // depth keeps that import working unchanged in the generated project.
+    copyTree(path.join(repoRoot, 'e2e'), path.join(targetDir, 'e2e'), {
       skip: isReadme,
       forbidden,
       stats,
