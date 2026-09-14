@@ -1,6 +1,7 @@
 using StackBraid.Features.Identity.Contracts.Dtos;
 using StackBraid.Features.Identity.Domain.Entities;
 using StackBraid.Features.Identity.Domain.Repositories;
+using StackBraid.Shared.Realtime;
 
 namespace StackBraid.Features.Identity.Application.Mapping;
 
@@ -15,6 +16,18 @@ namespace StackBraid.Features.Identity.Application.Mapping;
 public static class EntityMappingExtensions
 {
     public static RoleDto ToDto(this Role role) => new(
+        role.Id,
+        role.Name,
+        role.Description,
+        role.Permissions.ToList());
+
+    /// <summary>
+    /// Same fields as <see cref="ToDto(Role)"/>, kept separate because
+    /// <see cref="RealtimeRoleSummary"/> lives in <c>Shared</c> — a
+    /// realtime message must serialize on its own, with no dependency on
+    /// this feature's own DTOs.
+    /// </summary>
+    public static RealtimeRoleSummary ToRealtimeSummary(this Role role) => new(
         role.Id,
         role.Name,
         role.Description,

@@ -5,6 +5,7 @@ using StackBraid.Features.Identity.Domain.Entities;
 using StackBraid.Features.Identity.Domain.Repositories;
 using StackBraid.Features.Identity.Domain.ValueObjects;
 using StackBraid.Shared.Persistence;
+using StackBraid.Shared.Realtime;
 
 namespace StackBraid.Features.Identity.UnitTests.Application;
 
@@ -13,11 +14,12 @@ public class RevokeRoleCommandHandlerTests
     private readonly IUserRepository _users = Substitute.For<IUserRepository>();
     private readonly IRoleRepository _roles = Substitute.For<IRoleRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
+    private readonly IRealtimePublisher _realtime = Substitute.For<IRealtimePublisher>();
     private readonly RevokeRoleCommandHandler _sut;
 
     public RevokeRoleCommandHandlerTests()
     {
-        _sut = new RevokeRoleCommandHandler(_users, _roles, _unitOfWork);
+        _sut = new RevokeRoleCommandHandler(_users, _roles, _unitOfWork, _realtime);
     }
 
     [Fact]
@@ -33,6 +35,10 @@ public class RevokeRoleCommandHandlerTests
 
         result.IsSuccess.ShouldBeTrue();
         user.HasRole(role.Id).ShouldBeFalse();
+        await _realtime.Received(1).PublishToUserAsync(
+            user.Id,
+            Arg.Is<RealtimeMessage>(m => m.GetType() == typeof(UserRoleChangedMessage) && ((UserRoleChangedMessage)m).Roles.All(r => r.Id != role.Id)),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]

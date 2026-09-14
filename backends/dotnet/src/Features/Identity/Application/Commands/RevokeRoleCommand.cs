@@ -1,6 +1,8 @@
 using Mediator;
+using StackBraid.Features.Identity.Application.Mapping;
 using StackBraid.Features.Identity.Domain.Repositories;
 using StackBraid.Shared.Persistence;
+using StackBraid.Shared.Realtime;
 using StackBraid.Shared.Web;
 
 namespace StackBraid.Features.Identity.Application.Commands;
@@ -17,12 +19,14 @@ public sealed class RevokeRoleCommandHandler : ICommandHandler<RevokeRoleCommand
     private readonly IUserRepository _users;
     private readonly IRoleRepository _roles;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IRealtimePublisher _realtime;
 
-    public RevokeRoleCommandHandler(IUserRepository users, IRoleRepository roles, IUnitOfWork unitOfWork)
+    public RevokeRoleCommandHandler(IUserRepository users, IRoleRepository roles, IUnitOfWork unitOfWork, IRealtimePublisher realtime)
     {
         _users = users;
         _roles = roles;
         _unitOfWork = unitOfWork;
+        _realtime = realtime;
     }
 
     public async ValueTask<Result> Handle(RevokeRoleCommand command, CancellationToken cancellationToken)
@@ -41,6 +45,12 @@ public sealed class RevokeRoleCommandHandler : ICommandHandler<RevokeRoleCommand
 
         user.RevokeRole(command.RoleId, DateTime.UtcNow);
         await _unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        var occurredAt = DateTime.UtcNow;
+        await _realtime.PublishToUserAsync(
+            user.Id,
+            new UserRoleChangedMessage(user.Id, user.Roles.Select(r => r.ToRealtimeSummary()).ToList(), occurredAt),
+            cancellationToken).ConfigureAwait(false);
 
         return Result.Success();
     }

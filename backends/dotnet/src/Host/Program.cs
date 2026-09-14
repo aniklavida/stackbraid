@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -6,8 +7,10 @@ using StackBraid.Features.Identity.Application.Abstractions;
 using StackBraid.Features.Identity.Endpoints;
 using StackBraid.Host.HealthChecks;
 using StackBraid.Host.Observability;
+using StackBraid.Host.Realtime;
 using StackBraid.Host.Security;
 using StackBraid.Shared;
+using StackBraid.Shared.Realtime;
 using StackBraid.Shared.Web;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -71,10 +74,43 @@ builder.Services
         {
             OnChallenge = JwtProblemDetailsEvents.OnChallengeAsync,
             OnForbidden = JwtProblemDetailsEvents.OnForbiddenAsync,
+            // A browser's WebSocket handshake carries no custom headers, so
+            // a SignalR client authenticates with `?access_token=` instead
+            // of an Authorization header — restricted to the hub paths
+            // themselves, never accepted on an ordinary REST request.
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(accessToken) && context.HttpContext.Request.Path.StartsWithSegments("/v1/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            },
         };
     });
 
 builder.Services.AddAuthorization();
+
+// A connection string here is opt-in — SignalR delivers to every client
+// connected to *this* process with no backplane at all, correct for one
+// instance. Configuring Realtime:BackplaneConnectionString layers a Redis
+// (or Valkey — both speak the same wire protocol; which one deploys is not
+// decided by this code) backplane underneath via SignalR's own
+// AddStackExchangeRedis, so a message published by one instance reaches a
+// client connected to another. IRealtimePublisher callers never know which
+// mode is active.
+var realtimeBackplane = builder.Configuration["Realtime:BackplaneConnectionString"];
+var signalRBuilder = builder.Services
+    .AddSignalR()
+    .AddJsonProtocol(options => options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
+if (!string.IsNullOrWhiteSpace(realtimeBackplane))
+{
+    signalRBuilder.AddStackExchangeRedis(realtimeBackplane);
+}
+
+builder.Services.AddSingleton<IRealtimePublisher, SignalRRealtimePublisher>();
 
 builder.Services.AddHealthChecks()
     .AddCheck<DatabaseHealthCheck>("postgres", tags: ["ready"]);
@@ -106,6 +142,8 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 });
 
 app.MapIdentityEndpoints();
+app.MapHub<NotificationsHub>("/v1/hubs/notifications");
+app.MapHub<JobsHub>("/v1/hubs/jobs");
 
 await app.Services.MigratePostgresDatabaseAsync();
 await PostgresSeeder.SeedAsync(app.Services);
