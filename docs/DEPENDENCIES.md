@@ -128,8 +128,9 @@ reads under the `nuget-dotnet-backend` ecosystem.
 | `OpenTelemetry.Instrumentation.AspNetCore` (+ `.Instrumentation.Http`) | 1.18.0 | Apache-2.0 |
 | `OpenTelemetry.Exporter.Console` | 1.18.0 | Apache-2.0 |
 | `OpenTelemetry.Exporter.OpenTelemetryProtocol` (registered unconditionally in code, but only actually added to the tracing/metrics pipeline — see `Host/Observability/OpenTelemetryExtensions.cs` — when `Otel:OtlpEndpoint` is configured; this process never dials a collector nobody asked it to) | 1.18.0 | Apache-2.0 |
+| `Microsoft.AspNetCore.SignalR.StackExchangeRedis` (+ `StackExchange.Redis`, `Pipelines.Sockets.Unofficial`, `MessagePack`, `MessagePack.Annotations`, `Microsoft.NET.StringTools`) | 10.0.12 / 2.7.27 / 2.2.8 / 2.5.302 / 17.6.3 | MIT |
 
-All eighteen package families are MIT, Apache-2.0 or the permissive PostgreSQL Licence — compliant with the compiled-into-user-code rule. JWT signing/validation (`Host/Security/JwtAccessTokenIssuer`, wired in `Host/Program.cs`), structured console logging with correlation IDs (`Host/Program.cs`'s `UseSerilog` call, consuming `Shared/Web/CorrelationIdMiddleware`'s logging scope), and traces/metrics instrumentation (`Host/Observability/OpenTelemetryExtensions.cs`, also consuming the same correlation ID as a span attribute) are what these three families exist for.
+Every package family in the table above is MIT, Apache-2.0 or the permissive PostgreSQL Licence — compliant with the compiled-into-user-code rule. `Microsoft.AspNetCore.SignalR.StackExchangeRedis` is the realtime layer's optional backplane (`Host/Program.cs`, `Realtime:BackplaneConnectionString`) — layered underneath SignalR only when a connection string is configured, so one instance needs nothing running at all. It talks the plain Redis wire protocol, which Valkey speaks unchanged, so the same code runs against either without a rebuild; `docs/SPEC.md` §13's realtime scope names the choice between them as still open. `MessagePack` arrived transitively for server-to-server invocation serialization inside the backplane itself — unrelated to this project's own client-facing JSON hub protocol (`Host/Program.cs` pins `AddJsonProtocol`) — and is pinned via the direct `Microsoft.AspNetCore.SignalR.StackExchangeRedis` reference at 10.0.12 specifically: resolving that package at its initial 10.0.0 release pulls `MessagePack` 2.5.187, which NuGet's own vulnerability audit (`dotnet restore`'s `NU1902`/`NU1903` warnings) flags with several known CVEs; 10.0.12 resolves a patched 2.5.302 with none, verified by a clean `dotnet restore` with no such warnings. JWT signing/validation (`Host/Security/JwtAccessTokenIssuer`, wired in `Host/Program.cs`), structured console logging with correlation IDs (`Host/Program.cs`'s `UseSerilog` call, consuming `Shared/Web/CorrelationIdMiddleware`'s logging scope), and traces/metrics instrumentation (`Host/Observability/OpenTelemetryExtensions.cs`, also consuming the same correlation ID as a span attribute) are what these three families exist for.
 `Microsoft.EntityFrameworkCore.Relational` is deliberately separate from `Npgsql.EntityFrameworkCore.PostgreSQL`:
 it is what `backends/dotnet/src/Features/Identity/Persistence` (entity configuration, provider-agnostic) references for
 relational concepts like `ToTable`/`HasColumnName` that apply to any relational database, while `Npgsql.*` is confined
@@ -178,6 +179,18 @@ under the `pypi-python-backend` ecosystem.
 | `protobuf`, `googleapis-common-protos` (transitive, OTLP wire format) | 7.36.1 / 1.75.3 | BSD-3-Clause / Apache-2.0 |
 | `requests`, `urllib3`, `charset-normalizer` (transitive, the HTTP transport `opentelemetry-exporter-otlp-proto-http` actually sends over) | 2.34.2 / 2.7.0 / 3.5.1 | Apache-2.0 / MIT / MIT |
 | `asgiref`, `wrapt` (transitive, instrumentation plumbing) | 3.12.1 / 2.4.1 | BSD-3-Clause / BSD-2-Clause |
+| `redis` | 5.3.1 | MIT |
+
+`redis` (`redis.asyncio`, `app/shared/realtime/publisher.py`) is the realtime
+layer's optional backplane, the Python counterpart of the .NET table's
+`Microsoft.AspNetCore.SignalR.StackExchangeRedis` row above — used only when
+`STACKBRAID_REALTIME_REDIS_URL` is configured (`app/host/config.py`); left
+unset, `InProcessRealtimePublisher` delivers to this process's own WebSocket
+connections with no package call at all. It speaks the plain Redis wire
+protocol, which Valkey speaks unchanged, so `docs/SPEC.md` §13's still-open
+choice between the two is not decided by this dependency. Pulled in with no
+new transitive package of its own — its only declared dependency, `pyjwt`,
+is already audited above.
 
 Every one is MIT, Apache-2.0, BSD-2/3-Clause or PSF-2.0 — compliant with the
 compiled-into-user-code rule. Notably absent by deliberate choice: **no
@@ -202,14 +215,17 @@ MIT, Apache-2.0, BSD-2/3-Clause or MPL-2.0 (`certifi` — a CA bundle, only
 ever read by `httpx`'s test client, never linked into or shipped with the
 running server). None compile into the running backend.
 
-**Deliberately not added yet:** a background-job runner, a real PDF/Excel
-library, and a Redis client — named in `docs/SPEC.md`'s dependency table as
-the intended real implementations behind `JobScheduler`, `PdfGenerator`/
-`ExcelExporter` and `Cache`. Those interfaces currently ship with a minimal,
-dependency-free default (an in-process `asyncio.Queue`, a hand-written PDF
-writer, RFC 4180 CSV, and an in-process TTL cache) — the same pattern the
-.NET backend's `Shared` layer already established. They enter this document,
-with a verified date, the same day they enter `pyproject.toml`.
+**Deliberately not added yet:** a background-job runner and a real PDF/Excel
+library — named in `docs/SPEC.md`'s dependency table as the intended real
+implementations behind `JobScheduler` and `PdfGenerator`/`ExcelExporter`.
+Those interfaces currently ship with a minimal, dependency-free default (a
+hand-written PDF writer, RFC 4180 CSV) — the same pattern the .NET backend's
+`Shared` layer already established. They enter this document, with a
+verified date, the same day they enter `pyproject.toml`. `InProcessJobScheduler`
+(`app/shared/jobs/scheduler.py`) is wired for real in `host/main.py`'s
+lifespan for the first time this session — the realtime layer's demo job
+needed a real queue to run on — and still needs no package of its own; only
+the realtime publisher's distributed mode reaches for `redis`.
 
 ## Next.js frontend — `frontends/nextjs/`
 

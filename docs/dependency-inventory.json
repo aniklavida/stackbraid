@@ -1939,6 +1939,66 @@
     },
     {
       "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.AspNetCore.SignalR.StackExchangeRedis",
+      "version": "10.0.12",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "direct dependency of Host — the realtime SignalR backplane, layered in only when a connection string is configured; the redis crate it depends on also speaks Valkey's wire protocol unchanged"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "StackExchange.Redis",
+      "version": "2.7.27",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of the .NET backend, pulled in by Microsoft.AspNetCore.SignalR.StackExchangeRedis — the Redis/Valkey client itself"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Pipelines.Sockets.Unofficial",
+      "version": "2.2.8",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of the .NET backend, pulled in by StackExchange.Redis"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "MessagePack",
+      "version": "2.5.302",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of the .NET backend, pulled in by Microsoft.AspNetCore.SignalR.StackExchangeRedis (server-to-server invocation serialization for the backplane, unrelated to this project's own client-facing JSON hub protocol). Pinned via a direct PackageReference on Microsoft.AspNetCore.SignalR.StackExchangeRedis 10.0.12 — an earlier 10.0.0 resolution pulled MessagePack 2.5.187, which NuGet's own audit flags with several known CVEs; 10.0.12 resolves a patched 2.5.302 with none"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "MessagePack.Annotations",
+      "version": "2.5.302",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of the .NET backend, pulled in alongside MessagePack"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Microsoft.NET.StringTools",
+      "version": "17.6.3",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of the .NET backend, pulled in by the realtime SignalR/Redis backplane addition"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
       "name": "Microsoft.Bcl.Cryptography",
       "version": "10.0.2",
       "license": "MIT",
@@ -2506,6 +2566,16 @@
       "verifiedOn": "2026-09-14",
       "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
       "notes": "transitive dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "redis",
+      "version": "5.3.1",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-14",
+      "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend — the realtime backplane client (redis.asyncio); speaks the same wire protocol against Redis or Valkey"
     },
     {
       "ecosystem": "pypi-python-backend",
