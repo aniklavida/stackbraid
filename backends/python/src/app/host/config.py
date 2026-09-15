@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     run_migrations_on_startup: bool = True
     seed_on_startup: bool = True
 
+    # Path to the authoritative OpenAPI contract file. Defaults to empty, which
+    # resolves contract/openapi.yaml relative to the repository tree or working directory.
+    contract_path: str = ""
+
     # Comma-separated origins allowed to make cross-origin, credentialed
     # requests (e.g. a frontend's dev server calling this API from
     # a different port). Empty by default — no frontend origin is trusted

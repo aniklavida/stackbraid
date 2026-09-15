@@ -2,17 +2,19 @@
 // registered check group, then the report.
 
 import { createHarness, printReport } from './report.mjs';
+import { registerDocumentationChecks } from './checks/documentation.mjs';
 import { registerAuthChecks } from './checks/auth.mjs';
 import { registerErrorEnvelopeChecks } from './checks/errors.mjs';
 import { registerUserChecks } from './checks/users.mjs';
 import { registerRoleChecks } from './checks/roles.mjs';
 import { registerRealtimeChecks } from './checks/realtime.mjs';
 
-// Order matters: auth registers the primary test user and hands off a live
+// Order matters: documentation runs first as an unauthenticated contract check,
+// then auth registers the primary test user and hands off a live
 // session (`ctx.primaryUser.activeTokens`) that users/roles/realtime checks
 // reuse. Realtime runs last — its own checks deactivate and reassign roles
 // on the primary user, which nothing after it depends on being untouched.
-const CHECK_GROUPS = [registerAuthChecks, registerErrorEnvelopeChecks, registerUserChecks, registerRoleChecks, registerRealtimeChecks];
+const CHECK_GROUPS = [registerDocumentationChecks, registerAuthChecks, registerErrorEnvelopeChecks, registerUserChecks, registerRoleChecks, registerRealtimeChecks];
 
 export async function runConformanceSuite(baseUrl) {
   try {

@@ -29,4 +29,17 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\..\contract\openapi.yaml" Link="Contract\openapi.yaml" />
+  </ItemGroup>
+
+  <!-- Vendored Swagger UI browser assets, compiled in so a deployed binary serves
+       its own documentation with no network egress. LogicalName is set explicitly
+       rather than derived from the path: these file names contain hyphens and the
+       resource name is a contract with DocumentationAssetProvider. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\..\contract\docs-assets\swagger-ui\swagger-ui.css" LogicalName="StackBraid.Host.DocumentationAssets.swagger-ui.css" />
+    <EmbeddedResource Include="..\..\..\..\contract\docs-assets\swagger-ui\swagger-ui-bundle.js" LogicalName="StackBraid.Host.DocumentationAssets.swagger-ui-bundle.js" />
+  </ItemGroup>
+
 </Project>

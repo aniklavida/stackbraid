@@ -19,7 +19,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
   workflow_dispatch:
 
@@ -53,6 +53,13 @@ jobs:
           for f in infra/grafana/dashboards/*.json; do
             python3 -m json.tool "$f" > /dev/null
           done
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Lint OpenAPI contract
+        run: npx --yes @redocly/cli@2.52.1 lint contract/openapi.yaml
 
   build:
     runs-on: ubuntu-latest

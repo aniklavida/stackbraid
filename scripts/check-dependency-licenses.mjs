@@ -27,6 +27,7 @@
 // suite's own zero-dependency rule (nothing here needs its own licence audit).
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -315,6 +316,43 @@ if (existsSync(composePath)) {
   checkResolved('infra-image', resolved, { sourceLabel: 'infra/compose.yaml' });
 } else {
   warn('infra/compose.yaml not found — skipping Docker image check.');
+}
+
+// --- Vendored browser assets ---------------------------------------------
+// Third-party files copied into the tree rather than resolved from a lockfile.
+// Nothing else in this script would notice them: there is no manifest to read,
+// so a version bump or a hand-edit would be invisible. Each vendored directory
+// carries a PROVENANCE.json naming the package, version, licence and a SHA-256
+// per file; this checks the recorded version against the audited inventory and
+// re-hashes every file, so neither an unaudited upgrade nor a modified byte
+// reaches main.
+const vendoredProvenanceFiles = [p('contract', 'docs-assets', 'swagger-ui', 'PROVENANCE.json')];
+const resolvedVendored = [];
+for (const provenancePath of vendoredProvenanceFiles) {
+  const relative = path.relative(rootDir, provenancePath);
+  if (!existsSync(provenancePath)) {
+    fail(`VENDORED ASSET: ${relative} is missing — a vendored third-party copy with no provenance record is an unaudited dependency.`);
+    continue;
+  }
+
+  const provenance = JSON.parse(readFileSync(provenancePath, 'utf8'));
+  resolvedVendored.push({ name: provenance.package, version: provenance.version });
+
+  const vendoredDir = path.dirname(provenancePath);
+  for (const [fileName, expectedHash] of Object.entries(provenance.files || {})) {
+    const filePath = path.join(vendoredDir, fileName);
+    if (!existsSync(filePath)) {
+      fail(`VENDORED ASSET: ${relative} records ${fileName}, but that file is not present.`);
+      continue;
+    }
+    const actualHash = 'sha256-' + createHash('sha256').update(readFileSync(filePath)).digest('hex');
+    if (actualHash !== expectedHash) {
+      fail(`VENDORED ASSET MODIFIED: ${path.relative(rootDir, filePath)} does not match the hash recorded in ${relative}. These files are a byte-identical copy of a published package and must never be hand-edited — re-vendor from the registry, or restore the file.`);
+    }
+  }
+}
+if (resolvedVendored.length > 0) {
+  checkResolved('vendored-browser-asset', resolvedVendored, { sourceLabel: 'contract/docs-assets/*/PROVENANCE.json' });
 }
 
 // --- Report ---------------------------------------------------------------

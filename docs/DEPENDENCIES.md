@@ -15,7 +15,7 @@ This document is the narrative record. The machine-readable source of truth is `
 
 **Truthfulness note:** both backends' Identity feature are implemented and conformance-tested (see `docs/ROADMAP.md` step 3); the Next.js and Angular frontends' web and admin shells are both implemented and verified against both backends (see each one's own README). The Flutter mobile shell's Identity feature (register, sign in, profile, sign out) is implemented and verified end-to-end against both backends on the macOS desktop run target only — not on an iOS or Android simulator, see `mobile/flutter/README.md`. This inventory covers exactly what is genuinely shipped today. It will grow, stack by stack, as each is actually built. Nothing below pre-audits code that does not exist.
 
-Last verified: **2026-09-14**.
+Last verified: **2026-09-15**.
 
 ## TypeScript client — `clients/typescript/`
 
@@ -335,6 +335,38 @@ All six run as their own process in `infra/compose.yaml`, talked to only over th
 
 **Flagged, not decided — Redis's long-term line.** Redis 7.2 is the last BSD release; Redis Ltd. does not intend to reissue a BSD line above 7.2. The pin to `7.2-alpine` is today's compliant fix, not a permanent answer, because 7.2 will eventually fall out of upstream security support. The two compliant paths forward — **stay pinned to the 7.2 line for as long as it receives fixes, or move to `valkey/valkey` (the Linux Foundation-backed fork, confirmed BSD-3-Clause, wire-compatible with Redis OSS)** — are a product decision, not an audit finding, and are left open for the maintainer rather than decided here.
 
+## Vendored browser assets — `contract/docs-assets/`
+
+**This is the one place the repository redistributes someone else's code.** Everything else here is
+declared in a manifest and fetched by the user's own tooling; these files are copied into the tree
+and ship with every clone.
+
+| Package | Version | Licence | Class | Verified against | Verified on |
+|---|---|---|---|---|---|
+| `swagger-ui-dist` | 5.32.15 | Apache-2.0 | Compiled into user code | the package's own `LICENSE` file, copied to `contract/docs-assets/swagger-ui/LICENSE`, cross-checked against npm registry metadata | 2026-09-15 |
+
+Only `swagger-ui.css` and `swagger-ui-bundle.js` are vendored; both backends serve them at
+`/docs/assets/`. Audited on the strict **compiled-into-user-code** rule, not the separate-process
+one: this code is shipped to and executed in the browser of every person who opens the API
+documentation. Apache-2.0 satisfies that rule, and its attribution requirement is met by
+`THIRD_PARTY_NOTICES.md` and the licence files copied alongside the code.
+
+`swagger-ui-dist` declares one dependency of its own, `@scarf/scarf`, which reports installation
+telemetry. It is **not vendored and not installed** — it is an npm install-time package, absent from
+the browser bundles, which were checked for it directly. Nothing in `swagger-ui-bundle.js` contacts
+a third party once Swagger UI's own validator badge is disabled, which the documentation page does
+(`validatorUrl: null`) and both backends' tests assert.
+
+**Why this is a copy rather than a CDN reference** — so the documentation renders on an air-gapped
+network, so no third party is told who reads it, and so the bytes the browser executes are the bytes
+audited here. The full reasoning, and the cost accepted in exchange, is in
+`contract/docs-assets/swagger-ui/README.md`.
+
+**The integrity record.** `contract/docs-assets/swagger-ui/PROVENANCE.json` carries the package,
+version, licence, the npm tarball integrity hash, and a SHA-256 per file. The CI gate below re-hashes
+every one on each run: a vendored file cannot be edited, and its version cannot be bumped, without
+the build failing until the audit is redone.
+
 ## CI-only tooling
 
 Installed by `.github/workflows/*.yml` to check the repository itself. None of this reaches an end user's machine or a release artifact, but a user who reuses these workflows inherits the same installs — so they are recorded for transparency, though the automated check below does not gate on them (their versions are runner-default/floating by design, and re-auditing a linter's licence on every CI run buys nothing a one-time record doesn't already cover).
@@ -347,7 +379,7 @@ Installed by `.github/workflows/*.yml` to check the repository itself. None of t
 | `shellcheck` (apt) | GPL-3.0-only | Invoked as a CLI linter over `scripts/*.sh`; GPL binds redistribution/linking of shellcheck itself, not the shell scripts it merely reads |
 | `yamllint` (apt) | GPL-3.0-only | Same reasoning — a CLI check over YAML files it does not modify or redistribute |
 | `@openapitools/openapi-generator-cli` (npx) | Apache-2.0 | Generates `clients/dart/`; the generated *output* is new code, not openapi-generator's own source, and carries no obligation of its own |
-| `@redocly/cli@2.52.1` | MIT | Documented in `contract/README.md` as the contract-lint command. **Open item, out of scope here:** it is not currently wired into a CI workflow, only run manually — worth wiring up later |
+| `@redocly/cli@2.52.1` | MIT | Documented in `contract/README.md` as the contract-lint command; wired into CI (`.github/workflows/ci.yml` lint job) to ensure the served contract is validated on every push |
 
 ## Rejected packages — re-verified, not just re-recorded
 
@@ -369,11 +401,34 @@ Hangfire Core (LGPL-3.0-only) and QuestPDF Community (free under USD 1M revenue,
 
 ## Attribution — the determination, in writing
 
-The rule: an attribution obligation arises only from **actually reusing** third-party code — not from depending on a package, referencing an image tag, or studying how something works.
+The rule: an attribution obligation arises only from **actually reusing** third-party code — not from
+depending on a package, referencing an image tag, or studying how something works.
 
-**Nothing in this repository vendors, copies, or redistributes third-party source or binaries.** The npm and pub.dev packages above are declared in manifests (`package.json`, `pubspec.yaml`); a user's own `npm install` / `dart pub get` fetches them directly from the original registries, each already carrying its own licence file — the same mechanism every Node or Dart project relies on, and not a StackBraid-specific redistribution. The Docker images are referenced by tag in `infra/compose.yaml`; Docker pulls them from their publishers' own registries at `docker compose up` time. `clients/typescript/src/generated/` and `clients/dart/lib/src/` are **generated output** — new code written by a code generator from `contract/openapi.yaml`, not copies of `@hey-api/openapi-ts`'s or `openapi-generator`'s own source.
+**This repository now redistributes third-party code, in exactly one place.**
+`contract/docs-assets/swagger-ui/` holds two files copied byte-identical from the published
+`swagger-ui-dist` package and served to browsers by both backends. That is redistribution in the
+plain sense: the files travel with every clone, release and deployment of this repository. Apache-2.0
+§4 requires the licence and notice to travel with them, so they do —
+`contract/docs-assets/swagger-ui/LICENSE`, `NOTICE`, and the bundled-code notices in
+`swagger-ui-bundle.js.LICENSE.txt` — and [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md) at the
+repository root names the package, version, licence and copyright holder.
 
-**Conclusion: no `THIRD_PARTY_NOTICES` file is required today**, and none is included. This is recorded here, in writing, as the deliberate alternative to creating one. This determination is re-checked, not assumed, whenever a dependency changes class (for example, if a future release ever vendors a third-party file directly into the repository, or a release process starts bundling compiled dependency binaries) — at that point `THIRD_PARTY_NOTICES` becomes mandatory and this section says so.
+**Everything else still creates no obligation, for the reason it never did.** The npm and pub.dev
+packages above are declared in manifests (`package.json`, `pubspec.yaml`); a user's own
+`npm install` / `dart pub get` fetches them directly from the original registries, each already
+carrying its own licence file — the same mechanism every Node or Dart project relies on, and not a
+StackBraid-specific redistribution. The Docker images are referenced by tag in `infra/compose.yaml`;
+Docker pulls them from their publishers' own registries at `docker compose up` time.
+`clients/typescript/src/generated/` and `clients/dart/lib/src/` are **generated output** — new code
+written by a code generator from `contract/openapi.yaml`, not copies of `@hey-api/openapi-ts`'s or
+`openapi-generator`'s own source.
+
+**An earlier version of this document concluded that no `THIRD_PARTY_NOTICES` file was required, and
+said so in writing.** That conclusion was correct when written and is recorded here rather than
+quietly deleted, because it also named the condition that would end it: *"if a future release ever
+vendors a third-party file directly into the repository … at that point `THIRD_PARTY_NOTICES` becomes
+mandatory."* Vendoring Swagger UI is that event. The file was created in the same commit that copied
+the first byte.
 
 ## The CI gate
 
@@ -382,9 +437,10 @@ The rule: an attribution obligation arises only from **actually reusing** third-
 - a resolved package/version has no matching entry in the inventory (**unaudited dependency**);
 - a resolved version differs from the version the inventory audited (**drift** — the exact shape of the Redis problem, generalised: something moved and nobody re-checked the licence);
 - any inventory entry's recorded licence contains RPL, SSPL, RSAL, BSL, "Commons Clause", or "proprietary" (**rejected regardless of class**);
-- a `compiled-into-user-code` entry is licensed anything other than MIT, Apache-2.0, BSD-2/3-Clause, ISC or 0BSD (**class violation**).
+- a `compiled-into-user-code` entry is licensed anything other than MIT, Apache-2.0, BSD-2/3-Clause, ISC or 0BSD (**class violation**);
+- a vendored file under `contract/docs-assets/` no longer matches the SHA-256 recorded in its `PROVENANCE.json` (**vendored asset modified**), or that record names a version the inventory never audited (**unaudited upgrade**). Vendored copies have no lockfile to read, so without this check a bumped version or a hand-edited byte would be the one kind of change nothing here would notice.
 
-Proven against four deliberately broken cases before being wired in: a bumped-but-unaudited npm version, a hand-added banned-licence entry, a bumped-but-unaudited `requirements-lock.txt` version (`fastapi` hand-edited to a version the inventory never audited), and (implicitly, by construction) an unaudited-new-package addition — each produced the expected non-zero exit with the offending package named. Restoring the clean state passes again.
+Proven against five deliberately broken cases before being wired in: a bumped-but-unaudited npm version, a hand-added banned-licence entry, a bumped-but-unaudited `requirements-lock.txt` version (`fastapi` hand-edited to a version the inventory never audited), (implicitly, by construction) an unaudited-new-package addition, and a vendored Swagger UI file with five bytes appended — each produced the expected non-zero exit with the offending package or file named. Restoring the clean state passes again.
 
 ## Keeping this current
 
@@ -394,3 +450,8 @@ Adding a dependency to any client, or changing an image tag in `infra/compose.ya
 2. Add or update the entry in `docs/dependency-inventory.json` (name, version, licence, class, today's date).
 3. Reflect the change in this file if it is a direct/top-level dependency (the tables above mirror `README.md`'s "Dependencies" section — the full transitive closure lives only in the JSON, which would otherwise make both documents unreadable).
 4. Run `node scripts/check-dependency-licenses.mjs` locally before committing. CI runs the same check and will otherwise catch it anyway.
+
+**Vendoring or upgrading a copied file** additionally means updating its `PROVENANCE.json` (version,
+source, tarball integrity, every file hash, today's date), updating `THIRD_PARTY_NOTICES.md`, and
+re-reading the licence from the copied `LICENSE` file rather than carrying the old record forward.
+`contract/docs-assets/swagger-ui/README.md` has the exact commands.
