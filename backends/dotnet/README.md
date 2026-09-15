@@ -41,23 +41,26 @@ backends/dotnet/
 $ CONFORMANCE_ADMIN_EMAIL="admin@stackbraid.local" CONFORMANCE_ADMIN_PASSWORD="<seeded>" \
     node cli/run.mjs http://127.0.0.1:<port>
 
-39 passed, 0 failed, 1 skipped, 40 total.
+43 passed, 0 failed, 0 skipped, 43 total.
 ```
 
-Run against a genuinely fresh, empty local Postgres cluster (no Docker, no
-Testcontainers — see `scripts/start-local-postgres.sh`) migrated and seeded
-by this backend's own startup path. Every check in `contract/conformance`
+This output is the `dotnet-conformance` job of
+`.github/workflows/conformance.yml`, run against a genuinely fresh, empty
+Postgres migrated and seeded by this backend's own startup path.
+`scripts/start-local-postgres.sh` reproduces the same run on a local cluster
+with no Docker and no Testcontainers. Every check in `contract/conformance`
 passes: the byte-identical served contract at `/openapi.yaml`, browsable API
-documentation at `/docs` served from a vendored copy of Swagger UI rather than
-a CDN, absence of code-derived documentation endpoints,
-schema shape, the RFC 9457 Problem envelope on every documented
-error, offset pagination arithmetic, `UtcDateTime`'s exact `Z`-suffixed
-format, both token-delivery paths (body and httpOnly cookie) for
-login/refresh/logout, refresh-token rotation and revocation, permission-gated
-admin endpoints, and the realtime payloads below. The one skip is the
-expiry check, which needs a short-lived access token TTL
-(`Jwt:AccessTokenLifetimeSeconds`) configured to exercise for real rather
-than wait out the default 900 seconds.
+documentation at `/docs` served from a vendored copy of Swagger UI rather
+than a CDN, absence of code-derived documentation endpoints, schema shape,
+the RFC 9457 Problem envelope on every documented error, offset pagination
+arithmetic, `UtcDateTime`'s exact `Z`-suffixed format, both token-delivery
+paths (body and httpOnly cookie) for login/refresh/logout, refresh-token
+rotation and revocation, permission-gated
+admin endpoints, and the realtime payloads below. Nothing is skipped here
+because the expiry check has what it needs: a short-lived access token TTL
+(`Jwt:AccessTokenLifetimeSeconds`). Run without it, that one check skips
+rather than waiting out the default 900 seconds.
+
 The generated TypeScript and Dart clients (`clients/typescript`,
 `clients/dart`) both call this backend successfully with no hand edits —
 register, log in, and read the caller's own account, exercised directly
