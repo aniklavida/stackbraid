@@ -442,6 +442,25 @@ the first byte.
 
 Proven against five deliberately broken cases before being wired in: a bumped-but-unaudited npm version, a hand-added banned-licence entry, a bumped-but-unaudited `requirements-lock.txt` version (`fastapi` hand-edited to a version the inventory never audited), (implicitly, by construction) an unaudited-new-package addition, and a vendored Swagger UI file with five bytes appended — each produced the expected non-zero exit with the offending package or file named. Restoring the clean state passes again.
 
+## Dependabot — what is on, what is off, and why
+
+Two settings, often confused for one:
+
+| Setting | State | Reason |
+|---|---|---|
+| Security alerts | **on** | Reports a real advisory against the default branch. This is what surfaced the `js-yaml` and `pytest` advisories. |
+| Security updates (automatic fix pull requests) | **on** | Fires only when an advisory exists — a handful of times a year. It opens the fix we would otherwise have to find and write by hand. |
+| Version updates for npm, pip, NuGet, pub | **off** | See below. |
+| Version updates for GitHub Actions | **on**, monthly, grouped | `.github/dependabot.yml`. |
+
+**Why routine version updates are off for the package ecosystems.** The CI gate above checks every *resolved* version against `docs/dependency-inventory.json`. A version-update pull request bumps a lock file, so it arrives failing — `VERSION DRIFT: <package> resolved at X, but the inventory only audited Y` — and stays failing until somebody re-verifies that package's licence at the new version and writes an inventory entry. Verified by simulating one: bumping a single lock-file entry by a patch release produced exactly that failure.
+
+That is the audit doing its job, not an obstacle to route around. But it means each such pull request is manual audit work rather than a free upgrade, and across five ecosystems that is a standing tax on software that has not been released. A security advisory is worth paying it for. "A newer patch exists" is not.
+
+**Why GitHub Actions are the exception.** They are recorded in the CI-only table above, and the automated check deliberately does not gate on them, so these updates land green. They are also the dependencies most likely to rot silently — a pinned action keeps working right up until the runner drops the Node version it targets.
+
+**Dependabot's own commits carry no agent trailer**, because Dependabot is not one of our agents. The trailer goes on the merge commit when one of us reviews and merges its pull request.
+
 ## Keeping this current
 
 Adding a dependency to any client, or changing an image tag in `infra/compose.yaml`, means:

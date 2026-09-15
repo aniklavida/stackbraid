@@ -1,0 +1,36 @@
+# Dependabot is deliberately scoped to GitHub Actions and nothing else.
+#
+# Why not npm, pip, NuGet or pub: docs/dependency-inventory.json records every
+# resolved package at an audited version, and scripts/check-dependency-licenses.mjs
+# fails the build when a resolved version is not the audited one. A routine
+# version-update pull request therefore arrives red — "VERSION DRIFT: <pkg>
+# resolved at X, but the inventory only audited Y" — and cannot go green until
+# someone re-verifies that package's licence and adds an inventory entry by hand.
+# That is the audit working as designed, not a bug to route around, but it means
+# each such pull request is manual work rather than a free upgrade. Multiplied
+# across five ecosystems it is a steady tax for very little benefit on software
+# that has not been released.
+#
+# GitHub Actions are different: they are recorded in docs/DEPENDENCIES.md but the
+# licence gate does not check them (their versions are runner-default by design),
+# so these updates land green. They are also the dependencies most likely to rot
+# quietly — a pinned action keeps working until the runner drops its Node version.
+#
+# Security advisories are handled separately by Dependabot security updates, which
+# are enabled on the repository itself rather than configured here. Those fire only
+# when a real advisory exists.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    # One pull request for all of them rather than one each.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    labels:
+      - dependencies
+    commit-message:
+      prefix: "Update"
