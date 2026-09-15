@@ -2,7 +2,7 @@ name: Conformance suite
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
     paths:
       - 'contract/**'
       - 'backends/dotnet/**'
