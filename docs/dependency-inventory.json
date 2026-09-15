@@ -2549,12 +2549,32 @@
     },
     {
       "ecosystem": "pypi-python-backend",
+      "name": "pytest",
+      "version": "9.1.1",
+      "license": "MIT",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-15",
+      "source": "backends/python/.venv/lib/python3.12/site-packages/pytest-9.1.1.dist-info/licenses/LICENSE and importlib.metadata License-Expression",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
       "name": "pytest-asyncio",
       "version": "0.26.0",
       "license": "Apache-2.0",
       "class": "build-tooling",
       "verifiedOn": "2026-09-14",
       "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
+      "notes": "direct dependency of the Python backend"
+    },
+    {
+      "ecosystem": "pypi-python-backend",
+      "name": "pytest-asyncio",
+      "version": "1.4.0",
+      "license": "Apache-2.0",
+      "class": "build-tooling",
+      "verifiedOn": "2026-09-15",
+      "source": "backends/python/.venv/lib/python3.12/site-packages/pytest_asyncio-1.4.0.dist-info/licenses/LICENSE and importlib.metadata License-Expression",
       "notes": "direct dependency of the Python backend"
     },
     {
