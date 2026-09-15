@@ -27,7 +27,7 @@ backends/python/
 │   │   ├── contracts/         Pydantic DTOs and requests mirroring contract/openapi.yaml
 │   │   ├── application/       every command and query the contract needs
 │   │   └── endpoints/         the HTTP surface — FastAPI routers, permission-gated
-│   └── host/                  composition root — JWT, settings, DI wiring, migrations/seed on startup
+│   └── host/                  composition root — JWT, settings, DI wiring, migrations/seed on startup, OpenAPI docs
 └── tests/
     ├── shared/                       real tests, all passing
     ├── features/identity/{domain,application,mapping}/   all passing
@@ -48,13 +48,15 @@ mediator library. Same folders, same names, same flow, each idiomatic (see
 $ CONFORMANCE_ADMIN_EMAIL="admin@stackbraid.local" CONFORMANCE_ADMIN_PASSWORD="<seeded>" \
     node cli/run.mjs http://127.0.0.1:<port>
 
-36 passed, 0 failed, 1 skipped, 37 total.
+39 passed, 0 failed, 1 skipped, 40 total.
 ```
 
 Run against a genuinely fresh, empty local Postgres cluster (no Docker, no
 Testcontainers — see `scripts/start-local-postgres.sh`) migrated and seeded
 by this backend's own startup path. Every check in `contract/conformance`
-passes: schema shape, the RFC 9457 Problem envelope on every documented
+passes: the byte-identical served contract at `/openapi.yaml`, browsable API
+documentation at `/docs`, absence of code-derived documentation endpoints,
+schema shape, the RFC 9457 Problem envelope on every documented
 error, offset pagination arithmetic, `UtcDateTime`'s exact `Z`-suffixed
 format, both token-delivery paths (body and httpOnly cookie) for
 login/refresh/logout, refresh-token rotation and revocation, permission-gated

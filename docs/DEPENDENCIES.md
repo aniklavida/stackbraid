@@ -347,7 +347,7 @@ Installed by `.github/workflows/*.yml` to check the repository itself. None of t
 | `shellcheck` (apt) | GPL-3.0-only | Invoked as a CLI linter over `scripts/*.sh`; GPL binds redistribution/linking of shellcheck itself, not the shell scripts it merely reads |
 | `yamllint` (apt) | GPL-3.0-only | Same reasoning — a CLI check over YAML files it does not modify or redistribute |
 | `@openapitools/openapi-generator-cli` (npx) | Apache-2.0 | Generates `clients/dart/`; the generated *output* is new code, not openapi-generator's own source, and carries no obligation of its own |
-| `@redocly/cli@2.52.1` | MIT | Documented in `contract/README.md` as the contract-lint command. **Open item, out of scope here:** it is not currently wired into a CI workflow, only run manually — worth wiring up later |
+| `@redocly/cli@2.52.1` | MIT | Documented in `contract/README.md` as the contract-lint command; wired into CI (`.github/workflows/ci.yml` lint job) to ensure the served contract is validated on every push |
 
 ## Rejected packages — re-verified, not just re-recorded
 

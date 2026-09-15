@@ -41,13 +41,15 @@ backends/dotnet/
 $ CONFORMANCE_ADMIN_EMAIL="admin@stackbraid.local" CONFORMANCE_ADMIN_PASSWORD="<seeded>" \
     node cli/run.mjs http://127.0.0.1:<port>
 
-36 passed, 0 failed, 1 skipped, 37 total.
+39 passed, 0 failed, 1 skipped, 40 total.
 ```
 
 Run against a genuinely fresh, empty local Postgres cluster (no Docker, no
 Testcontainers — see `scripts/start-local-postgres.sh`) migrated and seeded
 by this backend's own startup path. Every check in `contract/conformance`
-passes: schema shape, the RFC 9457 Problem envelope on every documented
+passes: the byte-identical served contract at `/openapi.yaml`, browsable API
+documentation at `/docs`, absence of code-derived documentation endpoints,
+schema shape, the RFC 9457 Problem envelope on every documented
 error, offset pagination arithmetic, `UtcDateTime`'s exact `Z`-suffixed
 format, both token-delivery paths (body and httpOnly cookie) for
 login/refresh/logout, refresh-token rotation and revocation, permission-gated
@@ -185,8 +187,10 @@ implements Application's `IAccessTokenIssuer` port; `JwtProblemDetailsEvents`
 rewrites the default bearer-auth 401/403 into the contract's Problem
 envelope), configures Serilog to the console with the correlation ID
 attached to every log line, exposes `/health/live` and `/health/ready` (the
-latter checks Postgres connectivity), and migrates and seeds the database
-on startup.
+latter checks Postgres connectivity), serves the authoritative OpenAPI contract
+at `/openapi.yaml` and interactive Swagger UI documentation at `/docs` (driven
+by `contract/openapi.yaml`, with no code-first generators such as Swashbuckle or NSwag),
+and migrates and seeds the database on startup.
 
 **The JWT signing key in `appsettings.Development.json` is a fixed, publicly
 known development default** — stated plainly in `Host/Security/JwtOptions.cs`
