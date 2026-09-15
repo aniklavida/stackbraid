@@ -12,6 +12,68 @@
 
 import http from 'node:http';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const CONTRACT_FILE_PATH = path.resolve(__dirname, '../../../openapi.yaml');
+const CONTRACT_BYTES = fs.readFileSync(CONTRACT_FILE_PATH);
+
+// The stub serves the same vendored Swagger UI copy the real backends serve,
+// from the same paths, so the documentation conformance checks exercise the
+// stub exactly as they exercise .NET and Python.
+const DOCS_ASSETS_DIR = path.resolve(__dirname, '../../../docs-assets/swagger-ui');
+const DOCS_ASSETS = {
+  'swagger-ui.css': 'text/css; charset=utf-8',
+  'swagger-ui-bundle.js': 'application/javascript; charset=utf-8',
+};
+
+const DOCS_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StackBraid Identity API</title>
+  <link rel="stylesheet" href="/docs/assets/swagger-ui.css" />
+  <style>
+    html {
+      box-sizing: border-box;
+      overflow: -moz-scrollbars-vertical;
+      overflow-y: scroll;
+    }
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+    body {
+      margin: 0;
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="/docs/assets/swagger-ui-bundle.js" charset="UTF-8"></script>
+  <script>
+    window.onload = function() {
+      SwaggerUIBundle({
+        url: '/openapi.yaml',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis
+        ],
+        layout: 'BaseLayout',
+        // Swagger UI otherwise renders a validity badge by sending the spec's
+        // URL to validator.swagger.io. Nothing about this page may talk to a
+        // third party.
+        validatorUrl: null
+      });
+    };
+  </script>
+</body>
+</html>
+`;
 
 const PORT = Number(process.env.PORT || 4100);
 // Short by design: the conformance suite's expiry check waits for a real
@@ -174,6 +236,32 @@ const server = http.createServer(async (req, res) => {
   }
 
   try {
+    if (req.method === 'GET' && url.pathname === '/openapi.yaml') {
+      res.statusCode = 200;
+      res.setHeader('content-type', 'application/yaml; charset=utf-8');
+      res.end(CONTRACT_BYTES);
+      return;
+    }
+
+    if (req.method === 'GET' && (url.pathname === '/docs' || url.pathname === '/docs/')) {
+      res.statusCode = 200;
+      res.setHeader('content-type', 'text/html; charset=utf-8');
+      res.end(DOCS_HTML);
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname.startsWith('/docs/assets/')) {
+      const fileName = url.pathname.slice('/docs/assets/'.length);
+      const contentType = Object.prototype.hasOwnProperty.call(DOCS_ASSETS, fileName) ? DOCS_ASSETS[fileName] : null;
+      if (!contentType) {
+        return send({ status: 404, contentType: 'application/json', body: { error: 'no such documentation asset', path: url.pathname } });
+      }
+      res.statusCode = 200;
+      res.setHeader('content-type', contentType);
+      res.end(fs.readFileSync(path.join(DOCS_ASSETS_DIR, fileName)));
+      return;
+    }
+
     if (req.method === 'POST' && url.pathname === '/v1/auth/register') {
       const { email, password, displayName } = body || {};
       const errors = {};

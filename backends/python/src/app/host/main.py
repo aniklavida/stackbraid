@@ -29,6 +29,7 @@ from app.features.identity.endpoints.security import (
 )
 from app.features.identity.endpoints.router import router as identity_router
 from app.host.config import Settings
+from app.host.documentation import create_documentation_router
 from app.shared.jobs.scheduler import InProcessJobScheduler
 from app.shared.localization.localizer import JsonAppLocalizer
 from app.shared.observability.logging_setup import configure_logging
@@ -122,7 +123,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             await redis_client.aclose()
         await engine.dispose()
 
-    app = FastAPI(title="StackBraid Identity API", version="1.0.0", lifespan=lifespan)
+    app = FastAPI(
+        title="StackBraid Identity API",
+        version="1.0.0",
+        lifespan=lifespan,
+        docs_url=None,
+        redoc_url=None,
+        openapi_url=None,
+    )
     instrument_app(app)
 
     # No frontend origin is trusted by default — a frontend must be listed
@@ -166,6 +174,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"status": "ready"}
 
     app.include_router(identity_router)
+    app.include_router(create_documentation_router(settings.contract_path))
 
     return app
 

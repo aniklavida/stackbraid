@@ -53,6 +53,7 @@ export async function request(baseUrl, options) {
     status: res.status,
     contentType,
     body: parsedBody,
+    rawText: text,
     setCookies,
   };
 }

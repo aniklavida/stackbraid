@@ -213,6 +213,19 @@ export function generate(repoRoot, choices, targetDir) {
     forbidden,
     stats,
   });
+  // The vendored Swagger UI copy both backends serve at /docs/assets/.
+  //
+  // Deliberately copied WITHOUT `forbidden`: these files are a byte-identical
+  // copy of a published package whose SHA-256s are recorded in PROVENANCE.json
+  // and re-checked by the licence gate. Running them through the comment
+  // sanitizer was measured to modify both of them — the minified bundle carries
+  // syntax-highlighting definitions naming half the stacks in this repository —
+  // which would leave every generated project failing its own integrity check
+  // on the first CI run. The sanitizer exists to strip *our* cross-stack
+  // comments; those cannot appear in someone else's published package.
+  copyTree(path.join(repoRoot, 'contract/docs-assets'), path.join(targetDir, 'contract/docs-assets'), {
+    stats,
+  });
   writeFile(
     targetDir,
     'contract/README.md',
@@ -232,7 +245,7 @@ export function generate(repoRoot, choices, targetDir) {
   copyTree(path.join(repoRoot, 'infra'), path.join(targetDir, 'infra'), { forbidden, stats });
 
   // --- Generic top-level files ---------------------------------------------
-  for (const file of ['LICENSE', 'CODE_OF_CONDUCT.md', 'CONTRIBUTING.md', 'SECURITY.md', 'CLAUDE.md', 'GEMINI.md', '.env.example']) {
+  for (const file of ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'CODE_OF_CONDUCT.md', 'CONTRIBUTING.md', 'SECURITY.md', 'CLAUDE.md', 'GEMINI.md', '.env.example']) {
     const src = path.join(repoRoot, file);
     if (existsSync(src)) copyFile(src, targetDir, file);
   }

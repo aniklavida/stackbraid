@@ -5,6 +5,7 @@ using Serilog;
 using StackBraid.Database.Postgres;
 using StackBraid.Features.Identity.Application.Abstractions;
 using StackBraid.Features.Identity.Endpoints;
+using StackBraid.Host.Documentation;
 using StackBraid.Host.HealthChecks;
 using StackBraid.Host.Observability;
 using StackBraid.Host.Realtime;
@@ -144,6 +145,7 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 app.MapIdentityEndpoints();
 app.MapHub<NotificationsHub>("/v1/hubs/notifications");
 app.MapHub<JobsHub>("/v1/hubs/jobs");
+app.MapOpenApiDocumentation();
 
 await app.Services.MigratePostgresDatabaseAsync();
 await PostgresSeeder.SeedAsync(app.Services);

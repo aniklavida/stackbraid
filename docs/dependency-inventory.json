@@ -20956,6 +20956,16 @@
       "verifiedOn": "2026-09-14",
       "source": "backends/python/.venv (importlib.metadata License-Expression/License/Classifier, cross-checked against PyPI)",
       "notes": "generic decorator/wrapper library, transitive dependency of opentelemetry-instrumentation"
+    },
+    {
+      "ecosystem": "vendored-browser-asset",
+      "name": "swagger-ui-dist",
+      "version": "5.32.15",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-15",
+      "source": "contract/docs-assets/swagger-ui/LICENSE, cross-checked against npm registry metadata (license field)",
+      "notes": "browser assets copied byte-identical into contract/docs-assets/swagger-ui and served by both backends at /docs/assets/; audited as compiled-into-user-code because it is shipped to and executed by every reader of the API documentation; file integrity re-checked on every CI run against contract/docs-assets/swagger-ui/PROVENANCE.json"
     }
   ]
 }

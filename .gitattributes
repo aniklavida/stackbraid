@@ -1,0 +1,5 @@
+# Third-party browser assets copied byte-identical from a published package.
+# They are not our code: keep them out of the repository's language statistics
+# and out of diffs, where 1.5 MB of minified JavaScript helps nobody.
+contract/docs-assets/swagger-ui/swagger-ui.css        linguist-vendored -diff
+contract/docs-assets/swagger-ui/swagger-ui-bundle.js  linguist-vendored -diff
