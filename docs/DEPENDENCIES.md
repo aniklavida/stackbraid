@@ -15,7 +15,7 @@ This document is the narrative record. The machine-readable source of truth is `
 
 **Truthfulness note:** both backends' Identity feature are implemented and conformance-tested (see `docs/ROADMAP.md` step 3); the Next.js and Angular frontends' web and admin shells are both implemented and verified against both backends (see each one's own README). The Flutter mobile shell's Identity feature (register, sign in, profile, sign out) is implemented and verified end-to-end against both backends on the macOS desktop run target only — not on an iOS or Android simulator, see `mobile/flutter/README.md`. This inventory covers exactly what is genuinely shipped today. It will grow, stack by stack, as each is actually built. Nothing below pre-audits code that does not exist.
 
-Last verified: **2026-09-14**.
+Last verified: **2026-09-15**.
 
 ## TypeScript client — `clients/typescript/`
 
