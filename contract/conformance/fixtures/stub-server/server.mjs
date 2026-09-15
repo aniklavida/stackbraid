@@ -20,13 +20,22 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONTRACT_FILE_PATH = path.resolve(__dirname, '../../../openapi.yaml');
 const CONTRACT_BYTES = fs.readFileSync(CONTRACT_FILE_PATH);
 
+// The stub serves the same vendored Swagger UI copy the real backends serve,
+// from the same paths, so the documentation conformance checks exercise the
+// stub exactly as they exercise .NET and Python.
+const DOCS_ASSETS_DIR = path.resolve(__dirname, '../../../docs-assets/swagger-ui');
+const DOCS_ASSETS = {
+  'swagger-ui.css': 'text/css; charset=utf-8',
+  'swagger-ui-bundle.js': 'application/javascript; charset=utf-8',
+};
+
 const DOCS_HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>StackBraid Identity API</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.18.2/swagger-ui.css" />
+  <link rel="stylesheet" href="/docs/assets/swagger-ui.css" />
   <style>
     html {
       box-sizing: border-box;
@@ -44,8 +53,7 @@ const DOCS_HTML = `<!DOCTYPE html>
 </head>
 <body>
   <div id="swagger-ui"></div>
-  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.18.2/swagger-ui-bundle.js" charset="UTF-8"></script>
-  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.18.2/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
+  <script src="/docs/assets/swagger-ui-bundle.js" charset="UTF-8"></script>
   <script>
     window.onload = function() {
       SwaggerUIBundle({
@@ -53,10 +61,13 @@ const DOCS_HTML = `<!DOCTYPE html>
         dom_id: '#swagger-ui',
         deepLinking: true,
         presets: [
-          SwaggerUIBundle.presets.apis,
-          SwaggerUIStandalonePreset
+          SwaggerUIBundle.presets.apis
         ],
-        layout: 'BaseLayout'
+        layout: 'BaseLayout',
+        // Swagger UI otherwise renders a validity badge by sending the spec's
+        // URL to validator.swagger.io. Nothing about this page may talk to a
+        // third party.
+        validatorUrl: null
       });
     };
   </script>
@@ -236,6 +247,18 @@ const server = http.createServer(async (req, res) => {
       res.statusCode = 200;
       res.setHeader('content-type', 'text/html; charset=utf-8');
       res.end(DOCS_HTML);
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname.startsWith('/docs/assets/')) {
+      const fileName = url.pathname.slice('/docs/assets/'.length);
+      const contentType = Object.prototype.hasOwnProperty.call(DOCS_ASSETS, fileName) ? DOCS_ASSETS[fileName] : null;
+      if (!contentType) {
+        return send({ status: 404, contentType: 'application/json', body: { error: 'no such documentation asset', path: url.pathname } });
+      }
+      res.statusCode = 200;
+      res.setHeader('content-type', contentType);
+      res.end(fs.readFileSync(path.join(DOCS_ASSETS_DIR, fileName)));
       return;
     }
 

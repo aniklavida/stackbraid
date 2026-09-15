@@ -6,6 +6,7 @@ code-derived endpoints must be completely disabled, and replaced by endpoints
 serving the authoritative contract/openapi.yaml file and contract-driven browsable UI.
 """
 
+import re
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -64,3 +65,53 @@ def test_docs_serves_browsable_ui_referencing_openapi_yaml() -> None:
     res_slash = client.get("/docs/")
     assert res_slash.status_code == 200
     assert res_slash.text == html
+
+
+def test_docs_page_references_no_third_party_url() -> None:
+    """The documentation must render with no route to the internet.
+
+    Swagger UI is vendored and served from this backend. An absolute URL in the
+    page — a CDN script or stylesheet, or Swagger UI's own validator badge
+    calling validator.swagger.io — would both break the page offline and tell a
+    third party who is reading these docs.
+    """
+    app = create_app()
+    client = TestClient(app)
+
+    html = client.get("/docs").text
+    external = sorted(set(re.findall(r"https?://[^\s\"'<>()]+", html)))
+    assert external == [], f"documentation page references external URLs: {external}"
+
+
+def test_docs_assets_are_served_byte_identical_to_the_vendored_files() -> None:
+    app = create_app()
+    client = TestClient(app)
+
+    vendored_dir = Path(__file__).resolve().parents[4] / "contract" / "docs-assets" / "swagger-ui"
+    expected_content_types = {
+        "swagger-ui.css": "text/css",
+        "swagger-ui-bundle.js": "javascript",
+    }
+
+    for file_name, expected_type in expected_content_types.items():
+        vendored_file = vendored_dir / file_name
+        assert vendored_file.is_file(), f"Vendored Swagger UI file missing at {vendored_file}"
+
+        res = client.get(f"/docs/assets/{file_name}")
+        assert res.status_code == 200
+        assert expected_type in res.headers["content-type"]
+        assert res.content == vendored_file.read_bytes()
+
+
+def test_unknown_docs_asset_returns_404() -> None:
+    """The asset route is an allow-list, not a path join over the vendored directory.
+
+    "LICENSE" sits in that directory and must still not be served;
+    "swagger-ui-standalone-preset.js" is a real file of the package we
+    deliberately did not vendor.
+    """
+    app = create_app()
+    client = TestClient(app)
+
+    for attempt in ("not-a-real-asset.js", "LICENSE", "swagger-ui-standalone-preset.js"):
+        assert client.get(f"/docs/assets/{attempt}").status_code == 404

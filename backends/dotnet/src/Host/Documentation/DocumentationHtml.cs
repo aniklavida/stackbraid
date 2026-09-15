@@ -4,6 +4,12 @@ namespace StackBraid.Host.Documentation;
 /// Provides the browsable Swagger UI HTML page. Driven entirely by the
 /// authoritative OpenAPI contract served at /openapi.yaml — never generated
 /// from backend code.
+///
+/// Swagger UI itself is vendored at contract/docs-assets/swagger-ui and served
+/// from this backend at /docs/assets/, so the page renders with no network
+/// egress and no third party learns who reads these docs. See that directory's
+/// README for the provenance record and why it is a copy rather than a CDN
+/// reference.
 /// </summary>
 public static class DocumentationHtml
 {
@@ -14,7 +20,7 @@ public static class DocumentationHtml
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>StackBraid Identity API</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.18.2/swagger-ui.css" />
+  <link rel="stylesheet" href="/docs/assets/swagger-ui.css" />
   <style>
     html {
       box-sizing: border-box;
@@ -32,8 +38,7 @@ public static class DocumentationHtml
 </head>
 <body>
   <div id="swagger-ui"></div>
-  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.18.2/swagger-ui-bundle.js" charset="UTF-8"></script>
-  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.18.2/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
+  <script src="/docs/assets/swagger-ui-bundle.js" charset="UTF-8"></script>
   <script>
     window.onload = function() {
       SwaggerUIBundle({
@@ -41,10 +46,13 @@ public static class DocumentationHtml
         dom_id: '#swagger-ui',
         deepLinking: true,
         presets: [
-          SwaggerUIBundle.presets.apis,
-          SwaggerUIStandalonePreset
+          SwaggerUIBundle.presets.apis
         ],
-        layout: 'BaseLayout'
+        layout: 'BaseLayout',
+        // Swagger UI otherwise renders a validity badge by sending the spec's
+        // URL to validator.swagger.io. Nothing about this page may talk to a
+        // third party.
+        validatorUrl: null
       });
     };
   </script>

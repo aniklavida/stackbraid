@@ -48,7 +48,8 @@ Run against a genuinely fresh, empty local Postgres cluster (no Docker, no
 Testcontainers — see `scripts/start-local-postgres.sh`) migrated and seeded
 by this backend's own startup path. Every check in `contract/conformance`
 passes: the byte-identical served contract at `/openapi.yaml`, browsable API
-documentation at `/docs`, absence of code-derived documentation endpoints,
+documentation at `/docs` served from a vendored copy of Swagger UI rather than
+a CDN, absence of code-derived documentation endpoints,
 schema shape, the RFC 9457 Problem envelope on every documented
 error, offset pagination arithmetic, `UtcDateTime`'s exact `Z`-suffixed
 format, both token-delivery paths (body and httpOnly cookie) for
@@ -190,7 +191,10 @@ attached to every log line, exposes `/health/live` and `/health/ready` (the
 latter checks Postgres connectivity), serves the authoritative OpenAPI contract
 at `/openapi.yaml` and interactive Swagger UI documentation at `/docs` (driven
 by `contract/openapi.yaml`, with no code-first generators such as Swashbuckle or NSwag),
-and migrates and seeds the database on startup.
+and migrates and seeds the database on startup. Swagger UI itself is vendored in
+`contract/docs-assets/swagger-ui`, compiled into the Host assembly and served at
+`/docs/assets/` — the documentation page loads nothing from the internet, so it
+renders on an air-gapped network and tells no third party who is reading it.
 
 **The JWT signing key in `appsettings.Development.json` is a fixed, publicly
 known development default** — stated plainly in `Host/Security/JwtOptions.cs`

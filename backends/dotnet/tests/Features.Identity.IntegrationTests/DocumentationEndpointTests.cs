@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Shouldly;
@@ -46,6 +47,52 @@ public sealed class ContractProviderTests
         DocumentationHtml.Content.ShouldContain("/openapi.yaml");
         DocumentationHtml.Content.ShouldNotContain("openapi.json");
         DocumentationHtml.Content.ShouldContain("SwaggerUIBundle");
+    }
+
+    [Fact]
+    public void DocumentationHtml_loads_swagger_ui_from_this_backend_not_a_third_party()
+    {
+        // The documentation must render on a machine with no route to the
+        // internet, and must not tell a third party who is reading it. A CDN
+        // script or stylesheet, or Swagger UI's own validator badge calling
+        // validator.swagger.io, would break both promises.
+        var external = Regex.Matches(DocumentationHtml.Content, @"https?://[^\s""'<>()]+")
+            .Select(match => match.Value)
+            .Distinct()
+            .ToArray();
+
+        external.ShouldBeEmpty($"documentation page references external URLs: {string.Join(", ", external)}");
+    }
+
+    [Fact]
+    public void Embedded_documentation_assets_are_byte_identical_to_the_vendored_files()
+    {
+        var repoRoot = FindRepoRoot();
+
+        foreach (var fileName in DocumentationAssetProvider.AssetFileNames)
+        {
+            DocumentationAssetProvider.TryGetAsset(fileName, out var bytes, out var mediaType)
+                .ShouldBeTrue($"Expected {fileName} to be a served documentation asset.");
+            mediaType.ShouldNotBeNullOrWhiteSpace();
+
+            var vendoredPath = Path.Combine(repoRoot, "contract", "docs-assets", "swagger-ui", fileName);
+            File.Exists(vendoredPath).ShouldBeTrue($"Expected vendored asset at {vendoredPath}");
+            bytes.ShouldBe(File.ReadAllBytes(vendoredPath));
+        }
+    }
+
+    [Fact]
+    public void Only_the_vendored_documentation_assets_resolve()
+    {
+        // An allow-list, not a path join over the vendored directory. "LICENSE"
+        // sits in that directory and must still not resolve;
+        // "swagger-ui-standalone-preset.js" is a real file of the package we
+        // deliberately did not vendor.
+        foreach (var fileName in new[] { "not-a-real-asset.js", "LICENSE", "swagger-ui-standalone-preset.js" })
+        {
+            DocumentationAssetProvider.TryGetAsset(fileName, out _, out _)
+                .ShouldBeFalse($"{fileName} must not be served from /docs/assets/.");
+        }
     }
 
     private static string FindRepoRoot()
@@ -127,6 +174,44 @@ public sealed class DocumentationEndpointTests : IClassFixture<PostgresDatabaseF
         responseSlash.StatusCode.ShouldBe(HttpStatusCode.OK);
         var htmlSlash = await responseSlash.Content.ReadAsStringAsync();
         htmlSlash.ShouldBe(html);
+    }
+
+    [Fact]
+    public async Task Docs_assets_are_served_byte_identical_to_the_vendored_files()
+    {
+        using var client = _factory.CreateClient();
+        var repoRoot = FindRepoRoot();
+
+        var expectedMediaTypes = new Dictionary<string, string>
+        {
+            ["swagger-ui.css"] = "text/css",
+            ["swagger-ui-bundle.js"] = "application/javascript",
+        };
+
+        foreach (var (fileName, mediaType) in expectedMediaTypes)
+        {
+            var response = await client.GetAsync($"/docs/assets/{fileName}");
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            response.Content.Headers.ContentType?.MediaType.ShouldBe(mediaType);
+
+            var vendoredPath = Path.Combine(repoRoot, "contract", "docs-assets", "swagger-ui", fileName);
+            File.Exists(vendoredPath).ShouldBeTrue($"Expected vendored asset at {vendoredPath}");
+
+            var responseBytes = await response.Content.ReadAsByteArrayAsync();
+            responseBytes.ShouldBe(await File.ReadAllBytesAsync(vendoredPath));
+        }
+    }
+
+    [Fact]
+    public async Task Unknown_docs_asset_returns_404()
+    {
+        using var client = _factory.CreateClient();
+
+        foreach (var fileName in new[] { "not-a-real-asset.js", "LICENSE", "swagger-ui-standalone-preset.js" })
+        {
+            var response = await client.GetAsync($"/docs/assets/{fileName}");
+            response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        }
     }
 
     [Fact]

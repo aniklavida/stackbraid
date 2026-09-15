@@ -55,7 +55,8 @@ Run against a genuinely fresh, empty local Postgres cluster (no Docker, no
 Testcontainers — see `scripts/start-local-postgres.sh`) migrated and seeded
 by this backend's own startup path. Every check in `contract/conformance`
 passes: the byte-identical served contract at `/openapi.yaml`, browsable API
-documentation at `/docs`, absence of code-derived documentation endpoints,
+documentation at `/docs` served from a vendored copy of Swagger UI rather than
+a CDN, absence of code-derived documentation endpoints,
 schema shape, the RFC 9457 Problem envelope on every documented
 error, offset pagination arithmetic, `UtcDateTime`'s exact `Z`-suffixed
 format, both token-delivery paths (body and httpOnly cookie) for
