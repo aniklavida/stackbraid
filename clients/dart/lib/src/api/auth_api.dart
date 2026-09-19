@@ -265,7 +265,7 @@ _responseData = rawData == null ? null : deserialize<TokenPair, TokenPair>(rawDa
   /// 
   ///
   /// Parameters:
-  /// * [refreshRequest] - Omit the body entirely to fall back to the httpOnly `refreshToken` cookie (the browser path).
+  /// * [refreshRequest] - This endpoint accepts the refresh token via either form. Send it as `refreshToken` in this JSON body — the path for clients with no cookie jar, such as Flutter, backed by platform secure storage — or omit the body entirely to fall back to the httpOnly `refreshToken` cookie (the browser path). One endpoint serves both kinds of client.
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request

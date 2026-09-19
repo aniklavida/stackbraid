@@ -90,7 +90,7 @@ export type LoginRequest = {
 };
 
 /**
- * Optional — omit entirely to use the httpOnly cookie instead.
+ * Optional. Provide `refreshToken` here for clients without a cookie jar (e.g. Flutter, backed by platform secure storage); omit entirely to use the httpOnly cookie instead (the browser path). Both forms are accepted by the same endpoint.
  */
 export type RefreshRequest = {
     refreshToken?: string;
@@ -276,7 +276,7 @@ export type LoginResponse = LoginResponses[keyof LoginResponses];
 
 export type RefreshTokenData = {
     /**
-     * Omit the body entirely to fall back to the httpOnly `refreshToken` cookie (the browser path).
+     * This endpoint accepts the refresh token via either form. Send it as `refreshToken` in this JSON body — the path for clients with no cookie jar, such as Flutter, backed by platform secure storage — or omit the body entirely to fall back to the httpOnly `refreshToken` cookie (the browser path). One endpoint serves both kinds of client.
      */
     body?: RefreshRequest;
     path?: never;
