@@ -144,7 +144,7 @@ Exchange a refresh token for a new token pair
 import 'package:stackbraid_client/api.dart';
 
 final api = StackbraidClient().getAuthApi();
-final RefreshRequest refreshRequest = ; // RefreshRequest | Omit the body entirely to fall back to the httpOnly `refreshToken` cookie (the browser path).
+final RefreshRequest refreshRequest = ; // RefreshRequest | This endpoint accepts the refresh token via either form. Send it as `refreshToken` in this JSON body — the path for clients with no cookie jar, such as Flutter, backed by platform secure storage — or omit the body entirely to fall back to the httpOnly `refreshToken` cookie (the browser path). One endpoint serves both kinds of client.
 
 try {
     final response = api.refreshToken(refreshRequest);
@@ -158,7 +158,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **refreshRequest** | [**RefreshRequest**](RefreshRequest.md)| Omit the body entirely to fall back to the httpOnly `refreshToken` cookie (the browser path). | [optional] 
+ **refreshRequest** | [**RefreshRequest**](RefreshRequest.md)| This endpoint accepts the refresh token via either form. Send it as `refreshToken` in this JSON body — the path for clients with no cookie jar, such as Flutter, backed by platform secure storage — or omit the body entirely to fall back to the httpOnly `refreshToken` cookie (the browser path). One endpoint serves both kinds of client. | [optional] 
 
 ### Return type
 
