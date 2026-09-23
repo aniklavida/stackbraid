@@ -20818,6 +20818,116 @@
       "notes": "test-only — never shipped, used by Features.Identity.IntegrationTests' WebApplicationFactory-based secret-redaction test"
     },
     {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "AWSSDK.Core",
+      "version": "3.7.402.6",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-24",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of AWSSDK.S3"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "AWSSDK.S3",
+      "version": "3.7.415.5",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-24",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "S3-compatible object storage implementation behind IFileStorage"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "ClosedXML",
+      "version": "0.104.2",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-24",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "Excel export and import behind IExcelExporter and IExcelImporter"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "ClosedXML.Parser",
+      "version": "1.2.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-24",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of ClosedXML"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "DocumentFormat.OpenXml",
+      "version": "3.1.1",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-24",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of ClosedXML"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "DocumentFormat.OpenXml.Framework",
+      "version": "3.1.1",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-24",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of ClosedXML"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "ExcelNumberFormat",
+      "version": "1.1.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-24",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of ClosedXML"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "QuestPDF",
+      "version": "2024.12.3",
+      "license": "QuestPDF Community",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-24",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org PackageLicense.md)",
+      "notes": "PDF generator behind IPdfGenerator; free under USD 1M revenue"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "RBush",
+      "version": "4.0.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-24",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of ClosedXML"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "SixLabors.Fonts",
+      "version": "1.0.0",
+      "license": "Apache-2.0",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-24",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of ClosedXML"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "System.IO.Packaging",
+      "version": "8.0.1",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-24",
+      "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
+      "notes": "transitive dependency of DocumentFormat.OpenXml"
+    },
+    {
       "ecosystem": "pypi-python-backend",
       "name": "opentelemetry-api",
       "version": "1.44.0",

@@ -128,10 +128,11 @@ against any two running instances.
   |---|---|---|
   | `IMessagePublisher` | in-process queue, logged | RabbitMQ |
   | `IJobScheduler` | in-process background queue | Hangfire |
-  | `IPdfGenerator` | hand-written minimal PDF writer | QuestPDF |
-  | `IExcelExporter` | RFC 4180 CSV | ClosedXML |
+  | `IPdfGenerator` | QuestPDF (with `MinimalPdfGenerator` swappable fallback) | (implemented) |
+  | `IExcelExporter` | ClosedXML `.xlsx` (with `CsvExcelExporter` swappable fallback) | (implemented) |
+  | `IExcelImporter` | ClosedXML `.xlsx` with row-level error reporting | (implemented) |
   | `ICache` | in-memory (`IMemoryCache`) | Redis |
-  | `IFileStorage` | local disk | + S3-compatible |
+  | `IFileStorage` | local disk + S3-compatible (`S3FileStorage`, MinIO-ready) | (implemented) |
   | `IEmailSender` | SMTP when configured, logged otherwise | (same — SMTP is the real integration) |
 
   Every one of these is a genuine, tested implementation of its interface —
