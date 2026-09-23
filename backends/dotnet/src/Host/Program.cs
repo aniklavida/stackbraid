@@ -11,6 +11,7 @@ using StackBraid.Host.Observability;
 using StackBraid.Host.Realtime;
 using StackBraid.Host.Security;
 using StackBraid.Shared;
+using StackBraid.Shared.Documents;
 using StackBraid.Shared.Realtime;
 using StackBraid.Shared.Web;
 
@@ -32,7 +33,7 @@ builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptio
 var connectionString = builder.Configuration.GetConnectionString("Postgres")
     ?? throw new InvalidOperationException("ConnectionStrings:Postgres is not configured.");
 
-builder.Services.AddShared();
+builder.Services.AddShared(builder.Configuration);
 builder.Services.AddPostgresPersistence(connectionString);
 // Every handler here takes a Scoped repository (itself backed by a Scoped
 // DbContext) through its constructor. The library's own default is
@@ -145,6 +146,7 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 app.MapIdentityEndpoints();
 app.MapHub<NotificationsHub>("/v1/hubs/notifications");
 app.MapHub<JobsHub>("/v1/hubs/jobs");
+app.MapDocumentJobEndpoints();
 app.MapOpenApiDocumentation();
 
 await app.Services.MigratePostgresDatabaseAsync();

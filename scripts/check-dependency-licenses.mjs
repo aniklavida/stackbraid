@@ -46,6 +46,10 @@ const PERMISSIVE = new Set([
   // PSF-2.0 (Python Software Foundation Licence) — permissive, BSD-style;
   // covers a handful of Python stdlib-adjacent packages (e.g. typing_extensions).
   'PSF-2.0',
+  // QuestPDF Community — dual-licensed, free for individuals and organisations under
+  // USD 1M annual gross revenue (see docs/DEPENDENCIES.md line 400 and QuestPDF
+  // License Selection Guide). Pre-approved for use behind IPdfGenerator.
+  'QuestPDF Community',
 ]);
 
 // Some PyPI packages report a compound SPDX expression (e.g. "MIT AND PSF-2.0",
