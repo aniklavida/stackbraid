@@ -37,6 +37,8 @@ class User {
     required  this.updatedAt,
 
      this.lastLoginAt,
+
+    required  this.deletedAt,
   });
 
   @JsonKey(
@@ -138,6 +140,19 @@ class User {
 
 
 
+      /// Set when the account is soft-deleted; null for an active account.
+  @JsonKey(
+    
+    name: r'deletedAt',
+    required: true,
+    includeIfNull: true,
+  )
+
+
+  final DateTime? deletedAt;
+
+
+
 
 
     @override
@@ -149,7 +164,8 @@ class User {
       other.roles == roles &&
       other.createdAt == createdAt &&
       other.updatedAt == updatedAt &&
-      other.lastLoginAt == lastLoginAt;
+      other.lastLoginAt == lastLoginAt &&
+      other.deletedAt == deletedAt;
 
     @override
     int get hashCode =>
@@ -160,7 +176,8 @@ class User {
         roles.hashCode +
         createdAt.hashCode +
         updatedAt.hashCode +
-        (lastLoginAt == null ? 0 : lastLoginAt.hashCode);
+        (lastLoginAt == null ? 0 : lastLoginAt.hashCode) +
+        (deletedAt == null ? 0 : deletedAt.hashCode);
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 

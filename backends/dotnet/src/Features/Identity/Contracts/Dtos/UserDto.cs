@@ -9,4 +9,5 @@ public sealed record UserDto(
     IReadOnlyList<RoleDto> Roles,
     DateTime CreatedAt,
     DateTime UpdatedAt,
-    DateTime? LastLoginAt);
+    DateTime? LastLoginAt,
+    DateTime? DeletedAt = null);

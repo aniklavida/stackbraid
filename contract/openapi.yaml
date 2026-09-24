@@ -295,6 +295,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: includeDeleted
+          in: query
+          description: Include soft-deleted users. Defaults to false.
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: A page of users.
@@ -316,6 +322,13 @@ paths:
       operationId: getUser
       tags: [Users]
       summary: Read a single user
+      parameters:
+        - name: includeDeleted
+          in: query
+          description: Include a soft-deleted user for administrative recovery.
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: The requested user.
@@ -329,6 +342,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+
     patch:
       operationId: updateUser
       tags: [Users]
@@ -387,6 +401,54 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+
+
+  /v1/users/{userId}/restore:
+    post:
+      operationId: restoreUser
+      tags: [Users]
+      summary: Restore a soft-deleted user
+      description: Restores a user previously deactivated through the soft-delete path. Idempotent.
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      responses:
+        '200':
+          description: The restored, active user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/audit:
+    get:
+      operationId: listUserAudit
+      tags: [Users]
+      summary: List audit events for a user
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Audit events for the requested user, newest first.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /v1/roles:
     get:
       operationId: listRoles
@@ -412,6 +474,8 @@ paths:
 
   /v1/users/{userId}/roles:
     post:
+
+
       operationId: assignRole
       tags: [Roles]
       summary: Assign a role to a user
@@ -559,11 +623,18 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
     TooManyRequests:
-      description: Rate limit exceeded. Retry after the interval named in `detail`.
+      description: Rate limit exceeded. The response always uses the common Problem body with code IDENTITY.RATE_LIMITED.
+      headers:
+        Retry-After:
+          description: Seconds until the caller may retry.
+          schema:
+            type: integer
+            minimum: 1
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/Problem'
+
 
   schemas:
 
@@ -672,7 +743,8 @@ components:
 
     User:
       type: object
-      required: [id, email, displayName, status, roles, createdAt, updatedAt]
+      required: [id, email, displayName, status, roles, createdAt, updatedAt, deletedAt]
+
       properties:
         id:
           type: string
@@ -694,6 +766,10 @@ components:
           $ref: '#/components/schemas/UtcDateTime'
         lastLoginAt:
           $ref: '#/components/schemas/NullableUtcDateTime'
+        deletedAt:
+          $ref: '#/components/schemas/NullableUtcDateTime'
+          description: Set when the account is soft-deleted; null for an active account.
+
 
     RegisterRequest:
       type: object
@@ -860,6 +936,39 @@ components:
           type: integer
           minimum: 0
 
+    AuditEntry:
+      type: object
+      required: [id, entityType, entityId, action, correlationId, occurredAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        entityType:
+          type: string
+        entityId:
+          type: string
+          format: uuid
+        action:
+          type: string
+        actorId:
+          type: [string, 'null']
+          format: uuid
+        correlationId:
+          type: string
+        occurredAt:
+          $ref: '#/components/schemas/UtcDateTime'
+        details:
+          type: [string, 'null']
+
+    AuditPage:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEntry'
+
     UserPage:
       description: 'Page<User>.'
       allOf:
@@ -871,6 +980,7 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/User'
+
 
     RealtimeMessage:
       description: >-

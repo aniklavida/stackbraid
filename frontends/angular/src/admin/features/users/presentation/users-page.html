@@ -15,6 +15,9 @@
         <mat-option value="inactive">{{ "users.statusInactive" | transloco }}</mat-option>
       </mat-select>
     </mat-form-field>
+    <button mat-stroked-button (click)="toggleDeleted()">
+      {{ (filter().includeDeleted ? "users.actions.hideDeleted" : "users.actions.includeDeleted") | transloco }}
+    </button>
   </div>
 
   @if (users.isPending()) {
@@ -46,9 +49,10 @@
             <td class="py-2 font-medium">{{ user.displayName }}</td>
             <td class="py-2 text-gray-500">{{ user.email }}</td>
             <td class="py-2">
-              <span class="rounded-full px-2 py-0.5 text-xs" [class.bg-green-100]="user.status === 'active'" [class.bg-gray-100]="user.status !== 'active'">
-                {{ (user.status === "active" ? "users.statusActive" : "users.statusInactive") | transloco }}
-              </span>
+               <span class="rounded-full px-2 py-0.5 text-xs" [class.bg-green-100]="!user.deletedAt && user.status === 'active'" [class.bg-gray-100]="user.deletedAt || user.status !== 'active'">
+                 {{ (user.deletedAt ? "users.statusDeleted" : user.status === "active" ? "users.statusActive" : "users.statusInactive") | transloco }}
+               </span>
+
             </td>
             <td class="py-2">
               <div class="flex flex-wrap gap-1">
@@ -59,13 +63,20 @@
             </td>
             <td class="flex justify-end gap-2 py-2">
               <a mat-button [routerLink]="['/admin/users', user.id]">{{ "users.actions.view" | transloco }}</a>
-              <button
-                mat-stroked-button
-                [disabled]="user.status === 'inactive' || deactivate.isPending()"
-                (click)="deactivateUser(user.id, user.displayName)"
-              >
-                {{ "users.actions.deactivate" | transloco }}
-              </button>
+               @if (user.deletedAt) {
+                 <button mat-stroked-button [disabled]="restore.isPending()" (click)="restoreUser(user.id, user.displayName)">
+                   {{ "users.actions.restore" | transloco }}
+                 </button>
+               } @else {
+                 <button
+                   mat-stroked-button
+                   [disabled]="user.status === 'inactive' || deactivate.isPending()"
+                   (click)="deactivateUser(user.id, user.displayName)"
+                 >
+                   {{ "users.actions.deactivate" | transloco }}
+                 </button>
+               }
+
             </td>
           </tr>
         }

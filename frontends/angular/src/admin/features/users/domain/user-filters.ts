@@ -9,6 +9,7 @@ export interface UsersFilter {
   pageSize: number;
   search?: string;
   status?: AccountStatus;
+  includeDeleted?: boolean;
 }
 
 export const DEFAULT_USERS_FILTER: UsersFilter = { page: 1, pageSize: 20 };

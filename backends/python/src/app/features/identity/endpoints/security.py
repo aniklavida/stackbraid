@@ -15,6 +15,7 @@ import jwt
 from fastapi import Depends, HTTPException, Request
 
 from app.features.identity.application.abstractions import IssuedAccessToken
+from app.shared.observability.context import actor_id_var
 from app.shared.web.errors import AppError
 
 PERMISSION_CLAIM = "permission"
@@ -89,9 +90,11 @@ def get_current_user_id(request: Request, jwt_options: JwtOptions = Depends(get_
     claims = decode_access_token(raw_token, jwt_options)
 
     try:
-        return UUID(claims["sub"])
+        user_id = UUID(claims["sub"])
     except (KeyError, ValueError) as exc:
         raise AuthenticationError("Token does not carry a valid user id.") from exc
+    actor_id_var.set(user_id)
+    return user_id
 
 
 def get_current_permissions(request: Request, jwt_options: JwtOptions = Depends(get_jwt_options)) -> list[str]:

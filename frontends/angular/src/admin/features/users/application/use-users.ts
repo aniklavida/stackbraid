@@ -15,7 +15,7 @@ export function useUsers(filter: Signal<UsersFilter>) {
 export function useUser(userId: Signal<string>) {
   return injectQuery(() => ({
     queryKey: ["users", "detail", userId()],
-    queryFn: () => usersRepository.getUser(userId()),
+    queryFn: () => usersRepository.getUser(userId(), true),
   }));
 }
 
@@ -23,6 +23,24 @@ export function useDeactivateUser() {
   const queryClient = injectQueryClient();
   return injectMutation(() => ({
     mutationFn: (userId: string) => usersRepository.deactivateUser(userId),
+    onSuccess: (user) => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.setQueryData(["users", "detail", user.id], user);
+    },
+  }));
+}
+
+export function useUserAudit(userId: Signal<string>) {
+  return injectQuery(() => ({
+    queryKey: ["users", "audit", userId()],
+    queryFn: () => usersRepository.listAudit(userId()),
+  }));
+}
+
+export function useRestoreUser() {
+  const queryClient = injectQueryClient();
+  return injectMutation(() => ({
+    mutationFn: (userId: string) => usersRepository.restoreUser(userId),
     onSuccess: (user) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.setQueryData(["users", "detail", user.id], user);

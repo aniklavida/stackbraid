@@ -1,6 +1,8 @@
 .gitignore
 build.yaml
 doc/AssignRoleRequest.md
+doc/AuditEntry.md
+doc/AuditPage.md
 doc/AuthApi.md
 doc/DevicePlatform.md
 doc/DeviceToken.md
@@ -40,6 +42,8 @@ lib/src/auth/bearer_auth.dart
 lib/src/auth/oauth.dart
 lib/src/deserialize.dart
 lib/src/model/assign_role_request.dart
+lib/src/model/audit_entry.dart
+lib/src/model/audit_page.dart
 lib/src/model/device_platform.dart
 lib/src/model/device_token.dart
 lib/src/model/job_progress_message.dart

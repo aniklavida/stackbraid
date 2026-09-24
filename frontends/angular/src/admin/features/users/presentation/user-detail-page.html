@@ -25,13 +25,46 @@
           </dd>
           <dt class="text-gray-500">{{ "users.detail.createdAt" | transloco }}</dt>
           <dd>{{ formatDate(data.createdAt) }}</dd>
-          <dt class="text-gray-500">{{ "users.detail.lastLoginAt" | transloco }}</dt>
-          <dd>{{ data.lastLoginAt ? formatDate(data.lastLoginAt) : ("users.detail.lastLoginAt_never" | transloco) }}</dd>
-        </dl>
-      </mat-card-content>
-    </mat-card>
+           <dt class="text-gray-500">{{ "users.detail.lastLoginAt" | transloco }}</dt>
+           <dd>{{ data.lastLoginAt ? formatDate(data.lastLoginAt) : ("users.detail.lastLoginAt_never" | transloco) }}</dd>
+           @if (data.deletedAt) {
+             <dt class="text-gray-500">{{ "users.detail.deletedAt" | transloco }}</dt>
+             <dd>{{ formatDate(data.deletedAt) }}</dd>
+           }
 
-    <mat-card class="max-w-2xl">
+         </dl>
+         @if (data.deletedAt) {
+           <button mat-flat-button color="primary" class="mt-4" [disabled]="restore.isPending()" (click)="restoreUser()">
+             {{ "users.actions.restore" | transloco }}
+           </button>
+         }
+       </mat-card-content>
+
+     </mat-card>
+
+     <mat-card class="max-w-2xl">
+       <mat-card-header>
+         <mat-card-title>{{ "users.detail.audit" | transloco }}</mat-card-title>
+       </mat-card-header>
+       <mat-card-content>
+         @if (audit.isPending()) {
+           <mat-progress-bar mode="indeterminate" />
+         } @else if (audit.data()?.items?.length === 0) {
+           <p class="text-gray-500">{{ "users.detail.noAudit" | transloco }}</p>
+         } @else {
+           <ul class="flex flex-col gap-2 text-sm">
+             @for (entry of audit.data()?.items ?? []; track entry.id) {
+               <li class="flex justify-between gap-4">
+                 <span>{{ entry.action }}</span>
+                 <span class="text-gray-500">{{ formatDate(entry.occurredAt) }} · {{ entry.correlationId }}</span>
+               </li>
+             }
+           </ul>
+         }
+       </mat-card-content>
+     </mat-card>
+
+     <mat-card class="max-w-2xl">
       <mat-card-header>
         <mat-card-title>{{ "users.detail.roles" | transloco }}</mat-card-title>
       </mat-card-header>

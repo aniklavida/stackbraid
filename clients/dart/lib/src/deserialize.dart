@@ -1,4 +1,6 @@
 import 'package:stackbraid_client/src/model/assign_role_request.dart';
+import 'package:stackbraid_client/src/model/audit_entry.dart';
+import 'package:stackbraid_client/src/model/audit_page.dart';
 import 'package:stackbraid_client/src/model/device_token.dart';
 import 'package:stackbraid_client/src/model/job_progress_message.dart';
 import 'package:stackbraid_client/src/model/login_request.dart';
@@ -39,6 +41,10 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return (value is double ? value : double.parse('$value')) as ReturnType;
         case 'AssignRoleRequest':
           return AssignRoleRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AuditEntry':
+          return AuditEntry.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'AuditPage':
+          return AuditPage.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'DevicePlatform':
           
           

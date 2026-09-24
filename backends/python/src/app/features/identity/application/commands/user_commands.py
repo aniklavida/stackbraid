@@ -12,6 +12,7 @@ from app.features.identity.contracts.dtos import UserDto
 from app.features.identity.domain.entities import Role, UserStatus
 from app.features.identity.domain.repositories import RoleRepository, UserRepository
 from app.features.identity.domain.value_objects import Email
+from app.shared.caching.cache import Cache
 from app.shared.persistence.unit_of_work import UnitOfWork
 from app.shared.realtime.messages import RoleSummary, UserDeactivatedMessage, UserRoleChangedMessage
 from app.shared.realtime.publisher import RealtimePublisher
@@ -36,9 +37,10 @@ def _role_not_found() -> AppError:
 
 
 class UpdateUserCommand:
-    def __init__(self, users: UserRepository, unit_of_work: UnitOfWork) -> None:
+    def __init__(self, users: UserRepository, unit_of_work: UnitOfWork, cache: Cache | None = None) -> None:
         self._users = users
         self._unit_of_work = unit_of_work
+        self._cache = cache
 
     async def handle(self, user_id: UUID, display_name: str | None, email: str | None) -> Result[UserDto]:
         user = await self._users.get_by_id(user_id)
@@ -65,6 +67,8 @@ class UpdateUserCommand:
         user.updated_at = _utc_now()
         await self._users.save_changes(user)
         await self._unit_of_work.commit()
+        if self._cache is not None:
+            self._cache.remove(f"identity:user:{user.id}")
 
         return Result.success(user_to_dto(user))
 
@@ -73,13 +77,16 @@ class DeactivateUserCommand:
     """Idempotent — deactivating an already-inactive user returns the
     current state, not an error."""
 
-    def __init__(self, users: UserRepository, unit_of_work: UnitOfWork, realtime: RealtimePublisher) -> None:
+    def __init__(self, users: UserRepository, unit_of_work: UnitOfWork, realtime: RealtimePublisher, cache: Cache | None = None) -> None:
         self._users = users
         self._unit_of_work = unit_of_work
         self._realtime = realtime
+        self._cache = cache
 
     async def handle(self, user_id: UUID) -> Result[UserDto]:
         user = await self._users.get_by_id(user_id)
+        if user is None:
+            user = await self._users.get_by_id(user_id, include_deleted=True)
         if user is None:
             return Result.failure(_user_not_found())
 
@@ -88,6 +95,8 @@ class DeactivateUserCommand:
         user.updated_at = _utc_now()
         await self._users.save_changes(user)
         await self._unit_of_work.commit()
+        if self._cache is not None:
+            self._cache.remove(f"identity:user:{user.id}")
 
         # Idempotent per the class summary above — only a real transition notifies.
         if not was_already_inactive:

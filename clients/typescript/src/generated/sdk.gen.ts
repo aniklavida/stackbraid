@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AssignRoleData, AssignRoleErrors, AssignRoleResponses, DeactivateUserData, DeactivateUserErrors, DeactivateUserResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetUserData, GetUserErrors, GetUserResponses, ListNotificationsData, ListNotificationsErrors, ListNotificationsResponses, ListRolesData, ListRolesErrors, ListRolesResponses, ListUsersData, ListUsersErrors, ListUsersResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutErrors, LogoutResponses, RefreshDeviceTokenData, RefreshDeviceTokenErrors, RefreshDeviceTokenResponses, RefreshTokenData, RefreshTokenErrors, RefreshTokenResponses, RegisterDeviceTokenData, RegisterDeviceTokenErrors, RegisterDeviceTokenResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RevokeDeviceTokenData, RevokeDeviceTokenErrors, RevokeDeviceTokenResponses, RevokeRoleData, RevokeRoleErrors, RevokeRoleResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses } from './types.gen';
+import type { AssignRoleData, AssignRoleErrors, AssignRoleResponses, DeactivateUserData, DeactivateUserErrors, DeactivateUserResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetUserData, GetUserErrors, GetUserResponses, ListNotificationsData, ListNotificationsErrors, ListNotificationsResponses, ListRolesData, ListRolesErrors, ListRolesResponses, ListUserAuditData, ListUserAuditErrors, ListUserAuditResponses, ListUsersData, ListUsersErrors, ListUsersResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutErrors, LogoutResponses, RefreshDeviceTokenData, RefreshDeviceTokenErrors, RefreshDeviceTokenResponses, RefreshTokenData, RefreshTokenErrors, RefreshTokenResponses, RegisterDeviceTokenData, RegisterDeviceTokenErrors, RegisterDeviceTokenResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RestoreUserData, RestoreUserErrors, RestoreUserResponses, RevokeDeviceTokenData, RevokeDeviceTokenErrors, RevokeDeviceTokenResponses, RevokeRoleData, RevokeRoleErrors, RevokeRoleResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -166,6 +166,26 @@ export const updateUser = <ThrowOnError extends boolean = false>(options: Option
 export const deactivateUser = <ThrowOnError extends boolean = false>(options: Options<DeactivateUserData, ThrowOnError>): RequestResult<DeactivateUserResponses, DeactivateUserErrors, ThrowOnError> => (options.client ?? client).post<DeactivateUserResponses, DeactivateUserErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/users/{userId}/deactivate',
+    ...options
+});
+
+/**
+ * Restore a soft-deleted user
+ *
+ * Restores a user previously deactivated through the soft-delete path. Idempotent.
+ */
+export const restoreUser = <ThrowOnError extends boolean = false>(options: Options<RestoreUserData, ThrowOnError>): RequestResult<RestoreUserResponses, RestoreUserErrors, ThrowOnError> => (options.client ?? client).post<RestoreUserResponses, RestoreUserErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/users/{userId}/restore',
+    ...options
+});
+
+/**
+ * List audit events for a user
+ */
+export const listUserAudit = <ThrowOnError extends boolean = false>(options: Options<ListUserAuditData, ThrowOnError>): RequestResult<ListUserAuditResponses, ListUserAuditErrors, ThrowOnError> => (options.client ?? client).get<ListUserAuditResponses, ListUserAuditErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/audit',
     ...options
 });
 

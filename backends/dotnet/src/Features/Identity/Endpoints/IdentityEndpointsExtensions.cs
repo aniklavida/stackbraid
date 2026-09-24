@@ -8,6 +8,7 @@ public static class IdentityEndpointsExtensions
     {
         app.MapAuthEndpoints();
         app.MapUsersEndpoints();
+        app.MapAuditEndpoints();
         app.MapRolesEndpoints();
         app.MapNotificationEndpoints();
         return app;

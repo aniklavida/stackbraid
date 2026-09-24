@@ -16,6 +16,7 @@ public sealed class User : DomainEventEntity<Guid>, IAuditable
     public string PasswordHash { get; private set; } = string.Empty;
     public string DisplayName { get; private set; } = string.Empty;
     public UserStatus Status { get; private set; }
+    public DateTime? DeletedAtUtc { get; private set; }
     public DateTime? LastLoginAtUtc { get; private set; }
 
     public DateTime CreatedAtUtc { get; set; }
@@ -74,7 +75,19 @@ public sealed class User : DomainEventEntity<Guid>, IAuditable
         }
 
         Status = UserStatus.Inactive;
+        DeletedAtUtc = nowUtc;
         Raise(new UserDeactivatedEvent(Id, nowUtc));
+    }
+
+    public void Restore(DateTime nowUtc)
+    {
+        if (DeletedAtUtc is null)
+        {
+            return;
+        }
+
+        DeletedAtUtc = null;
+        Status = UserStatus.Active;
     }
 
     public bool HasRole(Guid roleId) => _userRoles.Any(ur => ur.RoleId == roleId);

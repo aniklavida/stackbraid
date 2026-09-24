@@ -111,6 +111,7 @@ class User:
         self.display_name = display_name
         self.status = UserStatus.ACTIVE
         self.last_login_at: datetime | None = None
+        self.deleted_at: datetime | None = None
         self.created_at: datetime | None = None
         self.updated_at: datetime | None = None
         self._user_roles: list[UserRole] = []
@@ -160,7 +161,14 @@ class User:
         if self.status == UserStatus.INACTIVE:
             return
         self.status = UserStatus.INACTIVE
+        self.deleted_at = now
         self._raise(UserDeactivatedEvent(self.id, now))
+
+    def restore(self) -> None:
+        if self.deleted_at is None:
+            return
+        self.deleted_at = None
+        self.status = UserStatus.ACTIVE
 
     def has_role(self, role_id: UUID) -> bool:
         return any(link.role_id == role_id for link in self._user_roles)

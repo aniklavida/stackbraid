@@ -2,6 +2,7 @@ using Mediator;
 using StackBraid.Features.Identity.Application.Mapping;
 using StackBraid.Features.Identity.Contracts.Dtos;
 using StackBraid.Features.Identity.Domain.Repositories;
+using StackBraid.Shared.Caching;
 using StackBraid.Shared.Persistence;
 using StackBraid.Shared.Realtime;
 using StackBraid.Shared.Web;
@@ -16,17 +17,23 @@ public sealed class DeactivateUserCommandHandler : ICommandHandler<DeactivateUse
     private readonly IUserRepository _users;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IRealtimePublisher _realtime;
+    private readonly ICache? _cache;
 
-    public DeactivateUserCommandHandler(IUserRepository users, IUnitOfWork unitOfWork, IRealtimePublisher realtime)
+    public DeactivateUserCommandHandler(IUserRepository users, IUnitOfWork unitOfWork, IRealtimePublisher realtime, ICache? cache = null)
     {
         _users = users;
         _unitOfWork = unitOfWork;
         _realtime = realtime;
+        _cache = cache;
     }
 
     public async ValueTask<Result<UserDto>> Handle(DeactivateUserCommand command, CancellationToken cancellationToken)
     {
         var user = await _users.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
+        if (user is null)
+        {
+            user = await _users.GetByIdIncludingDeletedAsync(command.UserId, cancellationToken).ConfigureAwait(false);
+        }
         if (user is null)
         {
             return AppError.NotFound("IDENTITY.USER_NOT_FOUND", "identity.user_not_found");
@@ -35,6 +42,7 @@ public sealed class DeactivateUserCommandHandler : ICommandHandler<DeactivateUse
         var wasAlreadyInactive = user.Status == Domain.Entities.UserStatus.Inactive;
         user.Deactivate(DateTime.UtcNow);
         await _unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        _cache?.Remove($"identity:user:{user.Id}");
 
         // Idempotent per the summary above — only a real transition notifies.
         if (!wasAlreadyInactive)

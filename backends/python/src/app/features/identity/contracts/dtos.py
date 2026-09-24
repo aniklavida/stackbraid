@@ -29,6 +29,22 @@ class UserDto(CamelModel):
     created_at: UtcDateTime
     updated_at: UtcDateTime
     last_login_at: UtcDateTime | None = None
+    deleted_at: UtcDateTime | None = None
+
+
+class AuditEntryDto(CamelModel):
+    id: UUID
+    entity_type: str
+    entity_id: UUID
+    action: str
+    actor_id: UUID | None = None
+    correlation_id: str
+    occurred_at: UtcDateTime
+    details: str | None = None
+
+
+class AuditPageDto(CamelModel):
+    items: list[AuditEntryDto]
 
 
 class UserPageDto(CamelModel):

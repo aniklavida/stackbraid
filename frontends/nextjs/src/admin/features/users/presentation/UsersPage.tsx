@@ -12,13 +12,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DEFAULT_USERS_FILTER, type AccountStatus } from "../domain/user-filters";
-import { useDeactivateUser, useUsers } from "../application/use-users";
+import { useDeactivateUser, useRestoreUser, useUsers } from "../application/use-users";
 
 export function UsersPage() {
   const t = useTranslations("users");
   const [filter, setFilter] = useState(DEFAULT_USERS_FILTER);
   const { data, isPending, isError, isPlaceholderData } = useUsers(filter);
   const deactivate = useDeactivateUser();
+  const restore = useRestoreUser();
 
   return (
     <div className="flex flex-col gap-6">
@@ -47,6 +48,12 @@ export function UsersPage() {
             <SelectItem value="inactive">{t("statusInactive")}</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant={filter.includeDeleted ? "default" : "outline"}
+          onClick={() => setFilter((prev) => ({ ...prev, page: 1, includeDeleted: !prev.includeDeleted }))}
+        >
+          {t(filter.includeDeleted ? "actions.hideDeleted" : "actions.includeDeleted")}
+        </Button>
       </div>
 
       {isPending && <Skeleton className="h-64 w-full" />}
@@ -81,9 +88,10 @@ export function UsersPage() {
                   <TableCell className="font-medium">{user.displayName}</TableCell>
                   <TableCell className="text-muted-foreground">{user.email}</TableCell>
                   <TableCell>
-                    <Badge variant={user.status === "active" ? "default" : "secondary"}>
-                      {t(user.status === "active" ? "statusActive" : "statusInactive")}
-                    </Badge>
+                       <Badge variant={user.deletedAt ? "destructive" : user.status === "active" ? "default" : "secondary"}>
+                         {t(user.deletedAt ? "statusDeleted" : user.status === "active" ? "statusActive" : "statusInactive")}
+                       </Badge>
+
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
@@ -98,18 +106,30 @@ export function UsersPage() {
                     <Button asChild variant="ghost" size="sm">
                       <Link href={`/admin/users/${user.id}`}>{t("actions.view")}</Link>
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={user.status === "inactive" || deactivate.isPending}
-                      onClick={() =>
-                        deactivate.mutate(user.id, {
-                          onSuccess: () => toast.success(t("actions.deactivated", { name: user.displayName })),
-                        })
-                      }
-                    >
-                      {t("actions.deactivate")}
-                    </Button>
+                     {user.deletedAt ? (
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         disabled={restore.isPending}
+                         onClick={() => restore.mutate(user.id, { onSuccess: () => toast.success(t("actions.restored", { name: user.displayName })) })}
+                       >
+                         {t("actions.restore")}
+                       </Button>
+                     ) : (
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         disabled={user.status === "inactive" || deactivate.isPending}
+                         onClick={() =>
+                           deactivate.mutate(user.id, {
+                             onSuccess: () => toast.success(t("actions.deactivated", { name: user.displayName })),
+                           })
+                         }
+                       >
+                         {t("actions.deactivate")}
+                       </Button>
+                     )}
+
                   </TableCell>
                 </TableRow>
               ))}

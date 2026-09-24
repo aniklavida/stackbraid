@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddSharedWeb(this IServiceCollection services)
     {
         services.AddSingleton<IAppLocalizer, JsonAppLocalizer>();
+        services.AddHttpContextAccessor();
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
         services.AddAppRateLimiting();
@@ -26,7 +27,7 @@ public static class ServiceCollectionExtensions
     {
         app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseExceptionHandler();
-        app.UseRateLimiter();
+        app.UseMiddleware<RateLimitMiddleware>();
         return app;
     }
 }

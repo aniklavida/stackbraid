@@ -11,7 +11,9 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**deactivateUser**](UsersApi.md#deactivateuser) | **POST** /v1/users/{userId}/deactivate | Deactivate a user
 [**getUser**](UsersApi.md#getuser) | **GET** /v1/users/{userId} | Read a single user
+[**listUserAudit**](UsersApi.md#listuseraudit) | **GET** /v1/audit | List audit events for a user
 [**listUsers**](UsersApi.md#listusers) | **GET** /v1/users | List users
+[**restoreUser**](UsersApi.md#restoreuser) | **POST** /v1/users/{userId}/restore | Restore a soft-deleted user
 [**updateUser**](UsersApi.md#updateuser) | **PATCH** /v1/users/{userId} | Update a user&#39;s profile
 
 
@@ -59,7 +61,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getUser**
-> User getUser(userId)
+> User getUser(userId, includeDeleted)
 
 Read a single user
 
@@ -69,9 +71,10 @@ import 'package:stackbraid_client/api.dart';
 
 final api = StackbraidClient().getUsersApi();
 final String userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+final bool includeDeleted = true; // bool | Include a soft-deleted user for administrative recovery.
 
 try {
-    final response = api.getUser(userId);
+    final response = api.getUser(userId, includeDeleted);
     print(response);
 } on DioException catch (e) {
     print('Exception when calling UsersApi->getUser: $e\n');
@@ -83,6 +86,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **userId** | **String**|  | 
+ **includeDeleted** | **bool**| Include a soft-deleted user for administrative recovery. | [optional] [default to false]
 
 ### Return type
 
@@ -99,8 +103,49 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **listUserAudit**
+> AuditPage listUserAudit(userId)
+
+List audit events for a user
+
+### Example
+```dart
+import 'package:stackbraid_client/api.dart';
+
+final api = StackbraidClient().getUsersApi();
+final String userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+
+try {
+    final response = api.listUserAudit(userId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling UsersApi->listUserAudit: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **userId** | **String**|  | 
+
+### Return type
+
+[**AuditPage**](AuditPage.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **listUsers**
-> UserPage listUsers(page, pageSize, sort, search, status, roleId)
+> UserPage listUsers(page, pageSize, sort, search, status, roleId, includeDeleted)
 
 List users
 
@@ -117,9 +162,10 @@ final String sort = sort_example; // String | One sortable field, optionally pre
 final String search = search_example; // String | Case-insensitive substring match against email and display name.
 final UserStatus status = ; // UserStatus | Filter by account status.
 final String roleId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | Filter to users holding this role.
+final bool includeDeleted = true; // bool | Include soft-deleted users. Defaults to false.
 
 try {
-    final response = api.listUsers(page, pageSize, sort, search, status, roleId);
+    final response = api.listUsers(page, pageSize, sort, search, status, roleId, includeDeleted);
     print(response);
 } on DioException catch (e) {
     print('Exception when calling UsersApi->listUsers: $e\n');
@@ -136,10 +182,54 @@ Name | Type | Description  | Notes
  **search** | **String**| Case-insensitive substring match against email and display name. | [optional] 
  **status** | [**UserStatus**](.md)| Filter by account status. | [optional] 
  **roleId** | **String**| Filter to users holding this role. | [optional] 
+ **includeDeleted** | **bool**| Include soft-deleted users. Defaults to false. | [optional] [default to false]
 
 ### Return type
 
 [**UserPage**](UserPage.md)
+
+### Authorization
+
+[bearerAuth](../README.md#bearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json, application/problem+json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **restoreUser**
+> User restoreUser(userId)
+
+Restore a soft-deleted user
+
+Restores a user previously deactivated through the soft-delete path. Idempotent.
+
+### Example
+```dart
+import 'package:stackbraid_client/api.dart';
+
+final api = StackbraidClient().getUsersApi();
+final String userId = 38400000-8cf0-11bd-b23e-10b96e4ef00d; // String | 
+
+try {
+    final response = api.restoreUser(userId);
+    print(response);
+} on DioException catch (e) {
+    print('Exception when calling UsersApi->restoreUser: $e\n');
+}
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **userId** | **String**|  | 
+
+### Return type
+
+[**User**](User.md)
 
 ### Authorization
 

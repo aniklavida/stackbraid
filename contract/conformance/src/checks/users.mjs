@@ -4,7 +4,7 @@
 import { request } from '../http.mjs';
 import { fail } from '../assert.mjs';
 import { Skip } from '../report.mjs';
-import { validateUser, validatePageEnvelope, violationsMessage } from '../schema.mjs';
+import { validateAuditEntry, validateUser, validatePageEnvelope, violationsMessage } from '../schema.mjs';
 import { expectProblem, resolvePrivilegedTokens, uniqueEmail } from './shared.mjs';
 
 export async function registerUserChecks(harness, ctx) {
@@ -99,13 +99,32 @@ export async function registerUserChecks(harness, ctx) {
     const reg = await request(ctx.baseUrl, { method: 'POST', path: '/v1/auth/register', body: { email, password: 'Conformance!2026', displayName: 'Deactivate Target' } });
     if (reg.status !== 201) fail('could not register a throwaway user for the deactivate check', { field: 'status', expected: 201, actual: reg.status });
     const targetId = reg.body.id;
+    const correlationId = `conformance-${Date.now()}`;
 
-    const first = await request(ctx.baseUrl, { method: 'POST', path: `/v1/users/${targetId}/deactivate`, accessToken });
+    const first = await request(ctx.baseUrl, { method: 'POST', path: `/v1/users/${targetId}/deactivate`, accessToken, headers: { 'X-Correlation-Id': correlationId } });
     if (first.status !== 200) fail('unexpected status deactivating a user', { field: 'status', expected: 200, actual: first.status });
     if (first.body.status !== 'inactive') fail('deactivate did not set status to inactive', { field: 'body.status', expected: 'inactive', actual: first.body.status });
+    if (first.body.deletedAt === null || first.body.deletedAt === undefined) fail('deactivate did not set deletedAt', { field: 'body.deletedAt', expected: 'RFC 3339 UTC timestamp', actual: first.body.deletedAt });
 
     const second = await request(ctx.baseUrl, { method: 'POST', path: `/v1/users/${targetId}/deactivate`, accessToken });
     if (second.status !== 200) fail('deactivating an already-inactive user did not return 200 (not idempotent)', { field: 'status', expected: 200, actual: second.status });
     if (second.body.status !== 'inactive') fail('re-deactivation changed status away from inactive', { field: 'body.status', expected: 'inactive', actual: second.body.status });
+
+    const normalList = await request(ctx.baseUrl, { path: '/v1/users?search=Deactivate%20Target&pageSize=50', accessToken });
+    if ((normalList.body?.items || []).some((user) => user.id === targetId)) fail('soft-deleted user appeared in the normal list', { field: 'body.items', expected: 'deleted user absent', actual: targetId });
+
+    const adminList = await request(ctx.baseUrl, { path: '/v1/users?includeDeleted=true&search=Deactivate%20Target&pageSize=50', accessToken });
+    const deleted = (adminList.body?.items || []).find((user) => user.id === targetId);
+    if (!deleted) fail('includeDeleted=true did not return the soft-deleted user', { field: 'body.items', expected: targetId, actual: (adminList.body?.items || []).map((user) => user.id) });
+
+    const audit = await request(ctx.baseUrl, { path: `/v1/audit?userId=${targetId}`, accessToken });
+    if (audit.status !== 200 || !Array.isArray(audit.body?.items)) fail('audit history was not retrievable', { field: 'body.items', expected: 'array', actual: audit.body });
+    const deactivateAudit = (audit.body?.items || []).find((entry) => entry.action === 'deleted' && entry.correlationId === correlationId);
+    if (!deactivateAudit) fail('deactivation audit event did not carry the request correlation ID', { field: 'items[].correlationId', expected: correlationId, actual: audit.body?.items });
+    const auditViolations = [];
+    (audit.body?.items || []).forEach((entry, index) => validateAuditEntry(entry, `body.items[${index}]`, auditViolations));
+    if (auditViolations.length) fail(violationsMessage('AuditEntry shape', auditViolations));
+
+    const restored = await request(ctx.baseUrl, { method: 'POST', path: `/v1/users/${targetId}/restore`, accessToken });
+    if (restored.status !== 200 || restored.body.status !== 'active' || restored.body.deletedAt !== null) fail('restore did not return an active, non-deleted user', { field: 'body', expected: 'active user with deletedAt null', actual: restored.body });
   });
-}

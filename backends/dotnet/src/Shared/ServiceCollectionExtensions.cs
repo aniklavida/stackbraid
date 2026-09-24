@@ -8,6 +8,7 @@ using StackBraid.Shared.Jobs;
 using StackBraid.Shared.Mailing;
 using StackBraid.Shared.Messaging;
 using StackBraid.Shared.Notifications;
+using StackBraid.Shared.Persistence;
 using StackBraid.Shared.Security;
 using StackBraid.Shared.Storage;
 using StackBraid.Shared.Web;
@@ -28,6 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddPersistentJobs(configuration);
         services.AddMemoryCache();
         services.AddSingleton<ICache, InMemoryCache>();
+        services.AddSingleton<ISoftDeleteService, SoftDeleteService>();
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
 

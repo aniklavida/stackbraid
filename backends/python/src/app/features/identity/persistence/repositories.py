@@ -15,7 +15,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.features.identity.domain.entities import RefreshToken, Role, User, UserRole, UserStatus
 from app.features.identity.domain.repositories import UserSearchQuery, UserSearchResult
 from app.features.identity.domain.value_objects import Email
-from app.features.identity.persistence.models import RefreshTokenModel, RoleModel, UserModel, UserRoleModel
+from app.features.identity.persistence.models import AuditLogModel, RefreshTokenModel, RoleModel, UserModel, UserRoleModel
+from app.shared.auditing.audit import AuditEntry
 
 _SORTABLE_COLUMNS = {
     "email": UserModel.email,
@@ -36,6 +37,7 @@ def _user_to_domain(row: UserModel) -> User:
     user = User(row.id, Email(row.email), row.password_hash, row.display_name)
     user.status = UserStatus(row.status)
     user.last_login_at = row.last_login_at
+    user.deleted_at = row.deleted_at
     user.created_at = row.created_at
     user.updated_at = row.updated_at
     for link in row.user_roles:
@@ -48,12 +50,18 @@ class SqlAlchemyUserRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def get_by_id(self, id: UUID) -> User | None:
-        row = await self._session.get(UserModel, id)
+    async def get_by_id(self, id: UUID, include_deleted: bool = False) -> User | None:
+        statement = select(UserModel).where(UserModel.id == id)
+        if not include_deleted:
+            statement = statement.where(UserModel.deleted_at.is_(None))
+        result = await self._session.execute(statement.execution_options(include_deleted=include_deleted))
+        row = result.scalar_one_or_none()
         return _user_to_domain(row) if row else None
 
     async def get_by_email(self, email: Email) -> User | None:
-        result = await self._session.execute(select(UserModel).where(UserModel.email == email.value))
+        result = await self._session.execute(
+            select(UserModel).where(UserModel.email == email.value, UserModel.deleted_at.is_(None))
+        )
         row = result.scalar_one_or_none()
         return _user_to_domain(row) if row else None
 
@@ -71,6 +79,7 @@ class SqlAlchemyUserRepository:
             last_login_at=user.last_login_at,
             created_at=user.created_at,
             updated_at=user.updated_at,
+            deleted_at=user.deleted_at,
         )
         self._session.add(row)
         await self._sync_user_roles(user, row)
@@ -107,11 +116,15 @@ class SqlAlchemyUserRepository:
         row.status = user.status.value
         row.last_login_at = user.last_login_at
         row.updated_at = user.updated_at
+        row.deleted_at = user.deleted_at
         await self._sync_user_roles(user, row)
 
     async def search(self, query: UserSearchQuery) -> UserSearchResult:
         stmt = select(UserModel)
         count_stmt = select(func.count()).select_from(UserModel)
+        if not query.include_deleted:
+            stmt = stmt.where(UserModel.deleted_at.is_(None))
+            count_stmt = count_stmt.where(UserModel.deleted_at.is_(None))
 
         if query.status is not None:
             stmt = stmt.where(UserModel.status == query.status.value)
@@ -134,10 +147,47 @@ class SqlAlchemyUserRepository:
 
         stmt = stmt.offset((query.page - 1) * query.page_size).limit(query.page_size)
 
-        total = (await self._session.execute(count_stmt)).scalar_one()
-        rows = (await self._session.execute(stmt)).scalars().unique().all()
+        total = (await self._session.execute(count_stmt.execution_options(include_deleted=query.include_deleted))).scalar_one()
+        rows = (await self._session.execute(stmt.execution_options(include_deleted=query.include_deleted))).scalars().unique().all()
 
         return UserSearchResult(items=[_user_to_domain(row) for row in rows], total_count=total)
+
+
+class SqlAlchemyAuditLog:
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    def add(self, entry: AuditEntry) -> None:
+        self._session.add(AuditLogModel(
+            id=entry.id,
+            entity_type=entry.entity_type,
+            entity_id=entry.entity_id,
+            action=entry.action,
+            actor_id=entry.actor_id,
+            correlation_id=entry.correlation_id,
+            occurred_at=entry.occurred_at,
+            details=entry.details,
+        ))
+
+    async def list(self, entity_id: UUID) -> list[AuditEntry]:
+        result = await self._session.execute(
+            select(AuditLogModel)
+            .where(AuditLogModel.entity_id == entity_id)
+            .order_by(AuditLogModel.occurred_at.desc())
+        )
+        return [
+            AuditEntry(
+                id=row.id,
+                entity_type=row.entity_type,
+                entity_id=row.entity_id,
+                action=row.action,
+                actor_id=row.actor_id,
+                correlation_id=row.correlation_id,
+                occurred_at=row.occurred_at,
+                details=row.details,
+            )
+            for row in result.scalars().all()
+        ]
 
 
 class SqlAlchemyRoleRepository:

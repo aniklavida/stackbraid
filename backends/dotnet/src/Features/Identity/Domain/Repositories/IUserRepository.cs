@@ -9,13 +9,16 @@ public sealed record UserSearchQuery(
     string Sort,
     string? Search,
     UserStatus? Status,
-    Guid? RoleId);
+    Guid? RoleId,
+    bool IncludeDeleted = false);
 
 public sealed record UserSearchResult(IReadOnlyList<User> Items, int TotalCount);
 
 public interface IUserRepository
 {
     Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<User?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<User?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default);
 

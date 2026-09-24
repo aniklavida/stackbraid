@@ -16,6 +16,8 @@ export 'package:stackbraid_client/src/api/roles_api.dart';
 export 'package:stackbraid_client/src/api/users_api.dart';
 
 export 'package:stackbraid_client/src/model/assign_role_request.dart';
+export 'package:stackbraid_client/src/model/audit_entry.dart';
+export 'package:stackbraid_client/src/model/audit_page.dart';
 export 'package:stackbraid_client/src/model/device_platform.dart';
 export 'package:stackbraid_client/src/model/device_token.dart';
 export 'package:stackbraid_client/src/model/job_progress_message.dart';

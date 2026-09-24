@@ -5,6 +5,7 @@
   "statusAll": "Todos los estados",
   "statusActive": "Activo",
   "statusInactive": "Inactivo",
+  "statusDeleted": "Eliminado",
   "columns": {
     "name": "Nombre",
     "email": "Correo",
@@ -15,7 +16,11 @@
   "actions": {
     "view": "Ver",
     "deactivate": "Desactivar",
-    "deactivated": "Se desactivó a {{name}}."
+    "deactivated": "Se desactivó a {{name}}.",
+    "includeDeleted": "Mostrar eliminados",
+    "hideDeleted": "Ocultar eliminados",
+    "restore": "Restaurar",
+    "restored": "Se restauró a {{name}}."
   },
   "pagination": {
     "summary": "Página {{page}} de {{totalPages}} — {{totalItems}} cuentas",
@@ -37,6 +42,9 @@
     "account": "Detalles de la cuenta",
     "createdAt": "Creado",
     "lastLoginAt": "Último inicio de sesión",
-    "lastLoginAt_never": "Nunca"
+    "lastLoginAt_never": "Nunca",
+    "deletedAt": "Eliminado",
+    "audit": "Historial de auditoría",
+    "noAudit": "No hay eventos de auditoría."
   }
 }

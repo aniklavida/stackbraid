@@ -5,6 +5,7 @@
   "statusAll": "All statuses",
   "statusActive": "Active",
   "statusInactive": "Inactive",
+  "statusDeleted": "Deleted",
   "columns": {
     "name": "Name",
     "email": "Email",
@@ -15,7 +16,11 @@
   "actions": {
     "view": "View",
     "deactivate": "Deactivate",
-    "deactivated": "Deactivated {{name}}."
+    "deactivated": "Deactivated {{name}}.",
+    "includeDeleted": "Show deleted",
+    "hideDeleted": "Hide deleted",
+    "restore": "Restore",
+    "restored": "Restored {{name}}."
   },
   "pagination": {
     "summary": "Page {{page}} of {{totalPages}} — {{totalItems}} accounts",
@@ -37,6 +42,9 @@
     "account": "Account details",
     "createdAt": "Created",
     "lastLoginAt": "Last sign-in",
-    "lastLoginAt_never": "Never"
+    "lastLoginAt_never": "Never",
+    "deletedAt": "Deleted",
+    "audit": "Audit history",
+    "noAudit": "No audit events."
   }
 }

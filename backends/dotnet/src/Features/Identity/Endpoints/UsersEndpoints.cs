@@ -23,6 +23,7 @@ public static class UsersEndpoints
         group.MapGet("/{userId:guid}", GetUserAsync).RequirePermission("users:read");
         group.MapPatch("/{userId:guid}", UpdateUserAsync).RequirePermission("users:write");
         group.MapPost("/{userId:guid}/deactivate", DeactivateUserAsync).RequirePermission("users:write");
+        group.MapPost("/{userId:guid}/restore", RestoreUserAsync).RequirePermission("users:write");
 
         return app;
     }
@@ -36,6 +37,7 @@ public static class UsersEndpoints
         string? search,
         string? status,
         Guid? roleId,
+        bool? includeDeleted,
         ISender sender,
         IAppLocalizer localizer,
         HttpContext context)
@@ -82,16 +84,16 @@ public static class UsersEndpoints
                 .ToProblemResult(context, localizer);
         }
 
-        var result = await sender.Send(new ListUsersQuery(resolvedPage, resolvedPageSize, resolvedSort, search, parsedStatus, roleId));
+        var result = await sender.Send(new ListUsersQuery(resolvedPage, resolvedPageSize, resolvedSort, search, parsedStatus, roleId, includeDeleted ?? false));
 
         return result.Match(
             dto => Results.Ok(dto),
             error => error.ToProblemResult(context, localizer));
     }
 
-    private static async Task<IResult> GetUserAsync(Guid userId, ISender sender, IAppLocalizer localizer, HttpContext context)
+    private static async Task<IResult> GetUserAsync(Guid userId, bool? includeDeleted, ISender sender, IAppLocalizer localizer, HttpContext context)
     {
-        var result = await sender.Send(new GetUserQuery(userId));
+        var result = await sender.Send(new GetUserQuery(userId, includeDeleted ?? false));
         return result.Match(
             dto => Results.Ok(dto),
             error => error.ToProblemResult(context, localizer));
@@ -108,6 +110,14 @@ public static class UsersEndpoints
     private static async Task<IResult> DeactivateUserAsync(Guid userId, ISender sender, IAppLocalizer localizer, HttpContext context)
     {
         var result = await sender.Send(new DeactivateUserCommand(userId));
+        return result.Match(
+            dto => Results.Ok(dto),
+            error => error.ToProblemResult(context, localizer));
+    }
+
+    private static async Task<IResult> RestoreUserAsync(Guid userId, ISender sender, IAppLocalizer localizer, HttpContext context)
+    {
+        var result = await sender.Send(new RestoreUserCommand(userId));
         return result.Match(
             dto => Results.Ok(dto),
             error => error.ToProblemResult(context, localizer));
