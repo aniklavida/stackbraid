@@ -6,6 +6,7 @@ from app.features.identity.domain.entities import RefreshToken, Role, User
 from app.features.identity.domain.repositories import UserSearchQuery
 from app.features.identity.domain.value_objects import Email
 from app.features.identity.persistence.repositories import (
+    SqlAlchemyAuditLog,
     SqlAlchemyRefreshTokenRepository,
     SqlAlchemyRoleRepository,
     SqlAlchemyUserRepository,
@@ -93,3 +94,25 @@ async def test_unit_of_work_commits_pending_changes(session) -> None:
 
     fetched = await users.get_by_id(user.id)
     assert fetched is not None
+
+
+async def test_deactivating_a_user_writes_a_retrievable_audit_row(session) -> None:
+    users = SqlAlchemyUserRepository(session)
+    audit = SqlAlchemyAuditLog(session)
+    user = User.register(Email.create("audited@example.com"), "hash", "Audited User", NOW)
+    user.created_at = user.updated_at = NOW
+    await users.add(user)
+    await session.commit()
+
+    user.deactivate(NOW)
+    user.updated_at = NOW
+    await users.save_changes(user)
+    await session.commit()
+
+    entries = await audit.list(user.id)
+
+    assert any(e.action == "created" and e.entity_id == user.id for e in entries)
+    deactivations = [e for e in entries if e.action == "deleted"]
+    assert len(deactivations) == 1
+    assert deactivations[0].correlation_id
+    assert deactivations[0].entity_type == "User"
