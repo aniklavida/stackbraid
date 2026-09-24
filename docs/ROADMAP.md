@@ -44,7 +44,13 @@ Background jobs, queue, storage, Excel, PDF, email, audit, caching, rate limitin
 
 SQL Server and MySQL, each with its own migrations.
 
-**Done:** conformance passes for every backend on every provider.
+**Status:** both providers exist on both backends, each with its own migrations, seed data and job store, and the
+composition roots select one with `Database:Provider` / `STACKBRAID_DATABASE_PROVIDER`. SQL Server is wired and its
+provider tests pass on both backends; Python's SQL Server and MySQL legs run in CI as service containers. The .NET
+MySQL leg is blocked: Pomelo 9.0.0 (the only MySQL EF Core provider with an accepted licence) targets EF Core 9 and
+cannot build its model on this backend's EF Core 10 baseline — see `docs/DEPENDENCIES.md`.
+
+**Done (not yet):** conformance passes for every backend on every provider.
 
 ## 7 · `create`, playbooks and release
 

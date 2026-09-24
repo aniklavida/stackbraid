@@ -7,19 +7,17 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import importlib
 import logging
 import subprocess
 import sys
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import AsyncIterator
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
-from app.database.postgres.engine import create_engine, create_session_factory
-from app.database.postgres.seed import seed
 from app.features.identity.endpoints.security import (
     AuthenticationError,
     ForbiddenError,
@@ -40,7 +38,6 @@ from app.shared.jobs.endpoints import create_jobs_router
 from app.shared.jobs.handlers import JobHandlerRegistry
 from app.shared.jobs.models import JobWorkerOptions
 from app.shared.jobs.persistent import JobWorker, PersistentJobScheduler
-from app.shared.jobs.sqlalchemy_store import SqlAlchemyJobStore
 from app.shared.localization.localizer import JsonAppLocalizer
 from app.shared.mailing.email_sender import SmtpEmailSender
 from app.shared.notifications.dispatcher import NotificationDispatcher, QueuedNotificationJob
@@ -56,17 +53,16 @@ from app.shared.web.exception_handling import register_exception_handlers
 from app.shared.web.problem import problem_response
 from app.shared.web.rate_limit import FixedWindowRateLimiter, RateLimitExceededError, rate_limited_response
 
-_ALEMBIC_INI = Path(__file__).resolve().parents[3] / "alembic.ini"
-
-
-def _run_migrations(dsn: str) -> None:
-    # env.py builds its own AsyncEngine (the documented Alembic recipe for an
-    # async dialect), so the DSN keeps its "+asyncpg" driver qualifier here —
-    # unlike a typical sync Alembic setup, it must not be stripped.
+def _run_migrations(provider, dsn: str) -> None:
+    # The selected provider owns its own Alembic script location and the
+    # environment variable its env.py reads. env.py builds its own AsyncEngine
+    # (the documented Alembic recipe for an async dialect), so the DSN keeps
+    # its "+driver" qualifier here — unlike a typical sync Alembic setup, it
+    # must not be stripped.
     subprocess.run(
-        [sys.executable, "-m", "alembic", "-c", str(_ALEMBIC_INI), "upgrade", "head"],
+        [sys.executable, "-m", "alembic", "-c", str(provider.ALEMBIC_INI), "upgrade", "head"],
         check=True,
-        env={"STACKBRAID_POSTGRES_DSN": dsn, "PATH": _path_env()},
+        env={provider.DSN_ENV_VAR: dsn, "PATH": _path_env()},
     )
 
 
@@ -82,10 +78,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     configure_opentelemetry(settings.otel_otlp_endpoint)
     localizer = JsonAppLocalizer()
 
+    # Select the database provider by name — each app/database/<provider>/
+    # package exposes the same small surface, so nothing here branches on
+    # which providers exist.
+    provider = importlib.import_module(f"app.database.{settings.database_provider}")
+    dsn = provider.resolve_dsn(settings)
+
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        engine = create_engine(settings.postgres_dsn)
-        session_factory = create_session_factory(engine)
+        engine = provider.create_engine(dsn)
+        session_factory = provider.create_session_factory(engine)
 
         app.state.session_factory = session_factory
         app.state.localizer = localizer
@@ -127,7 +129,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             worker_enabled=settings.jobs_worker_enabled,
             conformance_enabled=settings.jobs_conformance_enabled,
         )
-        app.state.job_store = SqlAlchemyJobStore(session_factory)
+        app.state.job_store = provider.create_job_store(session_factory)
         app.state.job_scheduler = PersistentJobScheduler(app.state.job_store)
         job_handlers = conformance_handlers() if settings.jobs_conformance_enabled else []
         app.state.job_worker = JobWorker(app.state.job_store, JobHandlerRegistry(job_handlers), job_options)
@@ -155,10 +157,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         background_tasks.append(asyncio.create_task(app.state.job_worker.run_forever()))
 
         if settings.run_migrations_on_startup:
-            await asyncio.to_thread(_run_migrations, settings.postgres_dsn)
+            await asyncio.to_thread(_run_migrations, provider, dsn)
 
         if settings.seed_on_startup:
-            await seed(session_factory, app.state.password_hasher)
+            await provider.seed(session_factory, app.state.password_hasher)
 
         yield
 

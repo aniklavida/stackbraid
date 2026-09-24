@@ -29,7 +29,7 @@ def upgrade() -> None:
         sa.Column('actor_id', sa.Uuid(), nullable=True),
         sa.Column('correlation_id', sa.String(length=200), nullable=False),
         sa.Column('occurred_at', sa.DateTime(timezone=True), nullable=False),
-        sa.Column('details', sa.String(), nullable=True),
+        sa.Column('details', sa.Text(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
     )
     op.create_index(op.f('ix_identity_audit_logs_entity_id'), 'identity_audit_logs', ['entity_id'], unique=False)

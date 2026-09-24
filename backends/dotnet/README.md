@@ -8,10 +8,17 @@ whether a backend actually satisfies the contract** (see "Conformance" below
 for the real run). `docs/STRUCTURE.md`'s dependency rules are enforced, not
 just followed by convention — `tests/ArchitectureTests` fails the build the
 moment one is violated (see "Architecture tests" below). This is
-`docs/ROADMAP.md` step 2's target. What is not yet true: no second provider
-(SQL Server/MySQL), no second backend (Python), and none of the Tier 2
-"professional" capabilities beyond the minimal defaults `Shared` already
-ships (see below). Frontends and mobile do not exist yet.
+`docs/ROADMAP.md` step 2's target. Providers: Postgres is the default this
+README's run uses; SQL Server and MySQL each ship their own
+`Database/<Provider>/` project with its own EF Core migrations, selected at
+startup with `Database:Provider`. SQL Server's DI and query-translation tests
+pass; MySQL's provider compiles and carries a Pomelo-generated migration, but
+Pomelo's only MIT release targets EF Core 9 and cannot build its model on this
+backend's EF Core 10 baseline, so the MySQL live leg is marked experimental in
+CI (see `docs/DEPENDENCIES.md`). What is not yet true: no second backend
+(Python), and none of the Tier 2 "professional" capabilities beyond the minimal
+defaults `Shared` already ships (see below). Frontends and mobile do not exist
+yet.
 
 ```
 backends/dotnet/
@@ -20,7 +27,8 @@ backends/dotnet/
 ├── scripts/                 start/stop a throwaway local Postgres for integration tests
 ├── src/
 │   ├── Shared/               cross-cutting plumbing — see below
-│   ├── Database/Postgres/    Npgsql wiring, migrations, seed data — see below
+│   ├── Database/             Postgres/ · SqlServer/ · MySql/ — one project each,
+│   │                         with its own migrations, seed data and job store
 │   ├── Features/Identity/
 │   │   ├── Domain/            entities, value objects, domain events — depends on nothing
 │   │   ├── Persistence/       DbContext, entity configuration, repositories — provider-agnostic
@@ -32,7 +40,8 @@ backends/dotnet/
     ├── Shared.UnitTests/                 real tests, all passing
     ├── Features.Identity.UnitTests/      domain + application + mapping, all passing
     ├── Features.Identity.IntegrationTests/   real local Postgres, all passing — see its own README
-    └── ArchitectureTests/                 the layering rules, enforced — see below
+    ├── ArchitectureTests/                 the layering rules, enforced — see below
+    └── Database.UnitTests/                provider DI + query translation, no live server needed
 ```
 
 ## Conformance — the real evidence

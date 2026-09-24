@@ -9,7 +9,7 @@
 
 const BACKEND_LABEL = { dotnet: '.NET', python: 'Python' };
 const FRONTEND_LABEL = { angular: 'Angular', nextjs: 'Next.js', none: null };
-const DATABASE_LABEL = { postgres: 'PostgreSQL' };
+const DATABASE_LABEL = { postgres: 'PostgreSQL', sqlserver: 'SQL Server', mysql: 'MySQL' };
 
 function backendRunInstructions(choices) {
   if (choices.backend === 'dotnet') {

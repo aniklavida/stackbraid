@@ -2,7 +2,9 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using StackBraid.Database.MySql;
 using StackBraid.Database.Postgres;
+using StackBraid.Database.SqlServer;
 using StackBraid.Features.Identity.Application.Abstractions;
 using StackBraid.Features.Identity.Endpoints;
 using StackBraid.Host.Documentation;
@@ -38,11 +40,32 @@ builder.Services.AddStackBraidObservability(builder.Configuration);
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 
-var connectionString = builder.Configuration.GetConnectionString("Postgres")
-    ?? throw new InvalidOperationException("ConnectionStrings:Postgres is not configured.");
+// The composition root is where the database choice is made — the only
+// place outside Database/<Provider>/ that names one. Database:Provider
+// defaults to postgres, the provider this backend's own README documents;
+// docs/STRUCTURE.md's isolation rule is enforced for every non-Database,
+// non-Host assembly by tests/ArchitectureTests.
+var databaseProvider = builder.Configuration["Database:Provider"] ?? "postgres";
 
 builder.Services.AddShared(builder.Configuration);
-builder.Services.AddPostgresPersistence(connectionString);
+switch (databaseProvider.ToLowerInvariant())
+{
+    case "sqlserver":
+        builder.Services.AddSqlServerPersistence(
+            builder.Configuration.GetConnectionString("SqlServer")
+                ?? throw new InvalidOperationException("ConnectionStrings:SqlServer is not configured."));
+        break;
+    case "mysql":
+        builder.Services.AddMySqlPersistence(
+            builder.Configuration.GetConnectionString("MySql")
+                ?? throw new InvalidOperationException("ConnectionStrings:MySql is not configured."));
+        break;
+    default:
+        builder.Services.AddPostgresPersistence(
+            builder.Configuration.GetConnectionString("Postgres")
+                ?? throw new InvalidOperationException("ConnectionStrings:Postgres is not configured."));
+        break;
+}
 // Every handler here takes a Scoped repository (itself backed by a Scoped
 // DbContext) through its constructor. The library's own default is
 // Singleton — its README recommends it for raw throughput — but a
@@ -123,7 +146,7 @@ if (!string.IsNullOrWhiteSpace(realtimeBackplane))
 builder.Services.AddSingleton<IRealtimePublisher, SignalRRealtimePublisher>();
 
 builder.Services.AddHealthChecks()
-    .AddCheck<DatabaseHealthCheck>("postgres", tags: ["ready"]);
+    .AddCheck<DatabaseHealthCheck>("database", tags: ["ready"]);
 
 // No frontend origin is trusted by default — a frontend must be listed
 // explicitly (Cors:AllowedOrigins, e.g. a frontend's local dev server)
@@ -163,8 +186,21 @@ app.MapDocumentJobEndpoints();
 app.MapJobEndpoints();
 app.MapOpenApiDocumentation();
 
-await app.Services.MigratePostgresDatabaseAsync();
-await PostgresSeeder.SeedAsync(app.Services);
+switch (databaseProvider.ToLowerInvariant())
+{
+    case "sqlserver":
+        await app.Services.MigrateSqlServerDatabaseAsync();
+        await SqlServerSeeder.SeedAsync(app.Services);
+        break;
+    case "mysql":
+        await app.Services.MigrateMySqlDatabaseAsync();
+        await MySqlSeeder.SeedAsync(app.Services);
+        break;
+    default:
+        await app.Services.MigratePostgresDatabaseAsync();
+        await PostgresSeeder.SeedAsync(app.Services);
+        break;
+}
 
 app.Run();
 

@@ -11,7 +11,17 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="STACKBRAID_", extra="ignore")
 
+    # Which database provider the composition root wires up, and that
+    # provider's own connection string. The provider modules live under
+    # app/database/<provider>/ and each reads the setting below that matches
+    # it, so no provider-specific logic lives here — only the choice does.
+    database_provider: str = "postgres"
     postgres_dsn: str = "postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/stackbraid"
+    sqlserver_dsn: str = (
+        "mssql+aioodbc://sa:ChangeMe%21123@127.0.0.1:1433/stackbraid"
+        "?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
+    )
+    mysql_dsn: str = "mysql+aiomysql://root:ChangeMe%21123@127.0.0.1:3306/stackbraid?charset=utf8mb4"
 
     # A fixed, publicly-known development default — never used past local
     # development. Base64-encoded HMAC-SHA256 key, same shape .NET's own

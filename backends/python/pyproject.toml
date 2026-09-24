@@ -11,6 +11,10 @@ dependencies = [
   "pydantic-settings>=2.6,<3.0",
   "sqlalchemy[asyncio]>=2.0,<3.0",
   "asyncpg>=0.30,<1.0",
+  "aioodbc>=0.5,<1.0",
+  "pyodbc>=5.3,<6.0",
+  "aiomysql>=0.3,<1.0",
+  "PyMySQL>=1.2,<2.0",
   "alembic>=1.14,<2.0",
   "pyjwt>=2.9,<3.0",
   "redis>=5.2,<6.0",
@@ -97,3 +101,14 @@ forbidden_modules = [
   "app.features.identity.persistence",
   "app.features.identity.endpoints",
 ]
+
+# 5. Provider-specific code lives only under app/database/<provider>/ — the
+#    other half of docs/STRUCTURE.md's "Database/<Provider>/ is the only place
+#    a provider name appears" rule. It covers every provider directory that
+#    exists (postgres, sqlserver, mysql) because it forbids the whole
+#    app.database package rather than naming one.
+[[tool.importlinter.contracts]]
+name = "Features and shared never import a database provider"
+type = "forbidden"
+source_modules = ["app.shared", "app.features"]
+forbidden_modules = ["app.database"]

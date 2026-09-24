@@ -139,6 +139,21 @@ Every package family in the table above is MIT, Apache-2.0 or the permissive Pos
 it is what `backends/dotnet/src/Features/Identity/Persistence` (entity configuration, provider-agnostic) references for
 relational concepts like `ToTable`/`HasColumnName` that apply to any relational database, while `Npgsql.*` is confined
 to `backends/dotnet/src/Database/Postgres` — the one place a provider name is allowed to appear, per `docs/STRUCTURE.md`.
+
+**Database providers.** Each provider ships as its own `Database/<Provider>/` project with its own EF Core migrations,
+seed data and job store; the composition root selects one at startup with `Database:Provider` (default `postgres`).
+`Database/SqlServer` references `Microsoft.EntityFrameworkCore.SqlServer` (10.0.12, MIT) and, through it, the MIT
+`Microsoft.Data.SqlClient` ADO.NET driver. The SQL Server driver's Azure AD authentication feature pulls in a closure of
+MIT Microsoft/Azure packages (`Azure.Identity`, `Azure.Core`, `Microsoft.Identity.Client*`, `System.ClientModel`, and
+their support packages) — none of them contacts an Azure service in this repository, and all are recorded in
+`docs/dependency-inventory.json`. `Database/MySql` references `Pomelo.EntityFrameworkCore.MySql` (9.0.0, MIT) —
+deliberately not Oracle's `MySql.Data`, which is GPL-2.0-only — and, through it, the MIT `MySqlConnector` driver.
+**Known block:** Pomelo 9.0.0 is built against EF Core 9 and cannot build its model on this backend's EF Core 10
+baseline (`Method not found: Microsoft.EntityFrameworkCore.Diagnostics.AbstractionsStrings.ArgumentIsEmpty`). Pomelo
+has no EF Core 10 release yet, and no other MySQL EF Core provider carries an accepted licence. The provider project
+compiles, its Pomelo-generated migration is committed, and its DI-wiring test passes; its query-translation test is
+skipped with that reason, and the .NET MySQL conformance leg is `continue-on-error: true` in
+`.github/workflows/conformance.yml`. Remove the gate the day Pomelo ships an EF Core 10 release.
 `StackBraid.Shared` (see `docs/STRUCTURE.md`) also uses a `FrameworkReference` to `Microsoft.AspNetCore.App` for
 `ProblemDetails`, localization and rate limiting types — a reference to the shared
 .NET runtime already installed alongside the SDK, not a NuGet download of its own, so it
@@ -175,6 +190,8 @@ under the `pypi-python-backend` ecosystem.
 | `pydantic-settings` (+ `python-dotenv`) | 2.15.0 / 1.2.3 | MIT / BSD-3-Clause |
 | `sqlalchemy` (+ `greenlet`) | 2.0.52 / 3.5.5 | MIT / MIT AND PSF-2.0 |
 | `asyncpg` | 0.31.0 | Apache-2.0 |
+| `aioodbc` (+ `pyodbc`, the ODBC driver it wraps) | 0.5.0 / 5.3.0 | Apache-2.0 / MIT |
+| `aiomysql` (+ `PyMySQL`, the pure-Python client it wraps) | 0.3.2 / 1.2.3 | MIT |
 | `alembic` (+ `mako`) | 1.20.0 / 1.4.1 | MIT |
 | `pyjwt` | 2.14.0 | MIT |
 | `starlette`, `anyio`, `click`, `idna`, `markupsafe`, `pyyaml`, `typing-extensions`, `annotated-doc` | various | MIT / BSD-3-Clause / PSF-2.0 |
@@ -195,6 +212,15 @@ protocol, which Valkey speaks unchanged, so `docs/SPEC.md` §13's still-open
 choice between the two is not decided by this dependency. Pulled in with no
 new transitive package of its own — its only declared dependency, `pyjwt`,
 is already audited above.
+
+The database provider drivers — `asyncpg` for Postgres, `aioodbc`/`pyodbc` for
+SQL Server, `aiomysql`/`PyMySQL` for MySQL — are each confined to
+`database/<provider>/`, so a feature or `shared/` module never imports one
+(enforced by the `Features and shared never import a database provider`
+import-linter contract). The provider is selected at startup with
+`STACKBRAID_DATABASE_PROVIDER`; the offline dialect/DDL tests for all three run
+in CI without a server, and the SQL Server and MySQL conformance legs use GitHub
+Actions service containers.
 
 Every one is MIT, Apache-2.0, BSD-2/3-Clause or PSF-2.0 — compliant with the
 compiled-into-user-code rule. Notably absent by deliberate choice: **no

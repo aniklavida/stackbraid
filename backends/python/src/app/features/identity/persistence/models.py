@@ -13,7 +13,7 @@ import json
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String, Uuid, event
+from sqlalchemy import JSON, DateTime, ForeignKey, String, Text, Uuid, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.shared.persistence.base import OrmBase
@@ -95,7 +95,7 @@ class AuditLogModel(OrmBase):
     actor_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
     correlation_id: Mapped[str] = mapped_column(String(200), nullable=False)
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    details: Mapped[str | None] = mapped_column(String, nullable=True)
+    details: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 @event.listens_for(type(UserModel.__mapper__), "after_configured")

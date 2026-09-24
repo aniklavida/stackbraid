@@ -7,10 +7,16 @@ all backed by a real Postgres database, and **all proven green against
 (see "Conformance" below for the real run). `import-linter` enforces
 `docs/STRUCTURE.md`'s dependency rules, not just convention — a violation
 fails `lint-imports`, not merely a review comment (see "Architecture" below).
-This is `docs/ROADMAP.md` step 3's target. What is not yet true: no second
-provider (SQL Server/MySQL), no second backend feature, and none of the
-Tier 2 "professional" capabilities beyond the minimal defaults `shared/`
-already ships (see below). Frontends and mobile do not exist yet.
+This is `docs/ROADMAP.md` step 3's target. Providers: Postgres is the default
+this README's run uses; SQL Server (through `pyodbc`/`aioodbc`) and MySQL
+(through `PyMySQL`/`aiomysql`) each ship their own `database/<provider>/`
+package with its own async engine wiring, Alembic migrations and seed data,
+selected at startup with `STACKBRAID_DATABASE_PROVIDER`. The provider
+dialect/DDL tests run without a live server; the SQL Server and MySQL
+conformance legs run in CI as service containers (see
+`.github/workflows/conformance.yml`). What is not yet true: no second backend
+feature, and none of the Tier 2 "professional" capabilities beyond the minimal
+defaults `shared/` already ships (see below).
 
 ```
 backends/python/
@@ -20,7 +26,7 @@ backends/python/
 ├── scripts/                  start/stop a throwaway local Postgres for integration tests
 ├── src/app/
 │   ├── shared/                cross-cutting plumbing — see below
-│   ├── database/postgres/     asyncpg wiring, Alembic migrations, seed data — see below
+│   ├── database/              postgres/ · sqlserver/ · mysql/ — async wiring, Alembic migrations, seed data
 │   ├── features/identity/
 │   │   ├── domain/            entities, value objects, domain events — depends on nothing
 │   │   ├── persistence/       SQLAlchemy models, repositories — provider-agnostic
