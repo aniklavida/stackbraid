@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import logging
 import subprocess
 import sys
 from contextlib import asynccontextmanager
@@ -32,6 +33,11 @@ from app.host.config import Settings
 from app.host.documentation import create_documentation_router
 from app.shared.jobs.scheduler import InProcessJobScheduler
 from app.shared.localization.localizer import JsonAppLocalizer
+from app.shared.mailing.email_sender import SmtpEmailSender
+from app.shared.notifications.dispatcher import NotificationDispatcher, QueuedNotificationJob
+from app.shared.notifications.firebase import FirebaseHttpTransport
+from app.shared.notifications.senders import EmailNotificationSender, FirebaseNotificationSender, FirebaseOptions, InAppNotificationSender
+from app.shared.notifications.stores import InMemoryDeviceTokenStore, InMemoryNotificationStore
 from app.shared.observability.logging_setup import configure_logging
 from app.shared.observability.tracing import configure_opentelemetry, instrument_app
 from app.shared.realtime.publisher import ConnectionRegistry, InProcessRealtimePublisher, RedisRealtimePublisher
@@ -104,6 +110,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             app.state.realtime_publisher = InProcessRealtimePublisher(app.state.realtime_registry)
 
         app.state.job_scheduler = InProcessJobScheduler()
+        app.state.notification_store = InMemoryNotificationStore()
+        app.state.device_token_store = InMemoryDeviceTokenStore()
+        email_sender = SmtpEmailSender(
+            host=settings.smtp_host,
+            port=settings.smtp_port,
+            username=settings.smtp_username or None,
+            password=settings.smtp_password or None,
+            from_address=settings.smtp_from_address,
+        )
+        firebase_options = FirebaseOptions(settings.firebase_project_id, settings.firebase_access_token)
+        if not firebase_options.project_id or not firebase_options.access_token:
+            logging.getLogger("stackbraid.notifications").warning("Firebase Cloud Messaging push is disabled: Firebase credentials are not configured. Email and in-app delivery remain active.")
+        app.state.notification_dispatcher = NotificationDispatcher(
+            [
+                FirebaseNotificationSender(FirebaseHttpTransport(firebase_options), app.state.device_token_store, firebase_options),
+                EmailNotificationSender(email_sender),
+                InAppNotificationSender(app.state.notification_store),
+            ]
+        )
+        app.state.queued_notification_job = QueuedNotificationJob(app.state.job_scheduler, app.state.notification_dispatcher)
         background_tasks.append(asyncio.create_task(app.state.job_scheduler.run_forever()))
 
         if settings.run_migrations_on_startup:

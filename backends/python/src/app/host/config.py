@@ -56,4 +56,13 @@ class Settings(BaseSettings):
     # env var (no `STACKBRAID_` prefix — `validation_alias` reads this
     # exact name, bypassing the class-wide prefix below) since that is the
     # name every OpenTelemetry SDK, in any language, already agrees on.
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_address: str = "no-reply@example.com"
+
+    firebase_project_id: str = ""
+    firebase_access_token: str = ""
+
     otel_otlp_endpoint: str = Field(default="", validation_alias="OTEL_EXPORTER_OTLP_ENDPOINT")

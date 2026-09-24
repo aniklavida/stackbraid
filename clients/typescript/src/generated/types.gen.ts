@@ -108,6 +108,40 @@ export type AssignRoleRequest = {
     roleId: string;
 };
 
+export type DevicePlatform = 'ios' | 'android' | 'web';
+
+export type RegisterDeviceTokenRequest = {
+    platform: DevicePlatform;
+    appVersion?: string;
+};
+
+export type RefreshDeviceTokenRequest = {
+    token: string;
+};
+
+export type DeviceToken = {
+    id: string;
+    platform: DevicePlatform;
+    appVersion: string;
+    registeredAt: UtcDateTime;
+    updatedAt: UtcDateTime;
+};
+
+export type Notification = {
+    id: string;
+    title: string;
+    body: string;
+    read: boolean;
+    createdAt: UtcDateTime;
+};
+
+/**
+ * Page<Notification>.
+ */
+export type NotificationPage = Page & {
+    items: Array<Notification>;
+};
+
 export type TokenPair = {
     accessToken: string;
     refreshToken: string;
@@ -181,9 +215,17 @@ export type LoginRequestWritable = {
     password: string;
 };
 
+export type RegisterDeviceTokenRequestWritable = {
+    token: string;
+    platform: DevicePlatform;
+    appVersion?: string;
+};
+
 export type UserIdParam = string;
 
 export type RoleIdParam = string;
+
+export type DeviceIdParam = string;
 
 /**
  * 1-based page number.
@@ -354,6 +396,139 @@ export type GetCurrentUserResponses = {
 };
 
 export type GetCurrentUserResponse = GetCurrentUserResponses[keyof GetCurrentUserResponses];
+
+export type RegisterDeviceTokenData = {
+    body: RegisterDeviceTokenRequestWritable;
+    path?: never;
+    query?: never;
+    url: '/v1/devices';
+};
+
+export type RegisterDeviceTokenErrors = {
+    /**
+     * The request failed validation. `Problem.errors` maps each invalid field to its messages.
+     */
+    400: Problem;
+    /**
+     * The access token is missing, expired, or invalid.
+     */
+    401: Problem;
+    /**
+     * The token is already registered to another user.
+     */
+    409: Problem;
+};
+
+export type RegisterDeviceTokenError = RegisterDeviceTokenErrors[keyof RegisterDeviceTokenErrors];
+
+export type RegisterDeviceTokenResponses = {
+    /**
+     * The device token is registered and is now eligible for push delivery.
+     */
+    201: DeviceToken;
+};
+
+export type RegisterDeviceTokenResponse = RegisterDeviceTokenResponses[keyof RegisterDeviceTokenResponses];
+
+export type RevokeDeviceTokenData = {
+    body?: never;
+    path: {
+        deviceId: string;
+    };
+    query?: never;
+    url: '/v1/devices/{deviceId}';
+};
+
+export type RevokeDeviceTokenErrors = {
+    /**
+     * The access token is missing, expired, or invalid.
+     */
+    401: Problem;
+    /**
+     * No resource exists at this identifier.
+     */
+    404: Problem;
+};
+
+export type RevokeDeviceTokenError = RevokeDeviceTokenErrors[keyof RevokeDeviceTokenErrors];
+
+export type RevokeDeviceTokenResponses = {
+    /**
+     * Revoked, or the token was already absent; both are treated as success.
+     */
+    204: void;
+};
+
+export type RevokeDeviceTokenResponse = RevokeDeviceTokenResponses[keyof RevokeDeviceTokenResponses];
+
+export type RefreshDeviceTokenData = {
+    body: RefreshDeviceTokenRequest;
+    path: {
+        deviceId: string;
+    };
+    query?: never;
+    url: '/v1/devices/{deviceId}';
+};
+
+export type RefreshDeviceTokenErrors = {
+    /**
+     * The request failed validation. `Problem.errors` maps each invalid field to its messages.
+     */
+    400: Problem;
+    /**
+     * The access token is missing, expired, or invalid.
+     */
+    401: Problem;
+    /**
+     * No resource exists at this identifier.
+     */
+    404: Problem;
+};
+
+export type RefreshDeviceTokenError = RefreshDeviceTokenErrors[keyof RefreshDeviceTokenErrors];
+
+export type RefreshDeviceTokenResponses = {
+    /**
+     * The device token was refreshed.
+     */
+    200: DeviceToken;
+};
+
+export type RefreshDeviceTokenResponse = RefreshDeviceTokenResponses[keyof RefreshDeviceTokenResponses];
+
+export type ListNotificationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * 1-based page number.
+         */
+        page?: number;
+        /**
+         * Items per page.
+         */
+        pageSize?: number;
+    };
+    url: '/v1/notifications';
+};
+
+export type ListNotificationsErrors = {
+    /**
+     * The access token is missing, expired, or invalid.
+     */
+    401: Problem;
+};
+
+export type ListNotificationsError = ListNotificationsErrors[keyof ListNotificationsErrors];
+
+export type ListNotificationsResponses = {
+    /**
+     * A page of in-app notifications.
+     */
+    200: NotificationPage;
+};
+
+export type ListNotificationsResponse = ListNotificationsResponses[keyof ListNotificationsResponses];
 
 export type ListUsersData = {
     body?: never;

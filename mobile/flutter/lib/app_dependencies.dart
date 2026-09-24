@@ -4,6 +4,7 @@ import 'shared/auth/session_controller.dart';
 import 'shared/auth/token_store.dart';
 import 'shared/http/api_client.dart';
 import 'shared/i18n/locale_controller.dart';
+import 'shared/notifications/push_notification_service.dart';
 
 /// The composition root — the mobile equivalent of a backend's `Host` or
 /// a web frontend's `app.config.ts` providers list: the one place allowed to
@@ -19,9 +20,12 @@ class AppDependencies {
       : apiClient = ApiClient(),
         tokenStore = SecureTokenStore(),
         localeController = LocaleController() {
-    session = SessionController(apiClient: apiClient, tokenStore: tokenStore);
-    authRepository = AuthRepositoryImpl(apiClient.authApi, apiClient.client.dio);
-    authUseCases = AuthUseCases(authRepository);
+     session = SessionController(apiClient: apiClient, tokenStore: tokenStore);
+     authRepository = AuthRepositoryImpl(apiClient.authApi, apiClient.client.dio);
+     authUseCases = AuthUseCases(authRepository);
+     pushNotifications = PushNotificationService(apiClient);
+     session.addListener(_syncPushNotifications);
+
   }
 
   final ApiClient apiClient;
@@ -30,10 +34,18 @@ class AppDependencies {
   late final SessionController session;
   late final AuthRepository authRepository;
   late final AuthUseCases authUseCases;
+  late final PushNotificationService pushNotifications;
 
   /// Called once at startup — restores the language preference and attempts
   /// to hydrate a session from the persisted refresh token.
   Future<void> bootstrap() async {
     await Future.wait([localeController.restore(), session.bootstrap()]);
+    _syncPushNotifications();
+  }
+
+  void _syncPushNotifications() {
+    if (session.status == AuthStatus.authenticated) {
+      pushNotifications.start();
+    }
   }
 }

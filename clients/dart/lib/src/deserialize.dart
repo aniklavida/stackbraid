@@ -1,10 +1,15 @@
 import 'package:stackbraid_client/src/model/assign_role_request.dart';
+import 'package:stackbraid_client/src/model/device_token.dart';
 import 'package:stackbraid_client/src/model/job_progress_message.dart';
 import 'package:stackbraid_client/src/model/login_request.dart';
+import 'package:stackbraid_client/src/model/notification.dart';
+import 'package:stackbraid_client/src/model/notification_page.dart';
 import 'package:stackbraid_client/src/model/page.dart';
 import 'package:stackbraid_client/src/model/problem.dart';
 import 'package:stackbraid_client/src/model/realtime_message.dart';
+import 'package:stackbraid_client/src/model/refresh_device_token_request.dart';
 import 'package:stackbraid_client/src/model/refresh_request.dart';
+import 'package:stackbraid_client/src/model/register_device_token_request.dart';
 import 'package:stackbraid_client/src/model/register_request.dart';
 import 'package:stackbraid_client/src/model/role.dart';
 import 'package:stackbraid_client/src/model/token_pair.dart';
@@ -34,18 +39,31 @@ final _regMap = RegExp(r'^Map<String,(.*)>$');
           return (value is double ? value : double.parse('$value')) as ReturnType;
         case 'AssignRoleRequest':
           return AssignRoleRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'DevicePlatform':
+          
+          
+        case 'DeviceToken':
+          return DeviceToken.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'JobProgressMessage':
           return JobProgressMessage.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'LoginRequest':
           return LoginRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'Notification':
+          return Notification.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'NotificationPage':
+          return NotificationPage.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'Page':
           return Page.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'Problem':
           return Problem.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'RealtimeMessage':
           return RealtimeMessage.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'RefreshDeviceTokenRequest':
+          return RefreshDeviceTokenRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'RefreshRequest':
           return RefreshRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
+        case 'RegisterDeviceTokenRequest':
+          return RegisterDeviceTokenRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'RegisterRequest':
           return RegisterRequest.fromJson(value as Map<String, dynamic>) as ReturnType;
         case 'Role':

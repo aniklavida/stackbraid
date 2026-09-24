@@ -9,6 +9,7 @@ public static class IdentityEndpointsExtensions
         app.MapAuthEndpoints();
         app.MapUsersEndpoints();
         app.MapRolesEndpoints();
+        app.MapNotificationEndpoints();
         return app;
     }
 }

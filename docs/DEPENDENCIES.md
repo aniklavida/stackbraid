@@ -61,7 +61,7 @@ restart, profile, sign out — consuming `clients/dart` (above) via a
 `path:` dependency, the same unchanged-generated-client convention the
 frontends use for `clients/typescript`. `mobile/flutter/pubspec.lock` is
 read by `scripts/check-dependency-licenses.mjs` under the
-`dart-mobile-flutter` ecosystem (66 entries — every package resolved
+`dart-mobile-flutter` ecosystem (73 entries — every package resolved
 transitively too, since a compiled-into-user-code classification follows
 the whole dependency chain, not just the direct one).
 
@@ -72,6 +72,7 @@ the Flutter framework's own):
 | Package | Licence | Why it's here |
 |---|---|---|
 | `dio`, `dio_web_adapter`, `copy_with_extension`, `json_annotation` | MIT / MIT / MIT / BSD-3-Clause | `stackbraid_client`'s own runtime dependencies — see the Dart client section above |
+| `firebase_core`, `firebase_messaging` (+ their platform-interface and web implementations, and `_flutterfire_internals`) | BSD-3-Clause | Firebase client initialization, device-token registration/refresh, and foreground/background/terminated message handling |
 | `flutter_secure_storage` (+ its `_linux`/`_macos`/`_platform_interface`/`_web`/`_windows` platform packages) | BSD-3-Clause | Platform secure storage for the persisted refresh token — see `mobile/flutter/README.md`, "Token storage" |
 | `path_provider` (+ its own platform packages), `jni`, `jni_flutter`, `jni_util`, `objective_c`, `ffi`, `win32`, `xdg_directories` | BSD-3-Clause | `flutter_secure_storage_windows`'s own dependency chain (path_provider) and, transitively, `path_provider_android`/`path_provider_foundation`'s own native-interop packages |
 | `code_assets`, `hooks`, `crypto`, `logging`, `pub_semver`, `record_use`, `yaml`, `package_config`, `args` | BSD-3-Clause | `objective_c`/`jni`'s own further dependency chain |

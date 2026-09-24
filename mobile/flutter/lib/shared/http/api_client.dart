@@ -31,6 +31,8 @@ class ApiClient {
   late final AuthApi authApi = AuthApi(client.dio);
   late final UsersApi usersApi = UsersApi(client.dio);
   late final RolesApi rolesApi = RolesApi(client.dio);
+  late final DevicesApi devicesApi = DevicesApi(client.dio);
+  late final NotificationsApi notificationsApi = NotificationsApi(client.dio);
 
   /// Attaches the current access token to every subsequent request this
   /// client makes. Called only after a token has been proven good by a
