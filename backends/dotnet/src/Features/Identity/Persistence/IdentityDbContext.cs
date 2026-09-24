@@ -20,6 +20,7 @@ public sealed class IdentityDbContext : AppDbContextBase
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<AuditLogModel> AuditLogs => Set<AuditLogModel>();
 
     public IdentityDbContext(DbContextOptions<IdentityDbContext> options, IPublisher? publisher = null)
         : base(options)
@@ -30,6 +31,16 @@ public sealed class IdentityDbContext : AppDbContextBase
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(IdentityDbContext).Assembly);
+        modelBuilder.Entity<User>().HasQueryFilter(user => user.DeletedAtUtc == null);
+        modelBuilder.Entity<AuditLogModel>(builder =>
+        {
+            builder.ToTable("audit_logs");
+            builder.HasKey(entry => entry.Id);
+            builder.Property(entry => entry.EntityType).HasMaxLength(100).IsRequired();
+            builder.Property(entry => entry.Action).HasMaxLength(50).IsRequired();
+            builder.Property(entry => entry.CorrelationId).HasMaxLength(200).IsRequired();
+            builder.Property(entry => entry.OccurredAtUtc).IsRequired();
+        });
     }
 
     protected override void OnBeforeSaveChanges()

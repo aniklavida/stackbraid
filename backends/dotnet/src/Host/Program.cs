@@ -14,9 +14,16 @@ using StackBraid.Shared;
 using StackBraid.Shared.Documents;
 using StackBraid.Shared.Jobs;
 using StackBraid.Shared.Realtime;
+using StackBraid.Shared.Time;
 using StackBraid.Shared.Web;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new UtcDateTimeJsonConverter());
+});
+builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 
 // Configured entirely in code — no Serilog.Settings.Configuration package,
 // so Logging:LogLevel in appsettings.json governs the ASP.NET Core

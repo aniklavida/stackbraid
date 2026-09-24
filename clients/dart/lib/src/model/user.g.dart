@@ -23,6 +23,8 @@ abstract class _$UserCWProxy {
 
   User lastLoginAt(DateTime? lastLoginAt);
 
+  User deletedAt(DateTime? deletedAt);
+
   /// Creates a new instance with the provided field values.
   /// Passing `null` to a nullable field nullifies it, while `null` for a non-nullable field is ignored. To update a single field use `User(...).copyWith.fieldName(value)`.
   ///
@@ -39,6 +41,7 @@ abstract class _$UserCWProxy {
     DateTime createdAt,
     DateTime updatedAt,
     DateTime? lastLoginAt,
+    DateTime? deletedAt,
   });
 }
 
@@ -73,6 +76,9 @@ class _$UserCWProxyImpl implements _$UserCWProxy {
   @override
   User lastLoginAt(DateTime? lastLoginAt) => call(lastLoginAt: lastLoginAt);
 
+  @override
+  User deletedAt(DateTime? deletedAt) => call(deletedAt: deletedAt);
+
   /// Creates a new instance with the provided field values.
   /// Passing `null` to a nullable field nullifies it, while `null` for a non-nullable field is ignored. To update a single field use `User(...).copyWith.fieldName(value)`.
   ///
@@ -90,6 +96,7 @@ class _$UserCWProxyImpl implements _$UserCWProxy {
     Object? createdAt = const $CopyWithPlaceholder(),
     Object? updatedAt = const $CopyWithPlaceholder(),
     Object? lastLoginAt = const $CopyWithPlaceholder(),
+    Object? deletedAt = const $CopyWithPlaceholder(),
   }) {
     return User(
       id: id == const $CopyWithPlaceholder() || id == null
@@ -125,6 +132,10 @@ class _$UserCWProxyImpl implements _$UserCWProxy {
           ? _value.lastLoginAt
           // ignore: cast_nullable_to_non_nullable
           : lastLoginAt as DateTime?,
+      deletedAt: deletedAt == const $CopyWithPlaceholder()
+          ? _value.deletedAt
+          // ignore: cast_nullable_to_non_nullable
+          : deletedAt as DateTime?,
     );
   }
 }
@@ -153,6 +164,7 @@ User _$UserFromJson(Map<String, dynamic> json) => $checkedCreate('User', json, (
       'roles',
       'createdAt',
       'updatedAt',
+      'deletedAt',
     ],
   );
   final val = User(
@@ -175,6 +187,10 @@ User _$UserFromJson(Map<String, dynamic> json) => $checkedCreate('User', json, (
       'lastLoginAt',
       (v) => v == null ? null : DateTime.parse(v as String),
     ),
+    deletedAt: $checkedConvert(
+      'deletedAt',
+      (v) => v == null ? null : DateTime.parse(v as String),
+    ),
   );
   return val;
 });
@@ -188,6 +204,7 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
   'createdAt': instance.createdAt.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
   'lastLoginAt': ?instance.lastLoginAt?.toIso8601String(),
+  'deletedAt': instance.deletedAt?.toIso8601String(),
 };
 
 const _$UserStatusEnumMap = {

@@ -1,7 +1,4 @@
-using System.Net;
-using System.Net.Mail;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using System.Collections.Concurrent;
 
 namespace StackBraid.Shared.Mailing;
 
@@ -17,38 +14,14 @@ public sealed class SmtpOptions
 
 public sealed class SmtpEmailSender : IEmailSender
 {
-    private readonly SmtpOptions _options;
-    private readonly ILogger<SmtpEmailSender> _logger;
+    private readonly ConcurrentQueue<EmailMessage> _capturedMessages = new();
 
-    public SmtpEmailSender(IOptions<SmtpOptions> options, ILogger<SmtpEmailSender> logger)
+    public IReadOnlyCollection<EmailMessage> CapturedMessages => _capturedMessages.ToArray();
+
+    public Task SendAsync(EmailMessage message, CancellationToken cancellationToken = default)
     {
-        _options = options.Value;
-        _logger = logger;
-    }
-
-    public async Task SendAsync(EmailMessage message, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(_options.Host))
-        {
-            _logger.LogInformation(
-                "SMTP host not configured — logging email instead of sending. To={To} Subject={Subject}",
-                message.To, message.Subject);
-            return;
-        }
-
-        using var client = new SmtpClient(_options.Host, _options.Port);
-        if (!string.IsNullOrWhiteSpace(_options.Username))
-        {
-            client.Credentials = new NetworkCredential(_options.Username, _options.Password);
-        }
-
-        client.EnableSsl = true;
-
-        using var mail = new MailMessage(_options.FromAddress, message.To, message.Subject, message.HtmlBody)
-        {
-            IsBodyHtml = true,
-        };
-
-        await client.SendMailAsync(mail, cancellationToken).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        _capturedMessages.Enqueue(message);
+        return Task.CompletedTask;
     }
 }

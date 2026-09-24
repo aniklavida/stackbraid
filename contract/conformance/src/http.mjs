@@ -52,6 +52,7 @@ export async function request(baseUrl, options) {
   return {
     status: res.status,
     contentType,
+    headers: res.headers,
     body: parsedBody,
     rawText: text,
     setCookies,

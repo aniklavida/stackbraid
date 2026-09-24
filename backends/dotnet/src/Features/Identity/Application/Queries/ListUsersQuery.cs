@@ -13,7 +13,8 @@ public sealed record ListUsersQuery(
     string Sort,
     string? Search,
     UserStatus? Status,
-    Guid? RoleId) : IQuery<Result<UserPageDto>>;
+    Guid? RoleId,
+    bool IncludeDeleted = false) : IQuery<Result<UserPageDto>>;
 
 public sealed class ListUsersQueryHandler : IQueryHandler<ListUsersQuery, Result<UserPageDto>>
 {
@@ -27,7 +28,7 @@ public sealed class ListUsersQueryHandler : IQueryHandler<ListUsersQuery, Result
     public async ValueTask<Result<UserPageDto>> Handle(ListUsersQuery query, CancellationToken cancellationToken)
     {
         var result = await _users.SearchAsync(
-            new UserSearchQuery(query.Page, query.PageSize, query.Sort, query.Search, query.Status, query.RoleId),
+            new UserSearchQuery(query.Page, query.PageSize, query.Sort, query.Search, query.Status, query.RoleId, query.IncludeDeleted),
             cancellationToken).ConfigureAwait(false);
 
         return Result<UserPageDto>.Success(result.ToDto(query.Page, query.PageSize));

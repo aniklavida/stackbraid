@@ -19,14 +19,9 @@ from fastapi import Depends, Request
 from starlette.responses import JSONResponse
 
 from app.shared.localization.localizer import AppLocalizer
+from app.shared.web.rate_limiter import RateLimitExceededError, RateLimiter
 from app.shared.web.errors import AppError, AppErrorType
 from app.shared.web.problem import problem_response
-
-
-class RateLimitExceededError(Exception):
-    """Raised by ``enforce_auth_rate_limit`` and translated into a 429
-    Problem response by the handler registered in ``host/main.py`` — never a
-    bare status code with no body."""
 
 
 @dataclass
@@ -35,7 +30,7 @@ class _Window:
     count: int
 
 
-class FixedWindowRateLimiter:
+class FixedWindowRateLimiter(RateLimiter):
     """High enough that a legitimate burst — a test suite, or one user's
     browser retrying login/refresh/register in quick succession — never trips
     it, while still bounding genuine credential-stuffing volume.
@@ -60,7 +55,9 @@ class FixedWindowRateLimiter:
 def rate_limited_response(request: Request, localizer: AppLocalizer) -> JSONResponse:
     error = AppError.validation("IDENTITY.RATE_LIMITED", "identity.rate_limited", {})
     error = AppError(error.code, AppErrorType.FAILURE, error.message_key)
-    return problem_response(error, localizer, request, status_override=429)
+    response = problem_response(error, localizer, request, status_override=429)
+    response.headers["Retry-After"] = "60"
+    return response
 
 
 def client_key(request: Request) -> str:

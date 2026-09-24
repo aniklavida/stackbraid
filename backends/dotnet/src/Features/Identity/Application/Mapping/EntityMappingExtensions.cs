@@ -41,7 +41,8 @@ public static class EntityMappingExtensions
         user.Roles.Select(r => r.ToDto()).ToList(),
         user.CreatedAtUtc,
         user.UpdatedAtUtc,
-        user.LastLoginAtUtc);
+        user.LastLoginAtUtc,
+        user.DeletedAtUtc);
 
     public static UserPageDto ToDto(this UserSearchResult result, int page, int pageSize)
     {

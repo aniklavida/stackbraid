@@ -25,6 +25,7 @@ def user_to_dto(user: User) -> UserDto:
         created_at=user.created_at,  # type: ignore[arg-type]
         updated_at=user.updated_at,  # type: ignore[arg-type]
         last_login_at=user.last_login_at,
+        deleted_at=user.deleted_at,
     )
 
 

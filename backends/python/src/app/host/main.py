@@ -29,9 +29,12 @@ from app.features.identity.endpoints.security import (
     app_error_for_forbidden,
     get_current_user_id,
 )
+from app.features.identity.endpoints.audit import router as audit_router
 from app.features.identity.endpoints.router import router as identity_router
 from app.host.config import Settings
 from app.host.documentation import create_documentation_router
+from app.shared.caching.cache import InMemoryCache
+from app.shared.persistence.soft_delete import InMemorySoftDeleteService
 from app.shared.jobs.conformance import conformance_handlers
 from app.shared.jobs.endpoints import create_jobs_router
 from app.shared.jobs.handlers import JobHandlerRegistry
@@ -95,6 +98,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
         app.state.access_token_issuer = JwtAccessTokenIssuer(app.state.jwt_options)
         app.state.auth_rate_limiter = FixedWindowRateLimiter(permit_limit=settings.auth_rate_limit_permits_per_minute)
+        app.state.cache = InMemoryCache()
+        app.state.soft_delete_service = InMemorySoftDeleteService()
 
         # Realtime: a ConnectionRegistry always holds this process's own
         # WebSocket connections. A Redis (or Valkey) URL layers a backplane
@@ -217,6 +222,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"status": "ready"}
 
     app.include_router(identity_router)
+    app.include_router(audit_router)
     app.include_router(create_jobs_router(get_current_user_id, conformance_enabled=settings.jobs_conformance_enabled))
     app.include_router(create_documentation_router(settings.contract_path))
 

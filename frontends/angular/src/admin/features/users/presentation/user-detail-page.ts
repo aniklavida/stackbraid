@@ -11,7 +11,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 
 import { useRoles } from "../../roles";
-import { useAssignRole, useRevokeRole, useUser } from "../application/use-users";
+import { useAssignRole, useRestoreUser, useRevokeRole, useUser, useUserAudit } from "../application/use-users";
 
 @Component({
   selector: "app-user-detail-page",
@@ -30,6 +30,8 @@ export class UserDetailPageComponent {
   protected readonly roles = useRoles();
   protected readonly assignRole = useAssignRole(this.userId);
   protected readonly revokeRole = useRevokeRole(this.userId);
+  protected readonly audit = useUserAudit(this.userId);
+  protected readonly restore = useRestoreUser();
   protected readonly selectedRoleId = signal("");
 
   protected readonly assignableRoles = computed(() => {
@@ -39,6 +41,12 @@ export class UserDetailPageComponent {
 
   protected formatDate(value: string): string {
     return new Intl.DateTimeFormat(this.transloco.getActiveLang(), { dateStyle: "long" }).format(new Date(value));
+  }
+
+  protected restoreUser(): void {
+    this.restore.mutate(this.userId(), {
+      onSuccess: () => this.snackBar.open(this.transloco.translate("users.actions.restored", { name: this.user.data()?.displayName ?? "" }), undefined, { duration: 3000 }),
+    });
   }
 
   protected revoke(roleId: string, roleName: string): void {

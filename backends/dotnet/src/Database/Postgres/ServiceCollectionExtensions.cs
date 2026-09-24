@@ -4,6 +4,7 @@ using Npgsql;
 using StackBraid.Features.Identity.Domain.Repositories;
 using StackBraid.Features.Identity.Persistence;
 using StackBraid.Features.Identity.Persistence.Repositories;
+using StackBraid.Shared.Auditing;
 using StackBraid.Shared.Jobs;
 using StackBraid.Shared.Persistence;
 
@@ -20,9 +21,15 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddPostgresPersistence(this IServiceCollection services, string connectionString)
     {
-        services.AddDbContext<IdentityDbContext>(options =>
-            options.UseNpgsql(connectionString, npgsql =>
-                npgsql.MigrationsAssembly(typeof(ServiceCollectionExtensions).Assembly.FullName)));
+        services.AddHttpContextAccessor();
+        services.AddDbContext<IdentityDbContext>((provider, options) =>
+            options
+                .UseNpgsql(connectionString, npgsql =>
+                    npgsql.MigrationsAssembly(typeof(ServiceCollectionExtensions).Assembly.FullName))
+                .AddInterceptors(provider.GetRequiredService<AuditSaveChangesInterceptor>()));
+
+        services.AddScoped<IAuditLog, IdentityAuditLog>();
+        services.AddScoped<AuditSaveChangesInterceptor>();
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<IdentityDbContext>());
         services.AddScoped<IUserRepository, UserRepository>();

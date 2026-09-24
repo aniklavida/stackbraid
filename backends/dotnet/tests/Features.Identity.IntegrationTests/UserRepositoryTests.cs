@@ -156,7 +156,7 @@ public class UserRepositoryTests
         await unitOfWork.SaveChangesAsync();
 
         using var freshScope = _fixture.Services.CreateScope();
-        var reloaded = await freshScope.ServiceProvider.GetRequiredService<IUserRepository>().GetByIdAsync(user.Id);
+        var reloaded = await freshScope.ServiceProvider.GetRequiredService<IUserRepository>().GetByIdIncludingDeletedAsync(user.Id);
 
         reloaded!.Status.ShouldBe(UserStatus.Inactive);
     }

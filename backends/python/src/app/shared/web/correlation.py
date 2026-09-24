@@ -15,7 +15,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.shared.observability.context import correlation_id_var
+from app.shared.observability.context import actor_id_var, correlation_id_var
 
 HEADER_NAME = "X-Correlation-Id"
 _STATE_KEY = "correlation_id"
@@ -47,6 +47,7 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
         correlation_id = request.headers.get(HEADER_NAME) or uuid.uuid4().hex
         setattr(request.state, _STATE_KEY, correlation_id)
         token = correlation_id_var.set(correlation_id)
+        actor_token = actor_id_var.set(None)
 
         span = trace.get_current_span()
         span.set_attribute("app.correlation_id", correlation_id)
@@ -72,4 +73,5 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
             )
             return response
         finally:
+            actor_id_var.reset(actor_token)
             correlation_id_var.reset(token)

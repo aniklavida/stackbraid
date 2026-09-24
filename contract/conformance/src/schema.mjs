@@ -82,7 +82,7 @@ export function validateRole(value, field, violations) {
 }
 
 export function validateUser(value, field, violations) {
-  const required = ['id', 'email', 'displayName', 'status', 'roles', 'createdAt', 'updatedAt'];
+  const required = ['id', 'email', 'displayName', 'status', 'roles', 'createdAt', 'updatedAt', 'deletedAt'];
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     violations.push(violation(field, 'object (User)', typeName(value)));
     return;
@@ -112,6 +112,25 @@ export function validateUser(value, field, violations) {
   if ('createdAt' in value) validateUtcDateTime(value.createdAt, `${field}.createdAt`, violations);
   if ('updatedAt' in value) validateUtcDateTime(value.updatedAt, `${field}.updatedAt`, violations);
   if ('lastLoginAt' in value) validateUtcDateTime(value.lastLoginAt, `${field}.lastLoginAt`, violations, { nullable: true });
+  if ('deletedAt' in value) validateUtcDateTime(value.deletedAt, `${field}.deletedAt`, violations, { nullable: true });
+}
+
+export function validateAuditEntry(value, field, violations) {
+  const required = ['id', 'entityType', 'entityId', 'action', 'correlationId', 'occurredAt'];
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    violations.push(violation(field, 'object (AuditEntry)', typeName(value)));
+    return;
+  }
+  for (const key of required) {
+    if (!(key in value)) violations.push(violation(`${field}.${key}`, 'present (required)', 'missing'));
+  }
+  for (const key of ['id', 'entityId']) {
+    if (key in value && typeof value[key] !== 'string') violations.push(violation(`${field}.${key}`, 'string (uuid)', typeName(value[key])));
+  }
+  for (const key of ['entityType', 'action', 'correlationId']) {
+    if (key in value && typeof value[key] !== 'string') violations.push(violation(`${field}.${key}`, 'string', typeName(value[key])));
+  }
+  if ('occurredAt' in value) validateUtcDateTime(value.occurredAt, `${field}.occurredAt`, violations);
 }
 
 export function validateTokenPair(value, field, violations) {

@@ -11,13 +11,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRoles } from "@/admin/features/roles";
-import { useAssignRole, useRevokeRole, useUser } from "../application/use-users";
+import { useAssignRole, useRestoreUser, useRevokeRole, useUser, useUserAudit } from "../application/use-users";
 
 export function UserDetailPage({ userId }: { userId: string }) {
   const t = useTranslations("users");
   const locale = useLocale();
   const { data: user, isPending, isError } = useUser(userId);
   const { data: roles } = useRoles();
+  const { data: audit, isPending: auditPending } = useUserAudit(userId);
+  const restore = useRestoreUser();
   const assignRole = useAssignRole(userId);
   const revokeRole = useRevokeRole(userId);
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
@@ -58,13 +60,45 @@ export function UserDetailPage({ userId }: { userId: string }) {
             </dd>
             <dt className="text-muted-foreground">{t("detail.createdAt")}</dt>
             <dd>{dateFormatter.format(new Date(user.createdAt))}</dd>
-            <dt className="text-muted-foreground">{t("detail.lastLoginAt")}</dt>
-            <dd>{user.lastLoginAt ? dateFormatter.format(new Date(user.lastLoginAt)) : t("detail.lastLoginAt_never")}</dd>
-          </dl>
-        </CardContent>
-      </Card>
+             <dt className="text-muted-foreground">{t("detail.lastLoginAt")}</dt>
+             <dd>{user.lastLoginAt ? dateFormatter.format(new Date(user.lastLoginAt)) : t("detail.lastLoginAt_never")}</dd>
+             {user.deletedAt && (
+               <>
+                 <dt className="text-muted-foreground">{t("detail.deletedAt")}</dt>
+                 <dd>{dateFormatter.format(new Date(user.deletedAt))}</dd>
+               </>
+             )}
 
-      <Card className="max-w-2xl">
+           </dl>
+           {user.deletedAt && (
+             <Button className="mt-4" onClick={() => restore.mutate(userId, { onSuccess: () => toast.success(t("actions.restored", { name: user.displayName })) })} disabled={restore.isPending}>
+               {t("actions.restore")}
+             </Button>
+           )}
+         </CardContent>
+
+       </Card>
+
+       <Card className="max-w-2xl">
+         <CardHeader>
+           <CardTitle>{t("detail.audit")}</CardTitle>
+         </CardHeader>
+         <CardContent>
+           {auditPending && <Skeleton className="h-20 w-full" />}
+           {audit?.items.length === 0 && <p className="text-muted-foreground">{t("detail.noAudit")}</p>}
+           <ul className="flex flex-col gap-2 text-sm">
+             {audit?.items.map((entry) => (
+               <li key={entry.id} className="flex justify-between gap-4">
+                 <span>{entry.action}</span>
+                 <span className="text-muted-foreground">{new Date(entry.occurredAt).toLocaleString(locale)} · {entry.correlationId}</span>
+               </li>
+             ))}
+           </ul>
+         </CardContent>
+       </Card>
+
+       <Card className="max-w-2xl">
+
         <CardHeader>
           <CardTitle>{t("detail.roles")}</CardTitle>
         </CardHeader>

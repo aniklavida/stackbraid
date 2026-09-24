@@ -21,6 +21,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.PasswordHash).IsRequired();
         builder.Property(u => u.DisplayName).HasMaxLength(200).IsRequired();
         builder.Property(u => u.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
+        builder.Property(u => u.DeletedAtUtc);
         builder.Property(u => u.CreatedAtUtc).IsRequired();
         builder.Property(u => u.UpdatedAtUtc).IsRequired();
         builder.Property(u => u.LastLoginAtUtc);

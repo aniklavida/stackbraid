@@ -18,6 +18,9 @@ public sealed class UserRepository : RepositoryBase<User, Guid>, IUserRepository
     public override Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         WithRoles.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
+    public Task<User?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default) =>
+        WithRoles.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
     public Task<User?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default) =>
         WithRoles.FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
 
@@ -27,6 +30,10 @@ public sealed class UserRepository : RepositoryBase<User, Guid>, IUserRepository
     public async Task<UserSearchResult> SearchAsync(UserSearchQuery query, CancellationToken cancellationToken = default)
     {
         var q = WithRoles.AsQueryable();
+        if (query.IncludeDeleted)
+        {
+            q = q.IgnoreQueryFilters();
+        }
 
         if (query.Status is not null)
         {

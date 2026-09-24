@@ -14,3 +14,4 @@ from __future__ import annotations
 from contextvars import ContextVar
 
 correlation_id_var: ContextVar[str | None] = ContextVar("correlation_id", default=None)
+actor_id_var: ContextVar[object | None] = ContextVar("actor_id", default=None)

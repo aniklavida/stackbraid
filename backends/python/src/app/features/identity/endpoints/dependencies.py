@@ -28,12 +28,15 @@ from app.features.identity.application.commands.user_commands import (
     RevokeRoleCommand,
     UpdateUserCommand,
 )
+from app.features.identity.application.commands.restore_user import RestoreUserCommand
 from app.features.identity.application.queries.queries import GetUserQuery, ListRolesQuery, ListUsersQuery
 from app.features.identity.persistence.repositories import (
+    SqlAlchemyAuditLog,
     SqlAlchemyRefreshTokenRepository,
     SqlAlchemyRoleRepository,
     SqlAlchemyUserRepository,
 )
+from app.shared.caching.cache import Cache
 from app.shared.localization.localizer import AppLocalizer
 from app.shared.notifications.dispatcher import NotificationDispatcher, QueuedNotificationJob
 from app.shared.notifications.models import DeviceTokenStore, NotificationStore
@@ -64,6 +67,10 @@ def get_refresh_token_repository(session: AsyncSession = Depends(get_session)) -
     return SqlAlchemyRefreshTokenRepository(session)
 
 
+def get_audit_log(session: AsyncSession = Depends(get_session)) -> SqlAlchemyAuditLog:
+    return SqlAlchemyAuditLog(session)
+
+
 def get_notification_store(request: Request) -> NotificationStore:
     return request.app.state.notification_store  # type: ignore[no-any-return]
 
@@ -78,6 +85,10 @@ def get_notification_dispatcher(request: Request) -> NotificationDispatcher:
 
 def get_queued_notification_job(request: Request) -> QueuedNotificationJob:
     return request.app.state.queued_notification_job  # type: ignore[no-any-return]
+
+
+def get_cache(request: Request) -> Cache:
+    return request.app.state.cache
 
 
 def get_localizer(request: Request) -> AppLocalizer:
@@ -133,16 +144,26 @@ def get_logout_command(
 def get_update_user_command(
     users: SqlAlchemyUserRepository = Depends(get_user_repository),
     unit_of_work: UnitOfWork = Depends(get_unit_of_work),
+    cache: Cache = Depends(get_cache),
 ) -> UpdateUserCommand:
-    return UpdateUserCommand(users, unit_of_work)
+    return UpdateUserCommand(users, unit_of_work, cache)
 
 
 def get_deactivate_user_command(
     users: SqlAlchemyUserRepository = Depends(get_user_repository),
     unit_of_work: UnitOfWork = Depends(get_unit_of_work),
     realtime: RealtimePublisher = Depends(get_realtime_publisher),
+    cache: Cache = Depends(get_cache),
 ) -> DeactivateUserCommand:
-    return DeactivateUserCommand(users, unit_of_work, realtime)
+    return DeactivateUserCommand(users, unit_of_work, realtime, cache)
+
+
+def get_restore_user_command(
+    users: SqlAlchemyUserRepository = Depends(get_user_repository),
+    unit_of_work: UnitOfWork = Depends(get_unit_of_work),
+    cache: Cache = Depends(get_cache),
+) -> RestoreUserCommand:
+    return RestoreUserCommand(users, unit_of_work, cache)
 
 
 def get_assign_role_command(
@@ -163,8 +184,11 @@ def get_revoke_role_command(
     return RevokeRoleCommand(users, roles, unit_of_work, realtime)
 
 
-def get_get_user_query(users: SqlAlchemyUserRepository = Depends(get_user_repository)) -> GetUserQuery:
-    return GetUserQuery(users)
+def get_get_user_query(
+    users: SqlAlchemyUserRepository = Depends(get_user_repository),
+    cache: Cache = Depends(get_cache),
+) -> GetUserQuery:
+    return GetUserQuery(users, cache)
 
 
 def get_list_users_query(users: SqlAlchemyUserRepository = Depends(get_user_repository)) -> ListUsersQuery:

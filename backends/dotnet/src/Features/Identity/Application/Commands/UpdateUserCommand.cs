@@ -3,6 +3,7 @@ using StackBraid.Features.Identity.Application.Mapping;
 using StackBraid.Features.Identity.Contracts.Dtos;
 using StackBraid.Features.Identity.Domain.Repositories;
 using StackBraid.Features.Identity.Domain.ValueObjects;
+using StackBraid.Shared.Caching;
 using StackBraid.Shared.Persistence;
 using StackBraid.Shared.Web;
 
@@ -14,11 +15,13 @@ public sealed class UpdateUserCommandHandler : ICommandHandler<UpdateUserCommand
 {
     private readonly IUserRepository _users;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICache? _cache;
 
-    public UpdateUserCommandHandler(IUserRepository users, IUnitOfWork unitOfWork)
+    public UpdateUserCommandHandler(IUserRepository users, IUnitOfWork unitOfWork, ICache? cache = null)
     {
         _users = users;
         _unitOfWork = unitOfWork;
+        _cache = cache;
     }
 
     public async ValueTask<Result<UserDto>> Handle(UpdateUserCommand command, CancellationToken cancellationToken)
@@ -52,6 +55,7 @@ public sealed class UpdateUserCommandHandler : ICommandHandler<UpdateUserCommand
 
         user.UpdateProfile(command.DisplayName, newEmail);
         await _unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        _cache?.Remove($"identity:user:{user.Id}");
 
         return Result<UserDto>.Success(user.ToDto());
     }

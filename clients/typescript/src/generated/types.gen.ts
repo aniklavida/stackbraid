@@ -78,6 +78,10 @@ export type User = {
     createdAt: UtcDateTime;
     updatedAt: UtcDateTime;
     lastLoginAt?: NullableUtcDateTime;
+    /**
+     * Set when the account is soft-deleted; null for an active account.
+     */
+    deletedAt: NullableUtcDateTime;
 };
 
 export type RegisterRequest = {
@@ -160,6 +164,21 @@ export type Page = {
     pageSize: number;
     totalItems: number;
     totalPages: number;
+};
+
+export type AuditEntry = {
+    id: string;
+    entityType: string;
+    entityId: string;
+    action: string;
+    actorId?: string | null;
+    correlationId: string;
+    occurredAt: UtcDateTime;
+    details?: string | null;
+};
+
+export type AuditPage = {
+    items: Array<AuditEntry>;
 };
 
 /**
@@ -296,7 +315,7 @@ export type LoginErrors = {
      */
     401: Problem;
     /**
-     * Rate limit exceeded. Retry after the interval named in `detail`.
+     * Rate limit exceeded. The response always uses the common Problem body with code IDENTITY.RATE_LIMITED.
      */
     429: Problem;
 };
@@ -561,6 +580,10 @@ export type ListUsersData = {
          * Filter to users holding this role.
          */
         roleId?: string;
+        /**
+         * Include soft-deleted users. Defaults to false.
+         */
+        includeDeleted?: boolean;
     };
     url: '/v1/users';
 };
@@ -596,7 +619,12 @@ export type GetUserData = {
     path: {
         userId: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Include a soft-deleted user for administrative recovery.
+         */
+        includeDeleted?: boolean;
+    };
     url: '/v1/users/{userId}';
 };
 
@@ -703,6 +731,72 @@ export type DeactivateUserResponses = {
 };
 
 export type DeactivateUserResponse = DeactivateUserResponses[keyof DeactivateUserResponses];
+
+export type RestoreUserData = {
+    body?: never;
+    path: {
+        userId: string;
+    };
+    query?: never;
+    url: '/v1/users/{userId}/restore';
+};
+
+export type RestoreUserErrors = {
+    /**
+     * The access token is missing, expired, or invalid.
+     */
+    401: Problem;
+    /**
+     * The caller is authenticated but lacks the permission this endpoint requires.
+     */
+    403: Problem;
+    /**
+     * No resource exists at this identifier.
+     */
+    404: Problem;
+};
+
+export type RestoreUserError = RestoreUserErrors[keyof RestoreUserErrors];
+
+export type RestoreUserResponses = {
+    /**
+     * The restored, active user.
+     */
+    200: User;
+};
+
+export type RestoreUserResponse = RestoreUserResponses[keyof RestoreUserResponses];
+
+export type ListUserAuditData = {
+    body?: never;
+    path?: never;
+    query: {
+        userId: string;
+    };
+    url: '/v1/audit';
+};
+
+export type ListUserAuditErrors = {
+    /**
+     * The access token is missing, expired, or invalid.
+     */
+    401: Problem;
+    /**
+     * The caller is authenticated but lacks the permission this endpoint requires.
+     */
+    403: Problem;
+};
+
+export type ListUserAuditError = ListUserAuditErrors[keyof ListUserAuditErrors];
+
+export type ListUserAuditResponses = {
+    /**
+     * Audit events for the requested user, newest first.
+     */
+    200: AuditPage;
+};
+
+export type ListUserAuditResponse = ListUserAuditResponses[keyof ListUserAuditResponses];
 
 export type ListRolesData = {
     body?: never;

@@ -22,6 +22,7 @@ class UserSearchQuery:
     search: str | None
     status: UserStatus | None
     role_id: UUID | None
+    include_deleted: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,7 +32,7 @@ class UserSearchResult:
 
 
 class UserRepository(Protocol):
-    async def get_by_id(self, id: UUID) -> User | None: ...
+    async def get_by_id(self, id: UUID, include_deleted: bool = False) -> User | None: ...
 
     async def get_by_email(self, email: Email) -> User | None: ...
 

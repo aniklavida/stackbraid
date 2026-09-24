@@ -14,7 +14,7 @@ export function useUsers(filter: UsersFilter) {
 export function useUser(userId: string) {
   return useQuery({
     queryKey: ["users", "detail", userId],
-    queryFn: () => usersRepository.getUser(userId),
+    queryFn: () => usersRepository.getUser(userId, true),
   });
 }
 
@@ -22,6 +22,24 @@ export function useDeactivateUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => usersRepository.deactivateUser(userId),
+    onSuccess: (user) => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.setQueryData(["users", "detail", user.id], user);
+    },
+  });
+}
+
+export function useUserAudit(userId: string) {
+  return useQuery({
+    queryKey: ["users", "audit", userId],
+    queryFn: () => usersRepository.listAudit(userId),
+  });
+}
+
+export function useRestoreUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => usersRepository.restoreUser(userId),
     onSuccess: (user) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.setQueryData(["users", "detail", user.id], user);

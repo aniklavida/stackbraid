@@ -9,10 +9,11 @@ translates between the two.
 
 from __future__ import annotations
 
+import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String, Uuid
+from sqlalchemy import JSON, DateTime, ForeignKey, String, Uuid, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.shared.persistence.base import OrmBase
@@ -32,6 +33,7 @@ class UserModel(OrmBase):
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
 
     user_roles: Mapped[list["UserRoleModel"]] = relationship(
         back_populates="user", cascade="all, delete-orphan", lazy="selectin"
@@ -81,3 +83,58 @@ class RefreshTokenModel(OrmBase):
     # enough. Without this, a token added in the same flush as a brand-new
     # user can be inserted first and fail its own foreign key check.
     user: Mapped[UserModel] = relationship()
+
+
+class AuditLogModel(OrmBase):
+    __tablename__ = "identity_audit_logs"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    entity_type: Mapped[str] = mapped_column(String(100), nullable=False)
+    entity_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False, index=True)
+    action: Mapped[str] = mapped_column(String(50), nullable=False)
+    actor_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
+    correlation_id: Mapped[str] = mapped_column(String(200), nullable=False)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    details: Mapped[str | None] = mapped_column(String, nullable=True)
+
+
+@event.listens_for(type(UserModel.__mapper__), "after_configured")
+def _configure_audit_and_soft_delete_listeners() -> None:
+    from sqlalchemy.orm import Session
+    from sqlalchemy.orm.attributes import get_history
+
+    from app.shared.auditing.audit import AuditEntry
+    from app.shared.observability.context import actor_id_var, correlation_id_var
+
+    @event.listens_for(Session, "do_orm_execute")
+    def _exclude_deleted_users(execute_state) -> None:
+        if execute_state.is_select and execute_state.execution_options.get("include_deleted") is not True:
+            statement = execute_state.statement
+            if "identity_users" in str(statement):
+                execute_state.statement = statement.where(UserModel.deleted_at.is_(None))
+
+    @event.listens_for(Session, "before_flush")
+    def _record_user_changes(session, _flush_context, _instances) -> None:
+        now = datetime.now(timezone.utc)
+        correlation_id = correlation_id_var.get() or "unknown"
+        actor_id = actor_id_var.get()
+        for row in set(session.new).union(session.dirty).union(session.deleted):
+            if not isinstance(row, UserModel):
+                continue
+            if row in session.new:
+                action = "created"
+            elif row in session.deleted:
+                action = "deleted"
+            else:
+                deleted_history = get_history(row, "deleted_at")
+                action = "deleted" if deleted_history.added and deleted_history.added[0] is not None else "restored" if deleted_history.deleted else "updated"
+            session.add(AuditLogModel(
+                id=uuid.uuid4(),
+                entity_type="User",
+                entity_id=row.id,
+                action=action,
+                actor_id=actor_id,
+                correlation_id=correlation_id,
+                occurred_at=now,
+                details=json.dumps({"status": row.status}, sort_keys=True),
+            ))

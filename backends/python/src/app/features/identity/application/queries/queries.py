@@ -9,16 +9,28 @@ from uuid import UUID
 from app.features.identity.application.mapping import role_to_dto, user_search_result_to_page_dto, user_to_dto
 from app.features.identity.contracts.dtos import RoleDto, UserDto, UserPageDto
 from app.features.identity.domain.repositories import RoleRepository, UserRepository, UserSearchQuery
+from app.shared.caching.cache import Cache
 from app.shared.web.errors import AppError
 from app.shared.web.result import Result
 
 
 class GetUserQuery:
-    def __init__(self, users: UserRepository) -> None:
+    def __init__(self, users: UserRepository, cache: Cache | None = None) -> None:
         self._users = users
+        self._cache = cache
 
-    async def handle(self, user_id: UUID) -> Result[UserDto]:
-        user = await self._users.get_by_id(user_id)
+    async def handle(self, user_id: UUID, include_deleted: bool = False) -> Result[UserDto]:
+        if not include_deleted and self._cache is not None:
+            async def load() -> UserDto | None:
+                cached_user = await self._users.get_by_id(user_id)
+                return user_to_dto(cached_user) if cached_user else None
+
+            user = await self._cache.get_or_create(f"identity:user:{user_id}", load, 300)
+            if user is None:
+                return Result.failure(AppError.not_found("IDENTITY.USER_NOT_FOUND", "identity.user_not_found"))
+            return Result.success(user)
+
+        user = await self._users.get_by_id(user_id, include_deleted=include_deleted)
         if user is None:
             return Result.failure(AppError.not_found("IDENTITY.USER_NOT_FOUND", "identity.user_not_found"))
         return Result.success(user_to_dto(user))
