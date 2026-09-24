@@ -88,6 +88,12 @@ jobs:
         # suite's expiry check exercises a real expiry instead of skipping it.
         env:
           Jwt__AccessTokenLifetimeSeconds: '5'
+          # The background-job check group needs the conformance handlers and
+          # a short retry backoff so the retry/dead-letter paths resolve in
+          # well under the polling timeout.
+          Jobs__ConformanceEnabled: 'true'
+          Jobs__BaseRetryDelayMilliseconds: '50'
+          Jobs__PollIntervalMilliseconds: '50'
         run: |
           nohup dotnet run --no-restore --no-build --configuration Release --project src/Host --urls http://127.0.0.1:8080 > dotnet-backend.log 2>&1 &
           for i in $(seq 1 60); do
@@ -146,6 +152,11 @@ jobs:
           # a real expiry instead of skipping it — same technique as this
           # backend's own README section on running the conformance suite.
           STACKBRAID_JWT_ACCESS_TOKEN_LIFETIME_SECONDS: '5'
+          # Background-job checks: conformance handlers plus a short retry
+          # backoff so retry/dead-letter resolve well under the poll timeout.
+          STACKBRAID_JOBS_CONFORMANCE_ENABLED: 'true'
+          STACKBRAID_JOBS_BASE_RETRY_DELAY_SECONDS: '0.05'
+          STACKBRAID_JOBS_POLL_INTERVAL_SECONDS: '0.05'
         run: |
           nohup env PYTHONPATH=src uvicorn app.host.main:app --host 127.0.0.1 --port 8080 > python-backend.log 2>&1 &
           for i in $(seq 1 60); do

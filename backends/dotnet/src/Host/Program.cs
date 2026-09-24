@@ -12,6 +12,7 @@ using StackBraid.Host.Realtime;
 using StackBraid.Host.Security;
 using StackBraid.Shared;
 using StackBraid.Shared.Documents;
+using StackBraid.Shared.Jobs;
 using StackBraid.Shared.Realtime;
 using StackBraid.Shared.Web;
 
@@ -152,6 +153,7 @@ app.MapIdentityEndpoints();
 app.MapHub<NotificationsHub>("/v1/hubs/notifications");
 app.MapHub<JobsHub>("/v1/hubs/jobs");
 app.MapDocumentJobEndpoints();
+app.MapJobEndpoints();
 app.MapOpenApiDocumentation();
 
 await app.Services.MigratePostgresDatabaseAsync();

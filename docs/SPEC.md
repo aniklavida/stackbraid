@@ -133,7 +133,7 @@ It ships first as an in-repo script requiring no npm publish, and becomes `npx s
 | Dispatch (Python) | container-resolved handlers | no dependency |
 | Mapping | **hand-written** | — |
 | Validation | FluentValidation | Apache-2.0 |
-| Background jobs | Hangfire | LGPL v3 |
+| Background jobs | Postgres-backed scheduler (`PersistentJobScheduler`, no new dependency); Hangfire not adopted (LGPL compiled into user code) | MIT |
 | PDF | QuestPDF | Community — free under USD 1M revenue |
 | Excel | ClosedXML | MIT |
 | Logging | Serilog | Apache-2.0 |

@@ -27,11 +27,17 @@ from app.features.identity.endpoints.security import (
     JwtOptions,
     app_error_for_auth_failure,
     app_error_for_forbidden,
+    get_current_user_id,
 )
 from app.features.identity.endpoints.router import router as identity_router
 from app.host.config import Settings
 from app.host.documentation import create_documentation_router
-from app.shared.jobs.scheduler import InProcessJobScheduler
+from app.shared.jobs.conformance import conformance_handlers
+from app.shared.jobs.endpoints import create_jobs_router
+from app.shared.jobs.handlers import JobHandlerRegistry
+from app.shared.jobs.models import JobWorkerOptions
+from app.shared.jobs.persistent import JobWorker, PersistentJobScheduler
+from app.shared.jobs.sqlalchemy_store import SqlAlchemyJobStore
 from app.shared.localization.localizer import JsonAppLocalizer
 from app.shared.mailing.email_sender import SmtpEmailSender
 from app.shared.notifications.dispatcher import NotificationDispatcher, QueuedNotificationJob
@@ -109,7 +115,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         else:
             app.state.realtime_publisher = InProcessRealtimePublisher(app.state.realtime_registry)
 
-        app.state.job_scheduler = InProcessJobScheduler()
+        job_options = JobWorkerOptions(
+            poll_interval_seconds=settings.jobs_poll_interval_seconds,
+            base_retry_delay_seconds=settings.jobs_base_retry_delay_seconds,
+            max_retry_delay_seconds=settings.jobs_max_retry_delay_seconds,
+            worker_enabled=settings.jobs_worker_enabled,
+            conformance_enabled=settings.jobs_conformance_enabled,
+        )
+        app.state.job_store = SqlAlchemyJobStore(session_factory)
+        app.state.job_scheduler = PersistentJobScheduler(app.state.job_store)
+        job_handlers = conformance_handlers() if settings.jobs_conformance_enabled else []
+        app.state.job_worker = JobWorker(app.state.job_store, JobHandlerRegistry(job_handlers), job_options)
         app.state.notification_store = InMemoryNotificationStore()
         app.state.device_token_store = InMemoryDeviceTokenStore()
         email_sender = SmtpEmailSender(
@@ -130,7 +146,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ]
         )
         app.state.queued_notification_job = QueuedNotificationJob(app.state.job_scheduler, app.state.notification_dispatcher)
-        background_tasks.append(asyncio.create_task(app.state.job_scheduler.run_forever()))
+        background_tasks.append(asyncio.create_task(app.state.job_scheduler.run_ephemeral_forever()))
+        background_tasks.append(asyncio.create_task(app.state.job_worker.run_forever()))
 
         if settings.run_migrations_on_startup:
             await asyncio.to_thread(_run_migrations, settings.postgres_dsn)
@@ -200,6 +217,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"status": "ready"}
 
     app.include_router(identity_router)
+    app.include_router(create_jobs_router(get_current_user_id, conformance_enabled=settings.jobs_conformance_enabled))
     app.include_router(create_documentation_router(settings.contract_path))
 
     return app

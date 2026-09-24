@@ -7,6 +7,7 @@ import { registerAuthChecks } from './checks/auth.mjs';
 import { registerErrorEnvelopeChecks } from './checks/errors.mjs';
 import { registerUserChecks } from './checks/users.mjs';
 import { registerRoleChecks } from './checks/roles.mjs';
+import { registerJobChecks } from './checks/jobs.mjs';
 import { registerRealtimeChecks } from './checks/realtime.mjs';
 
 // Order matters: documentation runs first as an unauthenticated contract check,
@@ -14,7 +15,7 @@ import { registerRealtimeChecks } from './checks/realtime.mjs';
 // session (`ctx.primaryUser.activeTokens`) that users/roles/realtime checks
 // reuse. Realtime runs last — its own checks deactivate and reassign roles
 // on the primary user, which nothing after it depends on being untouched.
-const CHECK_GROUPS = [registerDocumentationChecks, registerAuthChecks, registerErrorEnvelopeChecks, registerUserChecks, registerRoleChecks, registerRealtimeChecks];
+const CHECK_GROUPS = [registerDocumentationChecks, registerAuthChecks, registerErrorEnvelopeChecks, registerUserChecks, registerRoleChecks, registerJobChecks, registerRealtimeChecks];
 
 export async function runConformanceSuite(baseUrl) {
   try {
