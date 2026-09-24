@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AssignRoleData, AssignRoleErrors, AssignRoleResponses, DeactivateUserData, DeactivateUserErrors, DeactivateUserResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetUserData, GetUserErrors, GetUserResponses, ListRolesData, ListRolesErrors, ListRolesResponses, ListUsersData, ListUsersErrors, ListUsersResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutErrors, LogoutResponses, RefreshTokenData, RefreshTokenErrors, RefreshTokenResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RevokeRoleData, RevokeRoleErrors, RevokeRoleResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses } from './types.gen';
+import type { AssignRoleData, AssignRoleErrors, AssignRoleResponses, DeactivateUserData, DeactivateUserErrors, DeactivateUserResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetUserData, GetUserErrors, GetUserResponses, ListNotificationsData, ListNotificationsErrors, ListNotificationsResponses, ListRolesData, ListRolesErrors, ListRolesResponses, ListUsersData, ListUsersErrors, ListUsersResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutErrors, LogoutResponses, RefreshDeviceTokenData, RefreshDeviceTokenErrors, RefreshDeviceTokenResponses, RefreshTokenData, RefreshTokenErrors, RefreshTokenResponses, RegisterDeviceTokenData, RegisterDeviceTokenErrors, RegisterDeviceTokenResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RevokeDeviceTokenData, RevokeDeviceTokenErrors, RevokeDeviceTokenResponses, RevokeRoleData, RevokeRoleErrors, RevokeRoleResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -73,6 +73,50 @@ export const logout = <ThrowOnError extends boolean = false>(options?: Options<L
 export const getCurrentUser = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentUserData, ThrowOnError>): RequestResult<GetCurrentUserResponses, GetCurrentUserErrors, ThrowOnError> => (options?.client ?? client).get<GetCurrentUserResponses, GetCurrentUserErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/auth/me',
+    ...options
+});
+
+/**
+ * Register a device push token
+ */
+export const registerDeviceToken = <ThrowOnError extends boolean = false>(options: Options<RegisterDeviceTokenData, ThrowOnError>): RequestResult<RegisterDeviceTokenResponses, RegisterDeviceTokenErrors, ThrowOnError> => (options.client ?? client).post<RegisterDeviceTokenResponses, RegisterDeviceTokenErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/devices',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Revoke a device push token
+ */
+export const revokeDeviceToken = <ThrowOnError extends boolean = false>(options: Options<RevokeDeviceTokenData, ThrowOnError>): RequestResult<RevokeDeviceTokenResponses, RevokeDeviceTokenErrors, ThrowOnError> => (options.client ?? client).delete<RevokeDeviceTokenResponses, RevokeDeviceTokenErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/devices/{deviceId}',
+    ...options
+});
+
+/**
+ * Refresh a device push token
+ */
+export const refreshDeviceToken = <ThrowOnError extends boolean = false>(options: Options<RefreshDeviceTokenData, ThrowOnError>): RequestResult<RefreshDeviceTokenResponses, RefreshDeviceTokenErrors, ThrowOnError> => (options.client ?? client).patch<RefreshDeviceTokenResponses, RefreshDeviceTokenErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/devices/{deviceId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List the authenticated user's in-app notifications
+ */
+export const listNotifications = <ThrowOnError extends boolean = false>(options?: Options<ListNotificationsData, ThrowOnError>): RequestResult<ListNotificationsResponses, ListNotificationsErrors, ThrowOnError> => (options?.client ?? client).get<ListNotificationsResponses, ListNotificationsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/notifications',
     ...options
 });
 

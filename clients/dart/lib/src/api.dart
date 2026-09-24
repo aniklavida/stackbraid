@@ -8,6 +8,8 @@ import 'package:stackbraid_client/src/auth/basic_auth.dart';
 import 'package:stackbraid_client/src/auth/bearer_auth.dart';
 import 'package:stackbraid_client/src/auth/oauth.dart';
 import 'package:stackbraid_client/src/api/auth_api.dart';
+import 'package:stackbraid_client/src/api/devices_api.dart';
+import 'package:stackbraid_client/src/api/notifications_api.dart';
 import 'package:stackbraid_client/src/api/roles_api.dart';
 import 'package:stackbraid_client/src/api/users_api.dart';
 
@@ -106,6 +108,18 @@ class StackbraidClient {
   /// by doing that all interceptors will not be executed
   AuthApi getAuthApi() {
     return AuthApi(dio);
+  }
+
+  /// Get DevicesApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  DevicesApi getDevicesApi() {
+    return DevicesApi(dio);
+  }
+
+  /// Get NotificationsApi instance, base route and serializer can be overridden by a given but be careful,
+  /// by doing that all interceptors will not be executed
+  NotificationsApi getNotificationsApi() {
+    return NotificationsApi(dio);
   }
 
   /// Get RolesApi instance, base route and serializer can be overridden by a given but be careful,

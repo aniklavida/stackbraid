@@ -35,6 +35,8 @@ from app.features.identity.persistence.repositories import (
     SqlAlchemyUserRepository,
 )
 from app.shared.localization.localizer import AppLocalizer
+from app.shared.notifications.dispatcher import NotificationDispatcher, QueuedNotificationJob
+from app.shared.notifications.models import DeviceTokenStore, NotificationStore
 from app.shared.persistence.unit_of_work import SqlAlchemyUnitOfWork, UnitOfWork
 from app.shared.realtime.publisher import RealtimePublisher
 from app.shared.security.password_hasher import PasswordHasher
@@ -60,6 +62,22 @@ def get_role_repository(session: AsyncSession = Depends(get_session)) -> SqlAlch
 
 def get_refresh_token_repository(session: AsyncSession = Depends(get_session)) -> SqlAlchemyRefreshTokenRepository:
     return SqlAlchemyRefreshTokenRepository(session)
+
+
+def get_notification_store(request: Request) -> NotificationStore:
+    return request.app.state.notification_store  # type: ignore[no-any-return]
+
+
+def get_device_token_store(request: Request) -> DeviceTokenStore:
+    return request.app.state.device_token_store  # type: ignore[no-any-return]
+
+
+def get_notification_dispatcher(request: Request) -> NotificationDispatcher:
+    return request.app.state.notification_dispatcher  # type: ignore[no-any-return]
+
+
+def get_queued_notification_job(request: Request) -> QueuedNotificationJob:
+    return request.app.state.queued_notification_job  # type: ignore[no-any-return]
 
 
 def get_localizer(request: Request) -> AppLocalizer:

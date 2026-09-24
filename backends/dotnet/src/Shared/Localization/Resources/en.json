@@ -9,6 +9,8 @@
   "identity.unauthorized": "Authentication is required to perform this action.",
   "identity.email_in_use": "This email address is already in use by another account.",
   "identity.rate_limited": "Too many requests. Please wait a minute before trying again.",
+  "notifications.token_already_registered": "This device token is already registered.",
+  "notifications.device_not_found": "No device token exists with this identifier.",
   "problem.validation_failed.title": "Validation failed",
   "problem.unauthorized.title": "Unauthorized",
   "problem.forbidden.title": "Forbidden",

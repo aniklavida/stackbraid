@@ -7,6 +7,7 @@ using StackBraid.Shared.Documents;
 using StackBraid.Shared.Jobs;
 using StackBraid.Shared.Mailing;
 using StackBraid.Shared.Messaging;
+using StackBraid.Shared.Notifications;
 using StackBraid.Shared.Security;
 using StackBraid.Shared.Storage;
 using StackBraid.Shared.Web;
@@ -32,6 +33,7 @@ public static class ServiceCollectionExtensions
 
         services.AddFileStorage(configuration);
         services.AddDocuments();
+        services.AddNotifications(configuration);
 
         return services;
     }

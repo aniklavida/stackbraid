@@ -132,6 +132,11 @@ builder.Services.AddCors(options => options.AddPolicy("Frontend", policy =>
 
 var app = builder.Build();
 
+if (string.IsNullOrWhiteSpace(builder.Configuration["Notifications:Firebase:ProjectId"]) || string.IsNullOrWhiteSpace(builder.Configuration["Notifications:Firebase:AccessToken"]))
+{
+    app.Logger.LogWarning("Firebase Cloud Messaging push is disabled: Firebase credentials are not configured. Email and in-app delivery remain active.");
+}
+
 app.UseSharedWeb();
 app.UseCors("Frontend");
 app.UseAuthentication();

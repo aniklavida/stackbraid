@@ -46,6 +46,10 @@ tags:
     description: Administration of user accounts.
   - name: Roles
     description: Role catalogue and per-user role assignment.
+  - name: Devices
+    description: Device push-token registration, refresh and revocation.
+  - name: Notifications
+    description: Stored in-app notifications for the authenticated user.
 
 security:
   - bearerAuth: []
@@ -181,6 +185,91 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /v1/devices:
+    post:
+      operationId: registerDeviceToken
+      tags: [Devices]
+      summary: Register a device push token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterDeviceTokenRequest'
+      responses:
+        '201':
+          description: The device token is registered and is now eligible for push delivery.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceToken'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: The token is already registered to another user.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /v1/devices/{deviceId}:
+    parameters:
+      - $ref: '#/components/parameters/DeviceIdParam'
+    patch:
+      operationId: refreshDeviceToken
+      tags: [Devices]
+      summary: Refresh a device push token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshDeviceTokenRequest'
+      responses:
+        '200':
+          description: The device token was refreshed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceToken'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: revokeDeviceToken
+      tags: [Devices]
+      summary: Revoke a device push token
+      responses:
+        '204':
+          description: Revoked, or the token was already absent; both are treated as success.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/notifications:
+    get:
+      operationId: listNotifications
+      tags: [Notifications]
+      summary: List the authenticated user's in-app notifications
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: A page of in-app notifications.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPage'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -395,6 +484,13 @@ components:
         format: uuid
     RoleIdParam:
       name: roleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    DeviceIdParam:
+      name: deviceId
       in: path
       required: true
       schema:
@@ -653,6 +749,80 @@ components:
         roleId:
           type: string
           format: uuid
+
+    DevicePlatform:
+      type: string
+      enum: [ios, android, web]
+
+    RegisterDeviceTokenRequest:
+      type: object
+      required: [token, platform]
+      properties:
+        token:
+          type: string
+          minLength: 1
+          maxLength: 4096
+          writeOnly: true
+        platform:
+          $ref: '#/components/schemas/DevicePlatform'
+        appVersion:
+          type: string
+          maxLength: 50
+
+    RefreshDeviceTokenRequest:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          minLength: 1
+          maxLength: 4096
+          writeOnly: true
+
+    DeviceToken:
+      type: object
+      required: [id, platform, appVersion, registeredAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        platform:
+          $ref: '#/components/schemas/DevicePlatform'
+        appVersion:
+          type: string
+          maxLength: 50
+        registeredAt:
+          $ref: '#/components/schemas/UtcDateTime'
+        updatedAt:
+          $ref: '#/components/schemas/UtcDateTime'
+
+    Notification:
+      type: object
+      required: [id, title, body, read, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        body:
+          type: string
+        read:
+          type: boolean
+        createdAt:
+          $ref: '#/components/schemas/UtcDateTime'
+
+    NotificationPage:
+      description: 'Page<Notification>.'
+      allOf:
+        - $ref: '#/components/schemas/Page'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Notification'
 
     TokenPair:
       type: object

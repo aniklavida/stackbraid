@@ -42,6 +42,8 @@ dependencies:
   # the token-storage rule docs/SPEC.md states for every StackBraid client.
   # See shared/auth/token_store.dart for the reasoning.
   flutter_secure_storage: ^9.2.4
+  firebase_core: ^4.0.0
+  firebase_messaging: ^16.0.0
 
 dev_dependencies:
   flutter_test:
