@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>StackBraid.Worker</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    A console process, not a web host — it runs the background workers
+    (the persisted job worker and the messaging delivery service) against
+    the same Postgres the API writes to. Deploying it separately from
+    Host is what lets the API stay request-only while jobs are still
+    drained; running both is also correct (competing consumers).
+  -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\StackBraid.Shared.csproj" />
+    <ProjectReference Include="..\Database\Postgres\StackBraid.Database.Postgres.csproj" />
+  </ItemGroup>
+
+</Project>

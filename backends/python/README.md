@@ -48,7 +48,7 @@ mediator library. Same folders, same names, same flow, each idiomatic (see
 $ CONFORMANCE_ADMIN_EMAIL="admin@stackbraid.local" CONFORMANCE_ADMIN_PASSWORD="<seeded>" \
     node cli/run.mjs http://127.0.0.1:<port>
 
-43 passed, 0 failed, 0 skipped, 43 total.
+47 passed, 0 failed, 0 skipped, 47 total.
 ```
 
 This output is the `python-conformance` job of
@@ -63,9 +63,14 @@ the RFC 9457 Problem envelope on every documented error, offset pagination
 arithmetic, `UtcDateTime`'s exact `Z`-suffixed format, both token-delivery
 paths (body and httpOnly cookie) for login/refresh/logout, refresh-token
 rotation and revocation, permission-gated
-admin endpoints, and the realtime payloads below — byte-identical in shape
-to the .NET run with only the base URL changed. Nothing is skipped here
-because the expiry check has what it needs: a short-lived access token TTL
+admin endpoints, the realtime payloads below, and the `Jobs` group
+(enqueue/complete, retry-with-backoff, dead-letter, and that a job's status
+is visible only to its owner) — byte-identical in shape to the .NET run with
+only the base URL changed. The `Jobs` group is enabled by the
+conformance-only `STACKBRAID_JOBS_CONFORMANCE_ENABLED` flag plus a short
+retry backoff; against a backend without it, that one group skips rather than
+fails. Nothing else is skipped here because the expiry check has what it
+needs: a short-lived access token TTL
 (`STACKBRAID_JWT_ACCESS_TOKEN_LIFETIME_SECONDS`). Run without it, that one
 check skips rather than waiting out the default lifetime.
 
@@ -129,7 +134,8 @@ against any two running instances.
   | Protocol | Today's implementation | Real integration planned |
   |---|---|---|
   | `MessagePublisher` | in-process `asyncio.Queue`, logged | RabbitMQ |
-  | `JobScheduler` | in-process background queue | a real job runner |
+  | `MessageBus` | in-memory publish/subscribe fake with retry, exponential backoff, a dead-letter path and idempotent handlers | RabbitMQ |
+  | `JobScheduler` | Postgres-persistent (`PersistentJobScheduler`), with an in-process queue for the ephemeral delegate path | Postgres is the real store |
   | `PdfGenerator` | hand-written minimal PDF writer | a real PDF library |
   | `ExcelExporter` | RFC 4180 CSV | a real Excel library |
   | `Cache` | in-process, per-key TTL | Redis |
@@ -140,6 +146,16 @@ against any two running instances.
   none is a no-op — and every one is swappable for its planned counterpart
   without changing a caller. See [docs/DEPENDENCIES.md](../../docs/DEPENDENCIES.md)
   for what is and is not a dependency of this backend yet.
+
+  The persisted `JobScheduler` writes each durable job to the `shared_jobs`
+  table before returning, so it survives an API restart; the worker retries a
+  failure with exponential backoff and dead-letters the job once its attempt
+  budget is spent, and a job's owner can read its status at
+  `GET /v1/jobs/{jobId}`. `python -m app.host.worker` is a separate process
+  that drains the same queue, so the API can stay request-only. Real RabbitMQ
+  connectivity is **not** compiled into this build: `MessageBus` ships with
+  its in-memory fake only, and selecting the RabbitMQ provider fails loudly
+  rather than pretending to broker anything.
 
 ## What the Identity feature does
 

@@ -33,6 +33,18 @@ class Settings(BaseSettings):
     run_migrations_on_startup: bool = True
     seed_on_startup: bool = True
 
+    # Background jobs. The worker defaults on in the API process for a
+    # single-process deployment; set it off when a dedicated worker process
+    # (`python -m app.host.worker`) is deployed alongside a request-only API.
+    jobs_worker_enabled: bool = True
+    jobs_poll_interval_seconds: float = 1.0
+    jobs_base_retry_delay_seconds: float = 1.0
+    jobs_max_retry_delay_seconds: float = 300.0
+    # Registers the deterministic scenario handlers the conformance suite
+    # drives; off by default because they exist to prove behaviour, not to be
+    # a production surface.
+    jobs_conformance_enabled: bool = False
+
     # Path to the authoritative OpenAPI contract file. Defaults to empty, which
     # resolves contract/openapi.yaml relative to the repository tree or working directory.
     contract_path: str = ""

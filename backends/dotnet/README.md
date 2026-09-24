@@ -41,7 +41,7 @@ backends/dotnet/
 $ CONFORMANCE_ADMIN_EMAIL="admin@stackbraid.local" CONFORMANCE_ADMIN_PASSWORD="<seeded>" \
     node cli/run.mjs http://127.0.0.1:<port>
 
-43 passed, 0 failed, 0 skipped, 43 total.
+47 passed, 0 failed, 0 skipped, 47 total.
 ```
 
 This output is the `dotnet-conformance` job of
@@ -56,10 +56,14 @@ the RFC 9457 Problem envelope on every documented error, offset pagination
 arithmetic, `UtcDateTime`'s exact `Z`-suffixed format, both token-delivery
 paths (body and httpOnly cookie) for login/refresh/logout, refresh-token
 rotation and revocation, permission-gated
-admin endpoints, and the realtime payloads below. Nothing is skipped here
-because the expiry check has what it needs: a short-lived access token TTL
-(`Jwt:AccessTokenLifetimeSeconds`). Run without it, that one check skips
-rather than waiting out the default 900 seconds.
+admin endpoints, the realtime payloads below, and the `Jobs` group
+(enqueue/complete, retry-with-backoff, dead-letter, and that a job's status
+is visible only to its owner). The `Jobs` group is enabled by the
+conformance-only `Jobs:ConformanceEnabled` flag plus a short retry backoff;
+against a backend without it, that one group skips rather than fails.
+Nothing else is skipped here because the expiry check has what it needs: a
+short-lived access token TTL (`Jwt:AccessTokenLifetimeSeconds`). Run without
+it, that one check skips rather than waiting out the default 900 seconds.
 
 The generated TypeScript and Dart clients (`clients/typescript`,
 `clients/dart`) both call this backend successfully with no hand edits —
@@ -127,7 +131,8 @@ against any two running instances.
   | Interface | Today's implementation | Real integration planned |
   |---|---|---|
   | `IMessagePublisher` | in-process queue, logged | RabbitMQ |
-  | `IJobScheduler` | in-process background queue | Hangfire |
+  | `IMessageBus` | in-memory publish/subscribe fake with retry, exponential backoff, a dead-letter path and idempotent handlers | RabbitMQ |
+  | `IJobScheduler` | Postgres-persistent (`PersistentJobScheduler`), with `InProcessJobScheduler` kept for the ephemeral delegate path | Postgres is the real store; Hangfire was not adopted (LGPL compiled into user code) — see docs/DEPENDENCIES.md |
   | `IPdfGenerator` | QuestPDF (with `MinimalPdfGenerator` swappable fallback) | (implemented) |
   | `IExcelExporter` | ClosedXML `.xlsx` (with `CsvExcelExporter` swappable fallback) | (implemented) |
   | `IExcelImporter` | ClosedXML `.xlsx` with row-level error reporting | (implemented) |
@@ -141,6 +146,16 @@ against any two running instances.
   interface rather than the class. See
   [docs/DEPENDENCIES.md](../../docs/DEPENDENCIES.md) for what is and is not
   a dependency of this backend yet.
+
+  The persisted `IJobScheduler` writes each durable job to the `shared_jobs`
+  table before returning, so it survives an API restart; the worker retries a
+  failure with exponential backoff and dead-letters the job once its attempt
+  budget is spent, and a job's owner can read its status at
+  `GET /v1/jobs/{jobId}`. `src/Worker` is a separate process that drains the
+  same queue, so the API can stay request-only. Real RabbitMQ connectivity is
+  **not** compiled into this build: `IMessageBus` ships with its in-memory
+  fake only, and selecting the RabbitMQ provider fails loudly rather than
+  pretending to broker anything.
 
 ## What the Identity feature does
 

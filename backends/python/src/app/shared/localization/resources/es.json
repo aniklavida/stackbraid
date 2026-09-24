@@ -11,6 +11,8 @@
   "identity.rate_limited": "Demasiadas solicitudes. Espere un minuto antes de volver a intentarlo.",
   "notifications.token_already_registered": "Este token de dispositivo ya está registrado.",
   "notifications.device_not_found": "No existe ningún token de dispositivo con este identificador.",
+  "jobs.not_found": "No existe ningún trabajo con este identificador.",
+  "jobs.unknown_scenario": "El escenario de conformidad solicitado no se reconoce.",
   "problem.validation_failed.title": "La validación falló",
   "problem.unauthorized.title": "No autorizado",
   "problem.forbidden.title": "Prohibido",

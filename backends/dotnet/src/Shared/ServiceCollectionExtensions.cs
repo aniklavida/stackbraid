@@ -24,8 +24,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddSharedWeb();
         services.AddSharedPipelineBehaviors();
-        services.AddInProcessMessaging();
-        services.AddInProcessJobs();
+        services.AddInProcessMessaging(configuration);
+        services.AddPersistentJobs(configuration);
         services.AddMemoryCache();
         services.AddSingleton<ICache, InMemoryCache>();
         services.AddSingleton<IEmailSender, SmtpEmailSender>();
