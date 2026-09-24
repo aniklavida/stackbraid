@@ -3,6 +3,7 @@ using Shouldly;
 using StackBraid.Features.Identity.Domain.Entities;
 using StackBraid.Features.Identity.Domain.Repositories;
 using StackBraid.Features.Identity.Domain.ValueObjects;
+using StackBraid.Shared.Auditing;
 using StackBraid.Shared.Persistence;
 
 namespace StackBraid.Features.Identity.IntegrationTests;
@@ -159,5 +160,30 @@ public class UserRepositoryTests
         var reloaded = await freshScope.ServiceProvider.GetRequiredService<IUserRepository>().GetByIdIncludingDeletedAsync(user.Id);
 
         reloaded!.Status.ShouldBe(UserStatus.Inactive);
+    }
+
+    [Fact]
+    public async Task Deactivating_a_user_writes_a_retrievable_audit_row()
+    {
+        using var scope = _fixture.Services.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        var user = User.Register(UniqueEmail(), "hashed", "Audited User", DateTime.UtcNow);
+        await repository.AddAsync(user);
+        await unitOfWork.SaveChangesAsync();
+
+        user.Deactivate(DateTime.UtcNow);
+        await unitOfWork.SaveChangesAsync();
+
+        using var auditScope = _fixture.Services.CreateScope();
+        var auditLog = auditScope.ServiceProvider.GetRequiredService<IAuditLog>();
+        var entries = await auditLog.ListAsync(user.Id);
+
+        entries.ShouldContain(e => e.Action == "created" && e.EntityId == user.Id);
+        var deactivations = entries.Where(e => e.Action == "deleted").ToList();
+        deactivations.Count.ShouldBe(1);
+        deactivations[0].CorrelationId.ShouldNotBeNullOrWhiteSpace();
+        deactivations[0].EntityType.ShouldBe(nameof(User));
     }
 }

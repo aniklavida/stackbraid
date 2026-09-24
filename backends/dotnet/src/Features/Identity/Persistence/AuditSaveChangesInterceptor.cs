@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
 using StackBraid.Features.Identity.Domain.Entities;
 using StackBraid.Shared.Auditing;
 using StackBraid.Shared.Web;
@@ -14,6 +12,15 @@ public sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 
+    // Writes go straight into the same DbContext instance handed to this
+    // interceptor via eventData.Context, as an IdentityDbContext, rather
+    // than through IAuditLog: IAuditLog's implementation needs an
+    // IdentityDbContext, and this interceptor is itself constructed while
+    // building that same IdentityDbContext's options (AddDbContext resolves
+    // registered interceptors from the app's DI container before the
+    // context exists) — injecting IAuditLog here creates a circular
+    // dependency that deadlocks DI resolution. Reading audit history still
+    // goes through IAuditLog elsewhere, where no such cycle exists.
     public AuditSaveChangesInterceptor(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
@@ -36,13 +43,7 @@ public sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
 
     private void WriteEntries(DbContext? context)
     {
-        if (context is null)
-        {
-            return;
-        }
-
-        var auditLog = ((IInfrastructure<IServiceProvider>)context).Instance.GetService<IAuditLog>();
-        if (auditLog is null)
+        if (context is not IdentityDbContext identityContext)
         {
             return;
         }
@@ -52,7 +53,9 @@ public sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
         var correlationId = _httpContextAccessor.HttpContext?.GetCorrelationId() ?? "unknown";
         var now = DateTime.UtcNow;
 
-        foreach (var entry in context.ChangeTracker.Entries<User>())
+        // Materialized eagerly: adding to AuditLogs below mutates the same
+        // change tracker this enumerates, which invalidates a live iterator.
+        foreach (var entry in identityContext.ChangeTracker.Entries<User>().ToList())
         {
             if (entry.State is not (EntityState.Added or EntityState.Modified or EntityState.Deleted))
             {
@@ -68,15 +71,17 @@ public sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
                 _ => "updated",
             };
 
-            auditLog.Add(new AuditEntry(
-                Guid.NewGuid(),
-                nameof(User),
-                entry.Entity.Id,
-                action,
-                actorId,
-                correlationId,
-                now,
-                null));
+            identityContext.AuditLogs.Add(new AuditLogModel
+            {
+                Id = Guid.NewGuid(),
+                EntityType = nameof(User),
+                EntityId = entry.Entity.Id,
+                Action = action,
+                ActorId = actorId,
+                CorrelationId = correlationId,
+                OccurredAtUtc = now,
+                Details = null,
+            });
         }
     }
 }
