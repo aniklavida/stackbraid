@@ -1,0 +1,7 @@
+---
+description: StackBraid contributor and agent instructions
+globs: *
+alwaysApply: true
+---
+
+Cursor rule: the canonical guide is **`AGENTS.md`** at the repository root. Read it before making changes; edit conventions there, not here.

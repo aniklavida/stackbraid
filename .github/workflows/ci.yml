@@ -38,6 +38,12 @@ jobs:
       - name: Shellcheck all shell scripts
         run: shellcheck scripts/*.sh .githooks/pre-commit
 
+      - name: Verify multi-host pointers
+        run: |
+          ./scripts/check-host-pointers.sh --self-test
+          ./scripts/check-host-pointers.sh
+          ./scripts/generate-host-pointers.sh --check
+
       - name: Lint YAML (infra, workflows)
         run: |
           yamllint -d "{extends: default, rules: {line-length: disable, document-start: disable, truthy: disable}}" \
