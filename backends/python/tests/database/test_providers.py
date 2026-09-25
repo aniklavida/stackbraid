@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import importlib
 import io
+import logging
 from contextlib import redirect_stdout
 from datetime import datetime, timezone
 
@@ -67,10 +68,34 @@ def test_provider_migration_renders_its_own_dialect_ddl_offline(name: str) -> No
     provider = importlib.import_module(f"app.database.{name}")
     config = Config(str(provider.ALEMBIC_INI))
 
-    buffer = io.StringIO()
-    with redirect_stdout(buffer):
-        command.upgrade(config, "head", sql=True)
-    sql = buffer.getvalue()
+    # Each provider's migrations/env.py calls logging.config.fileConfig() on
+    # this ini (standard Alembic boilerplate), which reconfigures the root
+    # logger's handlers process-wide. Left alone, that silently breaks
+    # pytest's caplog capture for every test that runs afterward in this
+    # session. Save and restore the logging state around the in-process
+    # Alembic call so this test's side effect stays contained to itself.
+    root_logger = logging.getLogger()
+    saved_handlers = list(root_logger.handlers)
+    saved_level = root_logger.level
+    # fileConfig's default disable_existing_loggers=True marks every
+    # already-created logger not named in the ini as .disabled — including
+    # loggers modules created at import time, long before this test runs.
+    # Restoring root's handlers/level alone doesn't undo that per-logger
+    # flag, so snapshot and restore it for every logger that exists right now.
+    existing_loggers = list(logging.root.manager.loggerDict.values())
+    saved_disabled = [
+        (lgr, lgr.disabled) for lgr in existing_loggers if isinstance(lgr, logging.Logger)
+    ]
+    try:
+        buffer = io.StringIO()
+        with redirect_stdout(buffer):
+            command.upgrade(config, "head", sql=True)
+        sql = buffer.getvalue()
+    finally:
+        root_logger.handlers = saved_handlers
+        root_logger.setLevel(saved_level)
+        for lgr, disabled in saved_disabled:
+            lgr.disabled = disabled
 
     assert "identity_users" in sql
     assert "shared_jobs" in sql
