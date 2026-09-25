@@ -9,6 +9,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Shared\StackBraid.Shared.csproj" />
     <ProjectReference Include="..\Database\Postgres\StackBraid.Database.Postgres.csproj" />
+    <ProjectReference Include="..\Database\SqlServer\StackBraid.Database.SqlServer.csproj" />
+    <ProjectReference Include="..\Database\MySql\StackBraid.Database.MySql.csproj" />
     <ProjectReference Include="..\Features\Identity\Domain\StackBraid.Features.Identity.Domain.csproj" />
     <ProjectReference Include="..\Features\Identity\Application\StackBraid.Features.Identity.Application.csproj" />
     <ProjectReference Include="..\Features\Identity\Contracts\StackBraid.Features.Identity.Contracts.csproj" />

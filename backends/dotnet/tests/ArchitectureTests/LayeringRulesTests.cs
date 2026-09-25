@@ -1,7 +1,9 @@
 using System.Reflection;
 using NetArchTest.Rules;
 using Shouldly;
+using StackBraid.Database.MySql;
 using StackBraid.Database.Postgres;
+using StackBraid.Database.SqlServer;
 using StackBraid.Features.Identity.Application;
 using StackBraid.Features.Identity.Contracts;
 using StackBraid.Features.Identity.Domain;
@@ -27,6 +29,8 @@ public class LayeringRulesTests
     private static readonly Assembly EndpointsAssembly = typeof(Features.Identity.Endpoints.IdentityEndpointsExtensions).Assembly;
     private static readonly Assembly SharedAssembly = typeof(Shared.ServiceCollectionExtensions).Assembly;
     private static readonly Assembly DatabasePostgresAssembly = typeof(Database.Postgres.ServiceCollectionExtensions).Assembly;
+    private static readonly Assembly DatabaseSqlServerAssembly = typeof(Database.SqlServer.ServiceCollectionExtensions).Assembly;
+    private static readonly Assembly DatabaseMySqlAssembly = typeof(Database.MySql.ServiceCollectionExtensions).Assembly;
 
     [Fact]
     public void Domain_depends_on_nothing()
@@ -93,24 +97,34 @@ public class LayeringRulesTests
     [Fact]
     public void No_provider_name_appears_outside_Database()
     {
-        // Npgsql is the only provider driver referenced anywhere in this
-        // backend today — see docs/STRUCTURE.md: "Database/<Provider> is the
-        // only place a provider name appears." Every non-Database assembly
-        // is checked; Database.Postgres itself is exempt (that IS the
-        // provider-specific project).
+        // See docs/STRUCTURE.md: "Database/<Provider> is the only place a
+        // provider name appears." Every non-Database assembly is checked
+        // against every provider's driver/provider assembly; each
+        // Database/<Provider> project itself is exempt (that IS the
+        // provider-specific project). This covers all three shipped
+        // providers, not just the historical Postgres one.
         var otherAssemblies = new[] { SharedAssembly, DomainAssembly, ApplicationAssembly, ContractsAssembly, PersistenceAssembly, EndpointsAssembly };
+        var providerAssemblyMarkers = new[] { "Npgsql", "SqlServer", "SqlClient", "MySql" };
 
         foreach (var assembly in otherAssemblies)
         {
             var referencedAssemblies = assembly.GetReferencedAssemblies().Select(a => a.Name).ToList();
-            referencedAssemblies.ShouldNotContain(name => name != null && name.Contains("Npgsql", StringComparison.OrdinalIgnoreCase),
-                $"{assembly.GetName().Name} must not reference Npgsql — provider-specific code belongs only in Database/Postgres.");
+            foreach (var marker in providerAssemblyMarkers)
+            {
+                referencedAssemblies.ShouldNotContain(
+                    name => name != null && name.Contains(marker, StringComparison.OrdinalIgnoreCase),
+                    $"{assembly.GetName().Name} must not reference {marker} — provider-specific code belongs only in Database/<Provider>.");
+            }
         }
 
-        // And the positive half of the same rule: Database.Postgres is
-        // exactly where Npgsql is expected to appear.
+        // And the positive half of the same rule: each provider project is
+        // exactly where its own driver/provider assembly is expected to appear.
         DatabasePostgresAssembly.GetReferencedAssemblies().Select(a => a.Name)
             .ShouldContain(name => name != null && name.Contains("Npgsql", StringComparison.OrdinalIgnoreCase));
+        DatabaseSqlServerAssembly.GetReferencedAssemblies().Select(a => a.Name)
+            .ShouldContain(name => name != null && name.Contains("SqlClient", StringComparison.OrdinalIgnoreCase));
+        DatabaseMySqlAssembly.GetReferencedAssemblies().Select(a => a.Name)
+            .ShouldContain(name => name != null && name.Contains("MySqlConnector", StringComparison.OrdinalIgnoreCase));
     }
 
     private static string FailureMessage(TestResult result) =>

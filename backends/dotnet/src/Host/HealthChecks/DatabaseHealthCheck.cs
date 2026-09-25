@@ -17,7 +17,7 @@ public sealed class DatabaseHealthCheck : IHealthCheck
     {
         var canConnect = await _context.Database.CanConnectAsync(cancellationToken).ConfigureAwait(false);
         return canConnect
-            ? HealthCheckResult.Healthy("Postgres is reachable.")
-            : HealthCheckResult.Unhealthy("Postgres is not reachable.");
+            ? HealthCheckResult.Healthy("The database is reachable.")
+            : HealthCheckResult.Unhealthy("The database is not reachable.");
     }
 }

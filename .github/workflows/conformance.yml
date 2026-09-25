@@ -171,3 +171,255 @@ jobs:
           CONFORMANCE_ADMIN_EMAIL: admin@stackbraid.local
           CONFORMANCE_ADMIN_PASSWORD: ChangeMe!123
         run: node cli/run.mjs http://127.0.0.1:8080
+
+  # ---------------------------------------------------------------------------
+  # SQL Server and MySQL legs.
+  #
+  # These stand up a real server as a GitHub Actions service container — CI
+  # already has a container engine, so a service container is the natural
+  # equivalent of the repository's own no-Docker start-local-postgres.sh.
+  # Neither server can be started on a contributor's machine under this
+  # repository's testing rules, so these jobs are configured-but-not-executed
+  # locally; the provider-level DI/query-translation (or dialect/DDL) proof that
+  # *does* run on a plain runner lives in ci.yml's `database-providers` matrix.
+  #
+  # The .NET MySQL leg is marked experimental on purpose: the only MySQL EF Core
+  # provider on an accepted licence (Pomelo, MIT) targets EF Core 9 and is
+  # binary-incompatible with this backend's EF Core 10 baseline, so that server
+  # cannot yet be started by the .NET backend. `continue-on-error` keeps the
+  # workflow green while the failure stays visible in the run; activate the job
+  # the day Pomelo ships an EF Core 10 release. See docs/DEPENDENCIES.md.
+  # ---------------------------------------------------------------------------
+
+  dotnet-conformance-sqlserver:
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "ChangeMe!123"
+          MSSQL_PID: "Developer"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'ChangeMe!123' -C -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.100'
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      - name: Restore and build
+        working-directory: backends/dotnet
+        run: |
+          dotnet restore StackBraid.sln --locked-mode
+          dotnet build StackBraid.sln --no-restore --configuration Release
+
+      - name: Start the .NET backend against the SQL Server service container
+        working-directory: backends/dotnet
+        env:
+          Database__Provider: sqlserver
+          ConnectionStrings__SqlServer: "Server=127.0.0.1,1433;Database=stackbraid;User Id=sa;Password=ChangeMe!123;TrustServerCertificate=True"
+          Jwt__AccessTokenLifetimeSeconds: '5'
+          Jobs__ConformanceEnabled: 'true'
+          Jobs__BaseRetryDelayMilliseconds: '50'
+          Jobs__PollIntervalMilliseconds: '50'
+        run: |
+          nohup dotnet run --no-restore --no-build --configuration Release --project src/Host --urls http://127.0.0.1:8080 > dotnet-sqlserver-backend.log 2>&1 &
+          for i in $(seq 1 90); do
+            if curl -sf http://127.0.0.1:8080/health/ready > /dev/null 2>&1; then exit 0; fi
+            sleep 1
+          done
+          echo "Backend did not become ready in time:"; cat dotnet-sqlserver-backend.log; exit 1
+
+      - name: Run contract/conformance against the .NET backend on SQL Server
+        working-directory: contract/conformance
+        env:
+          CONFORMANCE_ADMIN_EMAIL: admin@stackbraid.local
+          CONFORMANCE_ADMIN_PASSWORD: ChangeMe!123
+        run: node cli/run.mjs http://127.0.0.1:8080
+
+  dotnet-conformance-mysql:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: "ChangeMe!123"
+          MYSQL_DATABASE: stackbraid
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -pChangeMe!123"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.100'
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      - name: Restore and build
+        working-directory: backends/dotnet
+        run: |
+          dotnet restore StackBraid.sln --locked-mode
+          dotnet build StackBraid.sln --no-restore --configuration Release
+
+      - name: Start the .NET backend against the MySQL service container
+        working-directory: backends/dotnet
+        env:
+          Database__Provider: mysql
+          ConnectionStrings__MySql: "Server=127.0.0.1;Port=3306;Database=stackbraid;User=root;Password=ChangeMe!123"
+          Jwt__AccessTokenLifetimeSeconds: '5'
+        run: |
+          nohup dotnet run --no-restore --no-build --configuration Release --project src/Host --urls http://127.0.0.1:8080 > dotnet-mysql-backend.log 2>&1 &
+          for i in $(seq 1 90); do
+            if curl -sf http://127.0.0.1:8080/health/ready > /dev/null 2>&1; then exit 0; fi
+            sleep 1
+          done
+          echo "Backend did not become ready in time:"; cat dotnet-mysql-backend.log; exit 1
+
+      - name: Run contract/conformance against the .NET backend on MySQL
+        working-directory: contract/conformance
+        env:
+          CONFORMANCE_ADMIN_EMAIL: admin@stackbraid.local
+          CONFORMANCE_ADMIN_PASSWORD: ChangeMe!123
+        run: node cli/run.mjs http://127.0.0.1:8080
+
+  python-conformance-sqlserver:
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "ChangeMe!123"
+          MSSQL_PID: "Developer"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'ChangeMe!123' -C -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      - name: Install the Microsoft ODBC driver 18 for SQL Server
+        run: |
+          curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
+          curl -sSL "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list" | sudo tee /etc/apt/sources.list.d/mssql-release.list > /dev/null
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies (locked)
+        working-directory: backends/python
+        run: uv pip install --system -r requirements-lock.txt
+
+      - name: Start the Python backend against the SQL Server service container
+        working-directory: backends/python
+        env:
+          STACKBRAID_DATABASE_PROVIDER: sqlserver
+          STACKBRAID_SQLSERVER_DSN: "mssql+aioodbc://sa:ChangeMe%21123@127.0.0.1:1433/stackbraid?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
+          STACKBRAID_JWT_ACCESS_TOKEN_LIFETIME_SECONDS: '5'
+          STACKBRAID_JOBS_CONFORMANCE_ENABLED: 'true'
+          STACKBRAID_JOBS_BASE_RETRY_DELAY_SECONDS: '0.05'
+          STACKBRAID_JOBS_POLL_INTERVAL_SECONDS: '0.05'
+        run: |
+          nohup env PYTHONPATH=src uvicorn app.host.main:app --host 127.0.0.1 --port 8080 > python-sqlserver-backend.log 2>&1 &
+          for i in $(seq 1 90); do
+            if curl -sf http://127.0.0.1:8080/health/ready > /dev/null 2>&1; then exit 0; fi
+            sleep 1
+          done
+          echo "Backend did not become ready in time:"; cat python-sqlserver-backend.log; exit 1
+
+      - name: Run contract/conformance against the Python backend on SQL Server
+        working-directory: contract/conformance
+        env:
+          CONFORMANCE_ADMIN_EMAIL: admin@stackbraid.local
+          CONFORMANCE_ADMIN_PASSWORD: ChangeMe!123
+        run: node cli/run.mjs http://127.0.0.1:8080
+
+  python-conformance-mysql:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: "ChangeMe!123"
+          MYSQL_DATABASE: stackbraid
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -pChangeMe!123"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies (locked)
+        working-directory: backends/python
+        run: uv pip install --system -r requirements-lock.txt
+
+      - name: Start the Python backend against the MySQL service container
+        working-directory: backends/python
+        env:
+          STACKBRAID_DATABASE_PROVIDER: mysql
+          STACKBRAID_MYSQL_DSN: "mysql+aiomysql://root:ChangeMe%21123@127.0.0.1:3306/stackbraid?charset=utf8mb4"
+          STACKBRAID_JWT_ACCESS_TOKEN_LIFETIME_SECONDS: '5'
+          STACKBRAID_JOBS_CONFORMANCE_ENABLED: 'true'
+          STACKBRAID_JOBS_BASE_RETRY_DELAY_SECONDS: '0.05'
+          STACKBRAID_JOBS_POLL_INTERVAL_SECONDS: '0.05'
+        run: |
+          nohup env PYTHONPATH=src uvicorn app.host.main:app --host 127.0.0.1 --port 8080 > python-mysql-backend.log 2>&1 &
+          for i in $(seq 1 90); do
+            if curl -sf http://127.0.0.1:8080/health/ready > /dev/null 2>&1; then exit 0; fi
+            sleep 1
+          done
+          echo "Backend did not become ready in time:"; cat python-mysql-backend.log; exit 1
+
+      - name: Run contract/conformance against the Python backend on MySQL
+        working-directory: contract/conformance
+        env:
+          CONFORMANCE_ADMIN_EMAIL: admin@stackbraid.local
+          CONFORMANCE_ADMIN_PASSWORD: ChangeMe!123
+        run: node cli/run.mjs http://127.0.0.1:8080

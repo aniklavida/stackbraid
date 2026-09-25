@@ -23,6 +23,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Shared\StackBraid.Shared.csproj" />
     <ProjectReference Include="..\..\src\Database\Postgres\StackBraid.Database.Postgres.csproj" />
+    <ProjectReference Include="..\..\src\Database\SqlServer\StackBraid.Database.SqlServer.csproj" />
+    <ProjectReference Include="..\..\src\Database\MySql\StackBraid.Database.MySql.csproj" />
     <ProjectReference Include="..\..\src\Features\Identity\Domain\StackBraid.Features.Identity.Domain.csproj" />
     <ProjectReference Include="..\..\src\Features\Identity\Application\StackBraid.Features.Identity.Application.csproj" />
     <ProjectReference Include="..\..\src\Features\Identity\Contracts\StackBraid.Features.Identity.Contracts.csproj" />

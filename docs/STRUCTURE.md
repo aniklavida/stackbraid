@@ -79,8 +79,13 @@ Database/<Provider>/             the only place a provider name appears
 
 - **A feature never imports another feature's internals** — only its `Contracts`. This is what keeps features removable.
 - **`Shared` never imports a feature.** The moment it does, it stops being shared and becomes a hidden dependency.
+- **No provider name appears outside `Database/<Provider>/`.** The .NET architecture test
+  `No_provider_name_appears_outside_Database` fails if any non-Database, non-Host assembly references a provider's driver,
+  and Python's `Features and shared never import a database provider` import-linter contract does the same for
+  `app.database`. The composition root is the one place a provider is named and chosen — .NET's `Host/Program.cs`
+  (`Database:Provider`) and Python's `app/host/main.py` (`STACKBRAID_DATABASE_PROVIDER`).
 
-Both are CI tests. A rule nobody enforces is a rule everybody breaks by month three.
+All three are CI tests. A rule nobody enforces is a rule everybody breaks by month three.
 
 ## Frontends — web and admin side by side
 

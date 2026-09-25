@@ -146,6 +146,62 @@ jobs:
           dotnet test tests/Shared.UnitTests/StackBraid.Shared.UnitTests.csproj --no-restore --configuration Release
           dotnet test tests/Features.Identity.UnitTests/StackBraid.Features.Identity.UnitTests.csproj --no-restore --configuration Release
           dotnet test tests/ArchitectureTests/StackBraid.ArchitectureTests.csproj --no-restore --configuration Release
+          dotnet test tests/Database.UnitTests/StackBraid.Database.UnitTests.csproj --no-restore --configuration Release
+
+  database-providers:
+    name: providers (${{ matrix.backend }} + ${{ matrix.provider }})
+    runs-on: ubuntu-latest
+    # Every backend x provider combination, proving each provider's project
+    # builds and its own DI/query-translation (or dialect/DDL) tests pass
+    # without a live server. The live-database conformance legs for SQL Server
+    # and MySQL run as service containers in conformance.yml; this job is the
+    # part that can run on a plain runner, so a provider that stops compiling
+    # or registering fails the build on its own, not only in a live leg.
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [dotnet, python]
+        provider: [postgres, sqlserver, mysql]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up .NET
+        if: matrix.backend == 'dotnet'
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.100'
+
+      - name: Build and run the .NET provider tests for this provider
+        if: matrix.backend == 'dotnet'
+        working-directory: backends/dotnet
+        run: |
+          dotnet restore StackBraid.sln --locked-mode
+          dotnet build StackBraid.sln --no-restore --configuration Release
+          dotnet test tests/Database.UnitTests/StackBraid.Database.UnitTests.csproj --no-restore --configuration Release --filter "FullyQualifiedName~${{ matrix.provider }}"
+          dotnet test tests/ArchitectureTests/StackBraid.ArchitectureTests.csproj --no-restore --configuration Release
+
+      - uses: actions/setup-python@v7
+        if: matrix.backend == 'python'
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        if: matrix.backend == 'python'
+        run: pip install uv
+
+      - name: Install unixODBC so pyodbc can load (SQL Server driver manager)
+        if: matrix.backend == 'python' && matrix.provider == 'sqlserver'
+        run: sudo apt-get update && sudo apt-get install -y unixodbc
+
+      - name: Install dependencies (locked)
+        if: matrix.backend == 'python'
+        working-directory: backends/python
+        run: uv pip install --system -r requirements-lock.txt
+
+      - name: Run the Python provider dialect/DDL tests for this provider
+        if: matrix.backend == 'python'
+        working-directory: backends/python
+        run: PYTHONPATH=src pytest tests/database -k "${{ matrix.provider }}"
 
   dotnet-integration:
     runs-on: ubuntu-latest
@@ -591,6 +647,7 @@ jobs:
       - python
       - python-integration
       - python-conformance
+      - database-providers
       - conformance-self-check
       - nextjs
       - angular
