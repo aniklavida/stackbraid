@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Pre-commit hook: fails the commit if the generated clients have drifted
-# from the contract.
+# from the contract, or if multi-host agent pointers are broken/duplicated.
 #
 # Enable it once per clone:
 #   git config core.hooksPath .githooks
 #
-# Only runs the (comparatively slow — Node + Dart + build_runner) drift
-# check when the commit actually touches the contract or the generated
-# clients, so unrelated commits (docs, CI, etc.) are not held up by it.
+# Only runs the comparatively slow drift check when the commit actually
+# touches the contract or generated clients, and runs host pointer checks
+# when agent documentation or pointer files are touched.
 set -euo pipefail
 
 root_dir="$(git rev-parse --show-toplevel)"
@@ -15,15 +15,21 @@ cd "$root_dir"
 
 changed="$(git diff --cached --name-only --diff-filter=ACMR)"
 
-if ! printf '%s\n' "$changed" | grep -qE '^(contract/openapi\.yaml|clients/)'; then
-  exit 0
+if printf '%s\n' "$changed" | grep -qE '^(AGENTS\.md|CLAUDE\.md|GEMINI\.md|\.cursor/|\.agent/)'; then
+  echo "pre-commit: agent documentation or pointers changed — checking host pointers..."
+  if ! "$root_dir/scripts/check-host-pointers.sh"; then
+    echo
+    echo "pre-commit: blocked — host pointer check failed." >&2
+    exit 1
+  fi
 fi
 
-echo "pre-commit: contract or clients/ changed — checking generated clients for drift..."
-
-if ! "$root_dir/scripts/check-client-drift.sh"; then
-  echo
-  echo "pre-commit: blocked — clients/ does not match a fresh generation." >&2
-  echo "Run ./scripts/generate-clients.sh, review the diff, git add clients/, and commit again." >&2
-  exit 1
+if printf '%s\n' "$changed" | grep -qE '^(contract/openapi\.yaml|clients/)'; then
+  echo "pre-commit: contract or clients/ changed — checking generated clients for drift..."
+  if ! "$root_dir/scripts/check-client-drift.sh"; then
+    echo
+    echo "pre-commit: blocked — clients/ does not match a fresh generation." >&2
+    echo "Run ./scripts/generate-clients.sh, review the diff, git add clients/, and commit again." >&2
+    exit 1
+  fi
 fi

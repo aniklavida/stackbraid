@@ -83,3 +83,22 @@ Every public claim is one of: **implemented and tested**, **experimental**, **pl
 ## Tests
 
 Unit, integration, end-to-end, architecture and contract conformance. All five run in CI. Run conformance against every backend before claiming a change works.
+
+## Playbooks
+
+Standard procedures live as tool-neutral playbooks in [`.agent/playbooks/`](.agent/playbooks/):
+
+- [`add-feature`](.agent/playbooks/add-feature.md) — end-to-end flow for introducing a new domain feature slice across all five stacks
+- [`add-endpoint`](.agent/playbooks/add-endpoint.md) — contract-first endpoint addition: OpenAPI schema, client regeneration, dual backend implementation, and conformance
+- [`add-entity`](.agent/playbooks/add-entity.md) — entity modeling in Domain and provider-agnostic Persistence configuration
+- [`add-migration`](.agent/playbooks/add-migration.md) — generating and applying provider-specific migrations across Postgres, SQL Server, and MySQL
+- [`regenerate-clients`](.agent/playbooks/regenerate-clients.md) — client regeneration from the contract and verifying zero drift
+- [`add-background-job`](.agent/playbooks/add-background-job.md) — registering durable background jobs and handlers across both backends
+- [`add-localized-string`](.agent/playbooks/add-localized-string.md) — adding translated strings to all catalogues and verifying completeness
+- [`run-conformance`](.agent/playbooks/run-conformance.md) — executing the zero-dependency contract conformance test suite against any running backend
+- [`design-screen`](.agent/playbooks/design-screen.md) — UI design rules, layout boundaries, design tokens, and web/admin separation
+- [`add-admin-screen`](.agent/playbooks/add-admin-screen.md) — building administrative management screens in Angular and Next.js admin shells
+- [`add-web-page`](.agent/playbooks/add-web-page.md) — creating public/authenticated web pages in Angular and Next.js web shells
+- [`make-accessible`](.agent/playbooks/make-accessible.md) — WCAG 2.1 AA accessibility guidelines, semantic HTML, ARIA, and automated axe checks
+- [`review-architecture`](.agent/playbooks/review-architecture.md) — verifying layering rules, import boundaries, and running architecture test suites
+- [`review-dependency`](.agent/playbooks/review-dependency.md) — licence auditing policy, dependency classification, inventory updates, and past precedent
