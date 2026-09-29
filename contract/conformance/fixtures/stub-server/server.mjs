@@ -104,9 +104,23 @@ const users = new Map(); // id -> record
 const usersByEmail = new Map(); // email -> id
 const accessTokens = new Map(); // token -> { userId, expiresAt: epochMs }
 const refreshTokens = new Map(); // token -> { userId, revoked }
+const auditEntries = []; // { id, entityType, entityId, action, actorId, correlationId, occurredAt, details }
 
 const newId = () => crypto.randomUUID();
 const newToken = () => crypto.randomBytes(24).toString('hex');
+
+function recordAudit({ entityType, entityId, action, actorId = null, correlationId, occurredAt, details = null }) {
+  auditEntries.push({
+    id: newId(),
+    entityType,
+    entityId,
+    action,
+    actorId: actorId || null,
+    correlationId: correlationId || newId(),
+    occurredAt: occurredAt || isoTimestamp(),
+    details,
+  });
+}
 
 function isoTimestamp(date = new Date()) {
   const iso = date.toISOString(); // e.g. 2026-09-13T10:15:30.123Z
@@ -139,6 +153,7 @@ function serializeUser(user) {
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     lastLoginAt: user.lastLoginAt,
+    deletedAt: user.deletedAt ?? null,
   };
   if (VIOLATIONS.has('missing-field')) delete body.displayName; // required field silently dropped
   if (VIOLATIONS.has('wrong-type')) body.status = body.status === 'active'; // enum string -> boolean
@@ -273,9 +288,18 @@ const server = http.createServer(async (req, res) => {
 
       const id = newId();
       const ts = isoTimestamp();
-      const user = { id, email, password, displayName, status: 'active', roles: [], createdAt: ts, updatedAt: ts, lastLoginAt: null };
+      const user = { id, email, password, displayName, status: 'active', roles: [], createdAt: ts, updatedAt: ts, lastLoginAt: null, deletedAt: null };
       users.set(id, user);
       usersByEmail.set(email, id);
+      recordAudit({
+        entityType: 'User',
+        entityId: id,
+        action: 'created',
+        actorId: null,
+        correlationId: req.headers['x-correlation-id'] || newId(),
+        occurredAt: ts,
+        details: null,
+      });
       return send({ status: 201, contentType: 'application/json', body: serializeUser(user) });
     }
 
@@ -326,6 +350,8 @@ const server = http.createServer(async (req, res) => {
         return send(problem({ status: 400, title: 'Validation failed', code: 'IDENTITY.VALIDATION_FAILED', errors: { pageSize: ['must be between 1 and 100'] } }));
       }
       let list = [...users.values()];
+      const includeDeleted = url.searchParams.get('includeDeleted') === 'true';
+      if (!includeDeleted) list = list.filter((u) => !u.deletedAt);
       const status = url.searchParams.get('status');
       if (status) list = list.filter((u) => u.status === status);
       const roleId = url.searchParams.get('roleId');
@@ -354,22 +380,50 @@ const server = http.createServer(async (req, res) => {
     }
 
     const userIdMatch = url.pathname.match(/^\/v1\/users\/([^/]+)$/);
-    if (userIdMatch && (req.method === 'GET' || req.method === 'PATCH')) {
+    if (userIdMatch && (req.method === 'GET' || req.method === 'PATCH' || req.method === 'DELETE')) {
       const caller = authenticate(req);
       if (!caller) return send(problem({ status: 401, title: 'Unauthorized', code: 'IDENTITY.UNAUTHORIZED' }));
       const target = users.get(userIdMatch[1]);
       if (!target) return send(problem({ status: 404, title: 'User not found', code: 'IDENTITY.USER_NOT_FOUND' }));
-      if (req.method === 'GET') return send({ status: 200, contentType: 'application/json', body: serializeUser(target) });
 
-      if (body && typeof body.displayName === 'string') target.displayName = body.displayName;
-      if (body && typeof body.email === 'string' && body.email !== target.email) {
-        if (usersByEmail.has(body.email)) return send(problem({ status: 409, title: 'Email already in use', code: 'IDENTITY.EMAIL_TAKEN' }));
-        usersByEmail.delete(target.email);
-        target.email = body.email;
-        usersByEmail.set(body.email, target.id);
+      if (req.method === 'GET') {
+        const includeDeleted = url.searchParams.get('includeDeleted') === 'true';
+        if (target.deletedAt && !includeDeleted) {
+          return send(problem({ status: 404, title: 'User not found', code: 'IDENTITY.USER_NOT_FOUND' }));
+        }
+        return send({ status: 200, contentType: 'application/json', body: serializeUser(target) });
       }
-      target.updatedAt = isoTimestamp();
-      return send({ status: 200, contentType: 'application/json', body: serializeUser(target) });
+
+      if (req.method === 'PATCH') {
+        if (body && typeof body.displayName === 'string') target.displayName = body.displayName;
+        if (body && typeof body.email === 'string' && body.email !== target.email) {
+          if (usersByEmail.has(body.email)) return send(problem({ status: 409, title: 'Email already in use', code: 'IDENTITY.EMAIL_TAKEN' }));
+          usersByEmail.delete(target.email);
+          target.email = body.email;
+          usersByEmail.set(body.email, target.id);
+        }
+        target.updatedAt = isoTimestamp();
+        return send({ status: 200, contentType: 'application/json', body: serializeUser(target) });
+      }
+
+      if (req.method === 'DELETE') {
+        const correlationId = req.headers['x-correlation-id'] || newId();
+        if (target.status !== 'inactive' || !target.deletedAt) {
+          target.status = 'inactive';
+          target.deletedAt = isoTimestamp();
+          target.updatedAt = isoTimestamp();
+          recordAudit({
+            entityType: 'User',
+            entityId: target.id,
+            action: 'deleted',
+            actorId: caller.id,
+            correlationId,
+            occurredAt: target.deletedAt,
+            details: null,
+          });
+        }
+        return send({ status: 200, contentType: 'application/json', body: serializeUser(target) });
+      }
     }
 
     const deactivateMatch = url.pathname.match(/^\/v1\/users\/([^/]+)\/deactivate$/);
@@ -378,9 +432,60 @@ const server = http.createServer(async (req, res) => {
       if (!caller) return send(problem({ status: 401, title: 'Unauthorized', code: 'IDENTITY.UNAUTHORIZED' }));
       const target = users.get(deactivateMatch[1]);
       if (!target) return send(problem({ status: 404, title: 'User not found', code: 'IDENTITY.USER_NOT_FOUND' }));
-      target.status = 'inactive';
-      target.updatedAt = isoTimestamp();
+      const correlationId = req.headers['x-correlation-id'] || newId();
+      if (target.status !== 'inactive' || !target.deletedAt) {
+        target.status = 'inactive';
+        target.deletedAt = isoTimestamp();
+        target.updatedAt = isoTimestamp();
+        recordAudit({
+          entityType: 'User',
+          entityId: target.id,
+          action: 'deleted',
+          actorId: caller.id,
+          correlationId,
+          occurredAt: target.deletedAt,
+          details: null,
+        });
+      }
       return send({ status: 200, contentType: 'application/json', body: serializeUser(target) });
+    }
+
+    const restoreMatch = url.pathname.match(/^\/v1\/users\/([^/]+)\/restore$/);
+    if (restoreMatch && req.method === 'POST') {
+      const caller = authenticate(req);
+      if (!caller) return send(problem({ status: 401, title: 'Unauthorized', code: 'IDENTITY.UNAUTHORIZED' }));
+      const target = users.get(restoreMatch[1]);
+      if (!target) return send(problem({ status: 404, title: 'User not found', code: 'IDENTITY.USER_NOT_FOUND' }));
+      const correlationId = req.headers['x-correlation-id'] || newId();
+      if (target.status === 'inactive' || target.deletedAt !== null) {
+        target.status = 'active';
+        target.deletedAt = null;
+        target.updatedAt = isoTimestamp();
+        recordAudit({
+          entityType: 'User',
+          entityId: target.id,
+          action: 'restored',
+          actorId: caller.id,
+          correlationId,
+          occurredAt: target.updatedAt,
+          details: null,
+        });
+      }
+      return send({ status: 200, contentType: 'application/json', body: serializeUser(target) });
+    }
+
+    if (req.method === 'GET' && url.pathname === '/v1/audit') {
+      const caller = authenticate(req);
+      if (!caller) return send(problem({ status: 401, title: 'Unauthorized', code: 'IDENTITY.UNAUTHORIZED' }));
+      const userId = url.searchParams.get('userId');
+      if (!userId) {
+        return send(problem({ status: 400, title: 'Validation failed', code: 'IDENTITY.VALIDATION_FAILED', errors: { userId: ['must be provided'] } }));
+      }
+      const items = auditEntries
+        .filter((entry) => entry.entityId === userId)
+        .slice()
+        .reverse();
+      return send({ status: 200, contentType: 'application/json', body: { items } });
     }
 
     if (req.method === 'GET' && url.pathname === '/v1/roles') {
