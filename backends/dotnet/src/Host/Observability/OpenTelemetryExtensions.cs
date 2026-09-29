@@ -2,6 +2,7 @@ using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using StackBraid.Shared.Jobs;
 
 namespace StackBraid.Host.Observability;
 
@@ -41,6 +42,9 @@ public static class OpenTelemetryExtensions
                             !httpContext.Request.Path.StartsWithSegments("/health");
                     })
                     .AddHttpClientInstrumentation()
+                    // The background-job worker's own spans — without this they
+                    // exist but nothing exports them.
+                    .AddSource(JobTelemetry.SourceName)
                     .AddConsoleExporter();
 
                 if (hasOtlpEndpoint)
@@ -53,6 +57,9 @@ public static class OpenTelemetryExtensions
                 metrics
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
+                    // The job duration histogram and failure counter the
+                    // background-jobs Grafana dashboard queries.
+                    .AddMeter(JobTelemetry.MeterName)
                     .AddConsoleExporter((_, readerOptions) =>
                     {
                         readerOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 5_000;

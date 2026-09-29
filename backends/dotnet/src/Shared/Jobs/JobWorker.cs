@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Serilog.Context;
 
 namespace StackBraid.Shared.Jobs;
 
@@ -47,10 +48,20 @@ public sealed class JobWorker
 
     private async Task ExecuteAsync(JobRecord job, CancellationToken cancellationToken)
     {
+        // The job's own span joins the trace that enqueued it (the persisted
+        // traceparent is its remote parent) and both it and every log line
+        // emitted below carry the correlation ID captured at enqueue time.
+        using var activity = JobTelemetry.StartAttempt(job);
+        using var correlationScope = job.CorrelationId is null ? null : LogContext.PushProperty("CorrelationId", job.CorrelationId);
+        using var traceScope = activity is null ? null : LogContext.PushProperty("TraceId", activity.TraceId.ToString());
+        using var spanScope = activity is null ? null : LogContext.PushProperty("SpanId", activity.SpanId.ToString());
+
+        var startedAt = _timeProvider.GetTimestamp();
         var handler = _registry.Resolve(job.Type);
         if (handler is null)
         {
-            await FailAsync(job, $"No handler is registered for job type '{job.Type}'.", cancellationToken).ConfigureAwait(false);
+            var outcome = await FailAsync(job, $"No handler is registered for job type '{job.Type}'.", JobTelemetry.NoHandlerReason, cancellationToken).ConfigureAwait(false);
+            JobTelemetry.RecordDuration(job, outcome, _timeProvider.GetElapsedTime(startedAt).TotalSeconds);
             return;
         }
 
@@ -63,19 +74,22 @@ public sealed class JobWorker
             job.NextAttemptAt = null;
             job.UpdatedAt = _timeProvider.GetUtcNow();
             await _store.UpdateAsync(job, cancellationToken).ConfigureAwait(false);
+            JobTelemetry.RecordDuration(job, JobTelemetry.SucceededOutcome, _timeProvider.GetElapsedTime(startedAt).TotalSeconds);
             _logger.LogInformation("Job {JobId} ({JobType}) succeeded on attempt {Attempt}.", job.Id, job.Type, job.Attempts);
         }
         catch (Exception ex)
         {
-            await FailAsync(job, ex.Message, cancellationToken).ConfigureAwait(false);
+            var outcome = await FailAsync(job, ex.Message, JobTelemetry.HandlerErrorReason, cancellationToken).ConfigureAwait(false);
+            JobTelemetry.RecordDuration(job, outcome, _timeProvider.GetElapsedTime(startedAt).TotalSeconds);
         }
     }
 
-    private async Task FailAsync(JobRecord job, string error, CancellationToken cancellationToken)
+    private async Task<string> FailAsync(JobRecord job, string error, string reason, CancellationToken cancellationToken)
     {
         var now = _timeProvider.GetUtcNow();
         job.LastError = error;
         job.UpdatedAt = now;
+        JobTelemetry.RecordFailure(job, reason);
 
         if (job.Attempts >= job.MaxAttempts)
         {
@@ -83,7 +97,7 @@ public sealed class JobWorker
             job.NextAttemptAt = null;
             await _store.UpdateAsync(job, cancellationToken).ConfigureAwait(false);
             _logger.LogError("Job {JobId} ({JobType}) exhausted its {Attempts} attempt(s) and was dead-lettered: {Error}", job.Id, job.Type, job.Attempts, error);
-            return;
+            return JobTelemetry.DeadLetteredOutcome;
         }
 
         var delay = BackoffPolicy.Compute(job.Attempts, _options);
@@ -91,6 +105,7 @@ public sealed class JobWorker
         job.NextAttemptAt = now + delay;
         await _store.UpdateAsync(job, cancellationToken).ConfigureAwait(false);
         _logger.LogWarning("Job {JobId} ({JobType}) failed on attempt {Attempt}; retrying in {Delay}: {Error}", job.Id, job.Type, job.Attempts, delay, error);
+        return JobTelemetry.RetryingOutcome;
     }
 }
 

@@ -14,7 +14,7 @@ namespace StackBraid.Database.Postgres;
 public sealed class PostgresJobStore : IJobStore
 {
     private const string SelectColumns =
-        "id, type, payload, owner_id, state, attempts, max_attempts, last_error, created_at, updated_at, next_attempt_at";
+        "id, type, payload, owner_id, state, attempts, max_attempts, last_error, created_at, updated_at, next_attempt_at, correlation_id, trace_parent, trace_state";
 
     private readonly NpgsqlDataSource _dataSource;
 
@@ -38,8 +38,14 @@ public sealed class PostgresJobStore : IJobStore
                 last_error text NULL,
                 created_at timestamptz NOT NULL,
                 updated_at timestamptz NOT NULL,
-                next_attempt_at timestamptz NULL
+                next_attempt_at timestamptz NULL,
+                correlation_id text NULL,
+                trace_parent text NULL,
+                trace_state text NULL
             );
+            ALTER TABLE shared_jobs ADD COLUMN IF NOT EXISTS correlation_id text NULL;
+            ALTER TABLE shared_jobs ADD COLUMN IF NOT EXISTS trace_parent text NULL;
+            ALTER TABLE shared_jobs ADD COLUMN IF NOT EXISTS trace_state text NULL;
             CREATE INDEX IF NOT EXISTS ix_shared_jobs_state_next_attempt_at ON shared_jobs (state, next_attempt_at);
             CREATE INDEX IF NOT EXISTS ix_shared_jobs_owner_id ON shared_jobs (owner_id);
             """;
@@ -52,9 +58,9 @@ public sealed class PostgresJobStore : IJobStore
     {
         const string sql = """
             INSERT INTO shared_jobs
-                (id, type, payload, owner_id, state, attempts, max_attempts, last_error, created_at, updated_at, next_attempt_at)
+                (id, type, payload, owner_id, state, attempts, max_attempts, last_error, created_at, updated_at, next_attempt_at, correlation_id, trace_parent, trace_state)
             VALUES
-                (@id, @type, @payload, @owner_id, @state, @attempts, @max_attempts, @last_error, @created_at, @updated_at, @next_attempt_at)
+                (@id, @type, @payload, @owner_id, @state, @attempts, @max_attempts, @last_error, @created_at, @updated_at, @next_attempt_at, @correlation_id, @trace_parent, @trace_state)
             """;
 
         await using var command = _dataSource.CreateCommand(sql);
@@ -94,7 +100,7 @@ public sealed class PostgresJobStore : IJobStore
             ) AS due
             WHERE j.id = due.id
             RETURNING
-                j.id, j.type, j.payload, j.owner_id, j.state, j.attempts, j.max_attempts, j.last_error, j.created_at, j.updated_at, j.next_attempt_at
+                j.id, j.type, j.payload, j.owner_id, j.state, j.attempts, j.max_attempts, j.last_error, j.created_at, j.updated_at, j.next_attempt_at, j.correlation_id, j.trace_parent, j.trace_state
             """;
 
         await using var command = _dataSource.CreateCommand(sql);
@@ -134,6 +140,9 @@ public sealed class PostgresJobStore : IJobStore
         command.Parameters.AddWithValue("created_at", job.CreatedAt);
         command.Parameters.AddWithValue("updated_at", job.UpdatedAt);
         command.Parameters.Add(NullableTimestamp("next_attempt_at", job.NextAttemptAt));
+        command.Parameters.Add(NullableText("correlation_id", job.CorrelationId));
+        command.Parameters.Add(NullableText("trace_parent", job.TraceParent));
+        command.Parameters.Add(NullableText("trace_state", job.TraceState));
     }
 
     private static NpgsqlParameter NullableText(string name, string? value) =>
@@ -167,5 +176,8 @@ public sealed class PostgresJobStore : IJobStore
         CreatedAt = reader.GetFieldValue<DateTimeOffset>(8),
         UpdatedAt = reader.GetFieldValue<DateTimeOffset>(9),
         NextAttemptAt = reader.IsDBNull(10) ? null : reader.GetFieldValue<DateTimeOffset>(10),
+        CorrelationId = reader.IsDBNull(11) ? null : reader.GetString(11),
+        TraceParent = reader.IsDBNull(12) ? null : reader.GetString(12),
+        TraceState = reader.IsDBNull(13) ? null : reader.GetString(13),
     };
 }

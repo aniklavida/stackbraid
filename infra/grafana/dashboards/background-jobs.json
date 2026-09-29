@@ -1,0 +1,61 @@
+{
+  "uid": "stackbraid-background-jobs",
+  "title": "StackBraid / Background jobs",
+  "description": "Job duration and failures emitted by both backends' background workers. The workers record OpenTelemetry instruments `stackbraid.jobs.duration` (histogram, unit s, attributes `job.type` and `job.outcome`) and `stackbraid.jobs.failures` (counter, attributes `job.type` and `job.reason`); the queries below name their Prometheus-normalized forms (`_seconds_bucket`, `_total`). Emission is verified via the console exporter; this dashboard has not been seen rendering against a live Prometheus/Grafana, which cannot run in this repository's no-Docker test environment.",
+  "tags": ["stackbraid"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Job duration (p95)",
+      "description": "95th percentile of time a background job attempt took, across both backends.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(stackbraid_jobs_duration_seconds_bucket[5m])) by (le, job_type))",
+          "legendFormat": "{{job_type}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Job attempts by outcome",
+      "description": "Attempts per second, tagged succeeded / retrying / dead-lettered.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(stackbraid_jobs_duration_seconds_count[5m])) by (job_outcome)",
+          "legendFormat": "{{job_outcome}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Job failures",
+      "description": "Failed attempts per second, tagged by job type and reason (handler-error or no-handler).",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(stackbraid_jobs_failures_total[5m])) by (job_type, job_reason)",
+          "legendFormat": "{{job_type}} — {{job_reason}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] }
+    }
+  ]
+}

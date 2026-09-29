@@ -37,6 +37,12 @@ public sealed class PersistentJobScheduler : IJobScheduler
             MaxAttempts = request.MaxAttempts,
             CreatedAt = now,
             UpdatedAt = now,
+            // Captured from the enqueuing request's ambient context — its span
+            // already carries the correlation ID and the W3C trace context, so
+            // the worker can restore both and join the same trace.
+            CorrelationId = JobTelemetry.CurrentCorrelationId(),
+            TraceParent = JobTelemetry.CurrentTraceParent(),
+            TraceState = JobTelemetry.CurrentTraceState(),
         };
 
         await _store.AddAsync(record, cancellationToken).ConfigureAwait(false);
