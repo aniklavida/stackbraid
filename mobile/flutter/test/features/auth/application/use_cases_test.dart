@@ -13,6 +13,7 @@ User _user({String email = 'a@example.com', String displayName = 'A'}) => User(
       roles: const [],
       createdAt: DateTime.utc(2026, 1, 1),
       updatedAt: DateTime.utc(2026, 1, 1),
+      deletedAt: null,
     );
 
 TokenPair _tokens() => TokenPair(

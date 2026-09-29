@@ -1,9 +1,34 @@
 # v1.0 release checklist
 
+Status as of this pass. **Ticked means verified in this pass, with the evidence
+named.** Unticked means not verified, or verified as failing. A box is never
+ticked on the strength of a claim in a document — only on a check that ran.
+
 ## Truth
 
-- [ ] Every public claim has working evidence or is clearly labelled planned.
-- [ ] The specification, the documentation and the implementation agree.
+- [x] Every public claim has working evidence or is clearly labelled planned.
+      Audited `README.md`, `docs/SPEC.md`, `docs/ARCHITECTURE.md`,
+      `CONTRIBUTING.md` and `docs/ROADMAP.md` against the source tree rather
+      than against other documents. `docs/SPEC.md` §6 now carries a per-capability
+      status table (implemented / partial / planned) with the specific gap named
+      for each partial; the blanket "everything is planned" and
+      "nothing in this document is implemented yet" claims are gone; the
+      `.NET + MySQL` block and the never-run `docker compose up` are stated in
+      the README's opening note rather than left to be discovered.
+- [x] The specification, the documentation and the implementation agree.
+      `docs/SPEC.md` §8 no longer marks `.NET + MySQL` as passing; §15 no longer
+      names Testcontainers, which neither backend uses; the `docs/SPEC.md` §11
+      dependency table and `AGENTS.md` were cross-checked against the actual
+      `package.json`, `pyproject.toml`, `*.csproj` and `pubspec.yaml` files.
+
+**Open truth item, deliberately not closed here:** `AGENTS.md` rejects "a
+revenue-gated commercial licence" outright, but `QuestPDF` Community — free
+under USD 1M annual revenue — ships compiled into the .NET backend. This is a
+real contradiction between the stated policy and what shipped, not a
+documentation slip. It is mitigated (swappable behind `IPdfGenerator`, which
+already has a dependency-free `MinimalPdfGenerator` fallback) and defended at
+length in `docs/DEPENDENCIES.md`, but the policy sentence and the shipped
+dependency have to be reconciled deliberately by a human. Tracked in #18.
 
 ## Product
 
@@ -24,12 +49,78 @@
 
 ## Repository
 
-- [ ] Every shipped dependency is listed with its licence and passes the audit.
-- [ ] README, specification, architecture, structure and troubleshooting are complete.
-- [ ] Security policy, code of conduct and contributor instructions are complete.
-- [ ] Repository description, topics and homepage are set.
-- [ ] CI and release workflows pass.
-- [ ] Working tree is clean and local HEAD matches the remote.
+- [x] Every shipped dependency is listed with its licence and passes the audit.
+      `node scripts/check-dependency-licenses.mjs` → `Checked 2138 audited
+      entries against what is actually resolved. OK — every resolved dependency
+      is in the audited inventory, at the audited version, with an accepted
+      licence.` The inventory covers 2,138 entries across 10 ecosystems
+      (npm ×3, Dart ×2, NuGet, PyPI, Docker images, CI tooling, vendored
+      assets). Spot-checked the direct dependencies actually declared in
+      `backends/dotnet/src/**.csproj` and `backends/python/pyproject.toml`
+      against the inventory — all present, none stale. **One policy conflict
+      found and escalated rather than silently closed — see the Truth section
+      and #18.**
+- [x] README, specification, architecture, structure and troubleshooting are complete.
+      README, `docs/SPEC.md`, `docs/ARCHITECTURE.md` and `docs/STRUCTURE.md`
+      all existed. **Troubleshooting did not exist at all** and is named in
+      this checklist while `grep -ri troubleshoot` matched nothing but the
+      checklist line itself — added as `docs/TROUBLESHOOTING.md`, 14
+      documented failures, every environment variable in it read out of the
+      source rather than written from memory.
+- [x] Security policy, code of conduct and contributor instructions are complete.
+      `SECURITY.md` and `CODE_OF_CONDUCT.md` were complete and accurate.
+      `CONTRIBUTING.md` was the outlier: it opened with "StackBraid is
+      pre-implementation… working code does not yet" and "Implementation
+      contributions are not being accepted" — both false, and actively
+      discouraging. Corrected, and given the missing how-to-run and
+      before-you-open-a-PR sections.
+- [ ] Repository description, topics and homepage are set. — **Partly done,
+      one item blocked.** `gh repo view` confirms description and 10 topics are
+      set and correct. **Homepage is genuinely empty** and was not fixed:
+      `gh repo edit` is denied by a local permission rule in this environment,
+      and routing around a permission rule is not a decision this pass should
+      make. One command remains for the maintainer:
+      `gh repo edit aniklavida/stackbraid --homepage https://github.com/aniklavida/stackbraid#readme`
+- [ ] CI and release workflows pass. — **Was red; two real defects fixed, one
+      remains, reported rather than fixed.** See below.
+- [ ] Working tree is clean and local HEAD matches the remote. — Checked at the
+      end of this pass; see the commit for the recorded result.
+
+### CI: what was actually broken
+
+`gh run list` showed the last four `develop` runs **failing**, and the newest
+one (run `36120869921`, 2026-09-25) failing in four jobs. The failures were
+**not** documentation problems and were **not** a flaky database:
+
+| Job | Real cause | Status |
+|---|---|---|
+| `dotnet-conformance`, `python-conformance`, `conformance-self-check` | `contract/conformance/src/checks/users.mjs` had a **syntax error** — the exported `registerUserChecks` function was never closed. `git show 1d4f0ea` shows commit `1d4f0ea` deleted the file's final `}` when it added the soft-delete and audit checks. Every job that loads the suite died with `SyntaxError: Unexpected end of input` at load time, before any HTTP call. | **Fixed** — restored the closing brace |
+| `flutter` | `mobile/flutter/test/features/auth/application/use_cases_test.dart` builds a `User` without the `deletedAt` argument that `1d4f0ea` added as a **required** named parameter to the generated Dart model. `flutter analyze` → `missing_required_argument`. | **Fixed** — added `deletedAt: null` |
+| `conformance-self-check` (baseline scenario) | **Still failing, deliberately not fixed here.** With the syntax error gone the suite runs, and the baseline scenario reports 9 failures: the stub server never learned `deletedAt`, and has no `restore`, `includeDeleted` or `/v1/audit` handling. The stub drifted from the checks that `1d4f0ea` extended. | **Open — see below** |
+
+Verified locally, no container engine: `node --check` clean on the repaired
+file; `flutter analyze` → `No issues found!`; `npm run demo:violations` → the
+suite now loads and executes.
+
+**The remaining conformance baseline failure is out of scope for this pass and
+is reported, not fixed.** Closing it means teaching the stub server
+`deletedAt`, `POST /v1/users/{id}/restore`, `?includeDeleted=` and `GET
+/v1/audit` — which is editing a test fixture and a stub server, and the
+instructions for this pass explicitly exclude both. It is also the exact work a
+prior attempt on this card drifted into. It needs the two
+`contract/conformance` jobs green before the box above can honestly be ticked.
+
+Two related findings noted **and deliberately not acted on**, because both are
+real bugs outside this pass's scope:
+
+- The .NET backend exposes `POST /v1/documents/export/excel` and
+  `.../pdf`, and `POST /v1/jobs/*` — none of which appear in
+  `contract/openapi.yaml`, and the `/v1/documents/*` routes carry no
+  `RequireAuthorization`. By the repo's own contract-first rule these are
+  violations, and an unauthenticated one.
+- `AuthEndpoints.cs` calls `.RequireRateLimiting("auth")` three times, but
+  there is no `AddRateLimiter`/`UseRateLimiter` anywhere in the backend, so
+  those three calls are inert. Only the custom middleware rate-limits.
 
 ## Launch
 
