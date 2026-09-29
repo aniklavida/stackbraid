@@ -250,6 +250,11 @@ jobs:
 
   dotnet-conformance-mysql:
     runs-on: ubuntu-latest
+    # Blocked, not passing: Pomelo.EntityFrameworkCore.MySql 9.0.0 targets EF
+    # Core 9, while the backend is on EF Core 10 (see docs/SPEC.md §8 and
+    # docs/ROADMAP.md §6). Kept running with continue-on-error so it keeps
+    # reporting and will visibly start passing the day Pomelo ships EF Core 10
+    # support.
     continue-on-error: true
     services:
       mysql:
