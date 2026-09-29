@@ -41,7 +41,9 @@ export class JobsPageComponent implements OnDestroy {
   constructor() {
     const initialId =
       this.route.snapshot.queryParamMap.get("jobId") ||
-      (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "demo-job-1");
+      (typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : "a0000000-0000-4000-8000-000000000001");
     this.jobId.set(initialId);
     this.jobService.start(initialId);
 

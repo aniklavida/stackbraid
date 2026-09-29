@@ -18,7 +18,9 @@ export function JobProgressPage({ source }: { source?: JobsSource }) {
 
   const queryJobId = searchParams.get("jobId");
   const [generatedJobId, setGeneratedJobId] = useState<string>(() => {
-    return typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "demo-job-1";
+    return typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : "a0000000-0000-4000-8000-000000000001";
   });
   const [copied, setCopied] = useState(false);
 

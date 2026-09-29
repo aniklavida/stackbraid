@@ -123,7 +123,8 @@ export function registerIdentityFlowSpec(test: TestType<PlaywrightTestArgs, obje
     await shot(page, "08-roles-catalogue");
 
     // --- Realtime multi-tab job progress (start in one tab, see in another) -------
-    const demoJobId = `demo-job-${stamp}`;
+    // Both .NET (Guid) and Python (UUID) validate that the jobId is a valid UUID
+    const demoJobId = "a0000000-0000-4000-8000-" + String(stamp).slice(-12).padStart(12, "0");
     await page.goto(`/jobs?jobId=${demoJobId}`);
     await expect(page.getByRole("heading", { name: /job progress/i })).toBeVisible();
     await expect(page.getByText("Live", { exact: true })).toBeVisible({ timeout: 15_000 });
