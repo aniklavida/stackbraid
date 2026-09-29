@@ -4,7 +4,9 @@
 
 StackBraid is a professional skeleton for building a real product. You choose your stack — backend, database, frontend, mobile — and get working, already-connected codebases with the plumbing a serious project needs already wired. You write business logic. Nothing else.
 
-> **Early implementation, no release yet.** Both backends' `Identity` feature is implemented and tested — register, log in, refresh, log out, manage users and roles, all proven against `contract/conformance`, unchanged between the two (see [`backends/dotnet/README.md`](backends/dotnet/README.md) and [`backends/python/README.md`](backends/python/README.md) for the real runs). Both the Next.js and Angular frontends' web and admin shells are implemented and verified end-to-end against both backends, unchanged, using the same Playwright script (see [`frontends/nextjs/README.md`](frontends/nextjs/README.md) and [`frontends/angular/README.md`](frontends/angular/README.md)). The Flutter mobile shell's `Identity` feature — register, sign in, a session surviving an app restart, profile, sign out — is implemented and verified end-to-end against both backends on the macOS desktop run target (not yet on an iOS or Android simulator; see [`mobile/flutter/README.md`](mobile/flutter/README.md)). Remaining database providers and every "professional" capability in the table below are still planned. Every capability below is planned unless explicitly marked implemented.
+> **Early implementation, no release yet.** Both backends' `Identity` feature is implemented and tested — register, log in, refresh, log out, manage users and roles, all proven against `contract/conformance`, unchanged between the two (see [`backends/dotnet/README.md`](backends/dotnet/README.md) and [`backends/python/README.md`](backends/python/README.md) for the real runs). Both the Next.js and Angular frontends' web and admin shells are implemented and verified end-to-end against both backends, unchanged, using the same Playwright script (see [`frontends/nextjs/README.md`](frontends/nextjs/README.md) and [`frontends/angular/README.md`](frontends/angular/README.md)). The Flutter mobile shell's `Identity` feature — register, sign in, a session surviving an app restart, profile, sign out — is implemented and verified end-to-end against both backends on the macOS desktop run target (not yet on an iOS or Android simulator; see [`mobile/flutter/README.md`](mobile/flutter/README.md)).
+>
+> Three caveats stated plainly rather than buried. **`.NET + MySQL` does not build** — Pomelo, the only MySQL EF Core provider with an accepted licence, targets EF Core 9, so that one leg is blocked and its CI job is `continue-on-error`; the other five backend × provider combinations pass. **No "professional" capability is finished** — several have real code with real gaps, and the status table in [`docs/SPEC.md` §6](docs/SPEC.md#6--capabilities) says exactly which. **The infrastructure stack has never been run end to end** — `infra/compose.yaml` is validated in CI, but `docker compose up` has not been proven on a clean machine.
 
 ## The idea
 
@@ -17,7 +19,7 @@ StackBraid is that combination, maintained once.
 | | Options |
 |---|---|
 | **Backend** | .NET · Python |
-| **Database** | PostgreSQL · SQL Server · MySQL |
+| **Database** | PostgreSQL · SQL Server · MySQL — except `.NET + MySQL`, which is blocked |
 | **Frontend** | Angular · Next.js — each containing both the public site and the admin area |
 | **Mobile** | Flutter · none |
 
@@ -36,6 +38,8 @@ A consequence worth stating plainly: **StackBraid ships exactly one feature — 
 **Essential** — auth with roles and refresh tokens · user and role management with admin screens · localization including locale-aware backend errors · a standard response and error envelope · validation surfaced in every client · pagination and filtering conventions · migrations and seeding · configuration and secrets · structured logging with correlation IDs · health endpoints · Docker Compose · CI · the agent layer.
 
 **Professional** — background jobs · RabbitMQ · file storage · Excel import with row-level errors, and export · PDF generation · templated email · audit log · soft delete · rate limiting · Redis caching · API versioning · realtime · push notifications · the full test matrix.
+
+> **What is actually built in the Professional layer.** A capability is only as real as the code behind it. Implemented and tested: the **audit log** and **soft delete and restore**, on both backends. Partially built: **background jobs** (durable queue, retry, backoff, dead-letter — but the only registered handlers are conformance fixtures), **file storage** (.NET only; Python's class is never registered), **Excel and PDF** (.NET has the importer, exporter and endpoints; Python has libraries with no endpoint), **templated email** (both backends only capture into an in-memory list — there is no SMTP client), **rate limiting** (in-process, per-instance), **realtime** (both backends; no surface consumes it) and **push notifications** (real FCM sender and Flutter token registration, but nothing dispatches a notification). Not built: **RabbitMQ**, **Redis caching** and **timezone rules**. `docs/SPEC.md` §6 carries the full per-capability status table — read it before assuming.
 
 ## The agent layer
 
@@ -82,6 +86,7 @@ A CI check (`scripts/check-dependency-licenses.mjs`) fails the build if a depend
 - [Folder structure](docs/STRUCTURE.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Release checklist](docs/RELEASE_CHECKLIST.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [Dependency licence audit](docs/DEPENDENCIES.md)
 
 ## Licence

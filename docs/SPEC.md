@@ -1,6 +1,16 @@
 # StackBraid — product specification
 
-**Status:** Draft. Nothing in this document is implemented yet.
+**Status: partially implemented.** This document is the *intended* v1 product.
+Read the status label on every capability below before believing it is built.
+
+Implemented and tested today: the `Identity` feature on both backends, on all
+three SQL database providers except the .NET + MySQL leg (see
+[`ROADMAP.md`](ROADMAP.md) §6), plus the web and admin shells of both
+frontends and the `auth` feature of the Flutter mobile shell. Everything not
+labelled implemented is **planned**. The authoritative per-capability evidence
+lives in `backends/*/README.md`, `frontends/*/README.md`,
+`mobile/flutter/README.md` and the `## [Unreleased]` section of
+[`CHANGELOG.md`](../CHANGELOG.md).
 
 ## 1 · What it is
 
@@ -37,13 +47,48 @@ Nobody takes two backends. Because every piece implements the same contract, **t
 
 ## 6 · Capabilities
 
+Each capability carries its real status. **Implemented** means shipped and
+covered by a test that runs in CI. **Partial** means real code exists with a
+stated gap. **Planned** means not built — do not describe it as working.
+
 ### Essential
 
-Auth (register, login, JWT with refresh, roles, permissions) · user and role management with admin screens · **localization, including locale-aware backend error messages** · a standard response and error-code envelope · validation surfaced correctly in every client · pagination, filtering and sorting conventions · migrations and seeding · configuration and secret management · structured logging with correlation IDs · health and readiness endpoints · Docker Compose for the whole system · CI running build, test, lint, architecture and conformance · **the agent layer**.
+| Capability | Status |
+|---|---|
+| Auth — register, login, JWT with refresh, roles, permissions | Implemented, both backends, conformance-tested |
+| User and role management with admin screens | Implemented in both frontends, verified against both backends |
+| Localization, including locale-aware backend error messages | Implemented, `en` + `es` in every stack |
+| Standard response and error-code envelope (RFC 9457) | Implemented |
+| Validation surfaced correctly in every client | Implemented |
+| Pagination, filtering and sorting conventions | Implemented |
+| Migrations and seeding | Implemented for all three SQL providers, per backend |
+| Configuration and secret management | Implemented |
+| Structured logging with correlation IDs | Implemented, with a test that no secret reaches a log line |
+| Health and readiness endpoints | Implemented |
+| Docker Compose for the whole system | **Partial** — `infra/compose.yaml` exists and is validated in CI, but `docker compose up` has never been run end to end on a clean machine |
+| CI running build, test, lint, architecture and conformance | Implemented |
+| The agent layer | Implemented — `AGENTS.md` plus 14 playbooks in `.agent/playbooks/` |
 
 ### Professional
 
-Background jobs · RabbitMQ · file storage (local and S3-compatible) · Excel import with row-level error reporting, and export · PDF generation · templated email · audit log · soft delete and restore · rate limiting · Redis caching · **API versioning from day one** · timezone and date rules decided once · **realtime** · **push notifications** · the full test matrix · a Flutter shell with auth, navigation and offline-aware HTTP.
+| Capability | Status |
+|---|---|
+| Background jobs | Partial — durable queue, retry, backoff and dead-letter on both backends, but the only registered handlers are conformance fixtures; no feature enqueues real work |
+| RabbitMQ | **Planned.** `AddRabbitMqMessaging` throws and `select_message_bus` raises `NotImplementedError`. Only the in-memory bus is registered. `infra/compose.yaml` does start a RabbitMQ service, so the compose file implies more than the backends do |
+| File storage (local and S3-compatible) | Partial — .NET implements both and selects on `Storage:Provider`; Python has a `LocalFileStorage` class that is never registered or called |
+| Excel import with row-level error reporting, and export | Partial — .NET implements the importer, the exporter and two endpoints; the importer has no HTTP surface. Python has a CSV exporter only, no importer, no endpoints |
+| PDF generation | Partial — .NET ships QuestPDF behind `IPdfGenerator` and exposes `POST /v1/documents/export/pdf`; Python hand-writes PDF 1.4 as a library with no endpoint and no registration |
+| Templated email | **Partial and weaker than it sounds.** Both backends' `IEmailSender`/`EmailSender` implementations only append to an in-memory capture list. There is no SMTP client, no template engine and no per-locale rendering. The `IEmailSender` doc comment claims otherwise; treat the code as the truth |
+| Audit log | Implemented on both backends, written automatically on user create/update/delete/restore, read via `GET /v1/audit`. Scoped to `User` changes only |
+| Soft delete and restore | Implemented, both backends, with the global query filter load-bearing under a sabotage test |
+| Rate limiting | Partial — a fixed-window in-process limiter on the auth endpoints. Per-instance, so unbounded across replicas. .NET's three `.RequireRateLimiting("auth")` calls are inert: there is no `AddRateLimiter`/`UseRateLimiter` in the backend, only the custom middleware does the work |
+| Redis caching | **Planned.** Only `InMemoryCache` exists. Redis is used solely as the realtime backplane, never as a cache |
+| API versioning from day one | Partial — `/v1/` is a literal prefix on every route. There is no versioning mechanism, no negotiation and no `v2` anywhere in the tree |
+| Timezone and date rules decided once | **Planned** |
+| Realtime | Partial — SignalR and native WebSocket hubs, both with an opt-in Redis backplane, and conformance coverage of the payload shapes. No frontend or mobile code consumes the channel; the generated clients expose helpers that nothing imports. Both hubs run a simulated demo job to prove the plumbing |
+| Push notifications | Partial — a real FCM sender and device-token endpoints on both backends, and Flutter registers and refreshes its token. **Nothing dispatches a notification**: no domain event produces one, and the device/notification stores are in-memory, so they do not survive a restart |
+| The full test matrix | Partial — unit, integration, architecture and conformance run in CI. The backend integration suites need an externally started database (§15); the frontend unit suites are thin; there is no dashboard anywhere, so the export-duration dashboard this section implies does not exist |
+| A Flutter shell with auth, navigation and offline-aware HTTP | Partial — auth, session persistence, profile and sign out are built and verified on the macOS desktop target. Navigation beyond the auth flow and offline-aware HTTP are not built |
 
 ### Not in v1
 
@@ -77,10 +122,20 @@ Multi-tenancy is excluded deliberately and honestly: it touches every table and 
 One suite, written against the contract, run against every backend on every database provider.
 
 ```
-contract/conformance/  →  .NET + PostgreSQL     ✅
-                       →  Python + PostgreSQL   ✅
-                       →  .NET + MySQL          ✅   …
+contract/conformance/  →  .NET + PostgreSQL        ✅
+                       →  .NET + SQL Server        ✅
+                       →  Python + PostgreSQL      ✅
+                       →  Python + SQL Server      ✅
+                       →  Python + MySQL           ✅
+                       →  .NET + MySQL             ❌ blocked
 ```
+
+`.NET + MySQL` is blocked, not passing: `Pomelo.EntityFrameworkCore.MySql`
+9.0.0 is the only MySQL EF Core provider with an accepted licence and it
+targets EF Core 9, so it cannot build its model on this backend's EF Core 10
+baseline. Its migration is generated and committed and the CI leg is marked
+`continue-on-error` until Pomelo ships an EF Core 10 release — see
+[`ROADMAP.md`](ROADMAP.md) §6. Do not read that leg as green.
 
 If every backend passes, every generated client is guaranteed to work against every backend. Without it, one backend drifts silently and a frontend breaks for reasons nobody can find.
 
@@ -180,12 +235,21 @@ Every suite is wired and runnable from the first commit. A user deletes what the
 
 | Stack | Unit | Integration | E2E | Architecture |
 |---|---|---|---|---|
-| .NET | xUnit · Shouldly · NSubstitute | Testcontainers | — | NetArchTest |
-| Python | pytest · pytest-asyncio | Testcontainers | — | import-linter |
+| .NET | xUnit · Shouldly · NSubstitute | real Postgres, connection string from the environment | — | NetArchTest |
+| Python | pytest · pytest-asyncio | real Postgres, DSN from the environment | — | import-linter |
 | Angular | Vitest | — | Playwright | dependency-cruiser |
 | Next.js | Vitest · Testing Library | — | Playwright | dependency-cruiser |
-| Flutter | `flutter_test` | `integration_test` | — | — |
+| Flutter | `flutter_test` | `integration_test` | — | hand-written boundary check |
 | Contract | — | — | — | conformance, every backend × provider |
+
+**Planned, not built: Testcontainers.** The two backend integration suites
+deliberately run against a throwaway local Postgres cluster started by each
+backend's `scripts/start-local-postgres.sh`, with no Docker and no container
+engine. Testcontainers remains the target and nothing here rejects it — see
+`backends/dotnet/tests/Features.Identity.IntegrationTests/README.md` for why
+the connection string is read from the environment instead, and note the
+consequence: **these suites are not self-contained, and skip or fail without
+a database the contributor started first.**
 
 **End-to-end stays at one happy path per surface.** The skeleton demonstrates the shape; a large e2e suite a user did not write becomes maintenance they did not ask for.
 

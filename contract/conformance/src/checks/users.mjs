@@ -128,3 +128,4 @@ export async function registerUserChecks(harness, ctx) {
     const restored = await request(ctx.baseUrl, { method: 'POST', path: `/v1/users/${targetId}/restore`, accessToken });
     if (restored.status !== 200 || restored.body.status !== 'active' || restored.body.deletedAt !== null) fail('restore did not return an active, non-deleted user', { field: 'body', expected: 'active user with deletedAt null', actual: restored.body });
   });
+}
