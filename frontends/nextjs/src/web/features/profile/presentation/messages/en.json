@@ -10,5 +10,11 @@
   "lastLogin": "Last sign-in",
   "lastLogin_never": "Never",
   "loading": "Loading your profile…",
-  "error": "We couldn't load your profile. Please try again."
+  "error": "We couldn't load your profile. Please try again.",
+  "notificationsTitle": "Live notifications",
+  "notificationsLive": "Live",
+  "notificationsPaused": "Live updates paused",
+  "notificationsEmpty": "No notifications yet.",
+  "userDeactivated": "Account deactivated",
+  "userRoleChanged": "Roles updated"
 }

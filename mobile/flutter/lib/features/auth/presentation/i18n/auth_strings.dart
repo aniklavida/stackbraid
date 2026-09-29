@@ -27,6 +27,12 @@ const Translations authStrings = {
     'auth.displayNameRequired': 'Tell us what to call you.',
     'auth.displayNameTooLong': 'Keep it under 200 characters.',
     'auth.welcomeBack': 'Welcome back',
+    'auth.notificationsTitle': 'Live notifications',
+    'auth.notificationsLive': 'Live',
+    'auth.notificationsPaused': 'Live updates paused',
+    'auth.notificationsEmpty': 'No notifications yet.',
+    'auth.userDeactivated': 'Account deactivated',
+    'auth.userRoleChanged': 'Roles updated',
   },
   'es': {
     'auth.signInTitle': 'Iniciar sesión',
@@ -51,6 +57,12 @@ const Translations authStrings = {
     'auth.displayNameRequired': 'Dinos cómo llamarte.',
     'auth.displayNameTooLong': 'Máximo 200 caracteres.',
     'auth.welcomeBack': 'Bienvenido de nuevo',
+    'auth.notificationsTitle': 'Notificaciones en vivo',
+    'auth.notificationsLive': 'En vivo',
+    'auth.notificationsPaused': 'Actualizaciones en vivo pausadas',
+    'auth.notificationsEmpty': 'Sin notificaciones aún.',
+    'auth.userDeactivated': 'Cuenta desactivada',
+    'auth.userRoleChanged': 'Roles actualizados',
   },
 };
 

@@ -15,6 +15,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(dirname, "./src"),
+      "@stackbraid/client-typescript/realtime": path.resolve(dirname, "../../clients/typescript/src/realtime.ts"),
       "@stackbraid/client-typescript": path.resolve(dirname, "../../clients/typescript/src/generated/index.ts"),
     },
   },

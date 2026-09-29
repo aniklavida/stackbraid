@@ -10,5 +10,11 @@
   "lastLogin": "Último inicio de sesión",
   "lastLogin_never": "Nunca",
   "loading": "Cargando tu perfil…",
-  "error": "No pudimos cargar tu perfil. Inténtalo de nuevo."
+  "error": "No pudimos cargar tu perfil. Inténtalo de nuevo.",
+  "notificationsTitle": "Notificaciones en vivo",
+  "notificationsLive": "En vivo",
+  "notificationsPaused": "Actualizaciones en vivo pausadas",
+  "notificationsEmpty": "Sin notificaciones aún.",
+  "userDeactivated": "Cuenta desactivada",
+  "userRoleChanged": "Roles actualizados"
 }

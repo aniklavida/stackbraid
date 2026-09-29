@@ -5,6 +5,7 @@ import { authGuard, permissionGuard } from "../shared/auth/auth.guard";
 import { AUTH_I18N_SCOPE } from "../web/features/auth";
 import { HOME_I18N_SCOPE } from "../web/features/home";
 import { PROFILE_I18N_SCOPE } from "../web/features/profile";
+import { JOBS_I18N_SCOPE } from "../web/features/jobs";
 import { USERS_I18N_SCOPE } from "../admin/features/users";
 import { ROLES_I18N_SCOPE } from "../admin/features/roles";
 import { ADMIN_LAYOUT_I18N_SCOPE } from "../admin/layout/admin.i18n";
@@ -23,6 +24,12 @@ export const routes: Routes = [
         canActivate: [authGuard],
         providers: [provideTranslocoScope(PROFILE_I18N_SCOPE)],
         loadComponent: () => import("../web/features/profile").then((m) => m.ProfilePageComponent),
+      },
+      {
+        path: "jobs",
+        canActivate: [authGuard],
+        providers: [provideTranslocoScope(JOBS_I18N_SCOPE)],
+        loadComponent: () => import("../web/features/jobs").then((m) => m.JobsPageComponent),
       },
     ],
   },

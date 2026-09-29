@@ -32,6 +32,8 @@ export interface RealtimeConnection {
   start(): void;
   /** Registers a handler for every `RealtimeMessage` this connection receives, in arrival order. */
   onMessage(handler: (message: RealtimeMessage) => void): void;
+  /** Registers a handler called when the connection closes or disconnects. */
+  onClose(handler: () => void): void;
   close(): void;
 }
 
@@ -133,6 +135,7 @@ export async function connectRealtimeChannel(
   }
 
   const handlers: Array<(message: RealtimeMessage) => void> = [];
+  const closeHandlers: Array<() => void> = [];
   let buffer = '';
 
   ws.addEventListener('message', (event: MessageEvent) => {
@@ -156,6 +159,13 @@ export async function connectRealtimeChannel(
     }
   });
 
+  ws.addEventListener('close', () => {
+    for (const handler of closeHandlers) handler();
+  });
+  ws.addEventListener('error', () => {
+    for (const handler of closeHandlers) handler();
+  });
+
   return {
     transport,
     start() {
@@ -167,6 +177,9 @@ export async function connectRealtimeChannel(
     },
     onMessage(handler) {
       handlers.push(handler);
+    },
+    onClose(handler) {
+      closeHandlers.push(handler);
     },
     close() {
       try {

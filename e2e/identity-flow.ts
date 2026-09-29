@@ -121,5 +121,29 @@ export function registerIdentityFlowSpec(test: TestType<PlaywrightTestArgs, obje
     await expect(page.getByRole("heading", { name: "Roles" })).toBeVisible();
     await expect(page.getByText("users:write")).toBeVisible();
     await shot(page, "08-roles-catalogue");
+
+    // --- Realtime multi-tab job progress (start in one tab, see in another) -------
+    const demoJobId = `demo-job-${stamp}`;
+    await page.goto(`/jobs?jobId=${demoJobId}`);
+    await expect(page.getByRole("heading", { name: /job progress/i })).toBeVisible();
+    await expect(page.getByText("Live", { exact: true })).toBeVisible({ timeout: 15_000 });
+    await shot(page, "09-jobs-tab1-connected");
+
+    // Open second tab in the same browser context (sharing the authenticated session)
+    const page2 = await page.context().newPage();
+    await page2.goto(`/jobs?jobId=${demoJobId}`);
+    await expect(page2.getByRole("heading", { name: /job progress/i })).toBeVisible();
+    await expect(page2.getByText("Live", { exact: true })).toBeVisible({ timeout: 15_000 });
+    await shot(page2, "10-jobs-tab2-connected");
+
+    // Start demo job from the first tab
+    await page.getByRole("button", { name: /start demo job/i }).click();
+
+    // Verify progress reaches 100% and finishes with succeeded on the second tab
+    await expect(page2.getByText("100%")).toBeVisible({ timeout: 15_000 });
+    await expect(page2.getByText(/succeeded/i)).toBeVisible({ timeout: 5_000 });
+    await shot(page2, "11-jobs-tab2-succeeded");
+
+    await page2.close();
   });
 }

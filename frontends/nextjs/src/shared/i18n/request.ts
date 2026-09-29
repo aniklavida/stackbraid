@@ -27,11 +27,12 @@ export default getRequestConfig(async () => {
   const cookieStore = await cookies();
   const locale = resolveLocale(cookieStore.get("NEXT_LOCALE")?.value);
 
-  const [common, auth, home, profile, users, roles, admin] = await Promise.all([
+  const [common, auth, home, profile, jobs, users, roles, admin] = await Promise.all([
     import(`./messages/${locale}.json`),
     import(`../../web/features/auth/presentation/messages/${locale}.json`),
     import(`../../web/features/home/presentation/messages/${locale}.json`),
     import(`../../web/features/profile/presentation/messages/${locale}.json`),
+    import(`../../web/features/jobs/presentation/messages/${locale}.json`),
     import(`../../admin/features/users/presentation/messages/${locale}.json`),
     import(`../../admin/features/roles/presentation/messages/${locale}.json`),
     import(`../../admin/layout/messages/${locale}.json`),
@@ -44,6 +45,7 @@ export default getRequestConfig(async () => {
       auth: auth.default,
       home: home.default,
       profile: profile.default,
+      jobs: jobs.default,
       users: users.default,
       roles: roles.default,
       admin: admin.default,

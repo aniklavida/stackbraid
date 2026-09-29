@@ -6,6 +6,7 @@
         <a mat-button routerLink="/">{{ "nav.home" | transloco }}</a>
         @if (auth.status() === "authenticated") {
           <a mat-button routerLink="/profile">{{ "nav.profile" | transloco }}</a>
+          <a mat-button routerLink="/jobs">{{ "nav.jobs" | transloco }}</a>
         }
         @if (auth.status() === "authenticated" && auth.hasPermission("users:read")) {
           <a mat-button routerLink="/admin">{{ "nav.admin" | transloco }}</a>

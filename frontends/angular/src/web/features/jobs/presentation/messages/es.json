@@ -1,0 +1,20 @@
+{
+  "title": "Progreso de tareas",
+  "description": "Tarea simulada en segundo plano ejecutada mediante canales de inserción en tiempo real.",
+  "jobIdLabel": "Identificador de tarea",
+  "startJob": "Iniciar tarea de demostración",
+  "statusLabel": "Estado",
+  "progressLabel": "Progreso",
+  "live": "En vivo",
+  "paused": "Actualizaciones en vivo pausadas",
+  "copyLink": "Copiar enlace",
+  "copied": "¡Copiado!",
+  "newJob": "Nueva tarea",
+  "status_idle": "Inactivo",
+  "status_queued": "En cola",
+  "status_running": "En ejecución",
+  "status_succeeded": "Completado",
+  "status_failed": "Fallido",
+  "frames": "Registro de eventos",
+  "noFrames": "Aún no se han recibido eventos."
+}

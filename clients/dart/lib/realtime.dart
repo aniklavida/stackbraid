@@ -49,18 +49,40 @@ enum RealtimeTransport { signalr, nativeWebSocket }
 /// rather than on the generated (and, for this union, unusable) `RealtimeMessage` class.
 typedef StackBraidRealtimeMessage = Object;
 
-class RealtimeConnection {
-  RealtimeConnection._(this._socket, this.transport, this._entityId);
+abstract class RealtimeConnection {
+  RealtimeTransport get transport;
+
+  /// Every message this connection receives, in arrival order.
+  Stream<StackBraidRealtimeMessage> get messages;
+
+  /// Emits when the connection closes or encounters an error.
+  Stream<void> get onClose;
+
+  /// Notifications channel: unused. Jobs channel: starts the connected job
+  /// (or the shared demo job — see `docs/SPEC.md` §13, "enough to prove the
+  /// plumbing, not a chat product").
+  void start();
+
+  Future<void> close();
+}
+
+class RealtimeConnectionImpl implements RealtimeConnection {
+  RealtimeConnectionImpl(this._socket, this.transport, this._entityId);
 
   final WebSocket _socket;
+  @override
   final RealtimeTransport transport;
   final String? _entityId;
   String _buffer = '';
 
   final _controller = StreamController<StackBraidRealtimeMessage>.broadcast();
+  final _closeController = StreamController<void>.broadcast();
 
   /// Every message this connection receives, in arrival order.
   Stream<StackBraidRealtimeMessage> get messages => _controller.stream;
+
+  /// Emits when the connection closes or encounters an error.
+  Stream<void> get onClose => _closeController.stream;
 
   void _listen() {
     _socket.listen(
@@ -79,8 +101,20 @@ class RealtimeConnection {
           _dispatch(jsonDecode(text) as Map<String, dynamic>);
         }
       },
-      onDone: _controller.close,
-      onError: _controller.addError,
+      onDone: () {
+        if (!_closeController.isClosed) {
+          _closeController.add(null);
+          _closeController.close();
+        }
+        _controller.close();
+      },
+      onError: (dynamic error) {
+        if (!_closeController.isClosed) {
+          _closeController.add(null);
+          _closeController.close();
+        }
+        _controller.addError(error);
+      },
     );
   }
 
@@ -197,7 +231,7 @@ Future<RealtimeConnection> connectRealtimeChannel(
     })}$_recordSeparator');
   }
 
-  final connection = RealtimeConnection._(socket, transport, entityId);
+  final connection = RealtimeConnectionImpl(socket, transport, entityId);
   connection._listen();
   return connection;
 }

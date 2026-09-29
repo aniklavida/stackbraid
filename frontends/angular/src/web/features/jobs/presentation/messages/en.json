@@ -1,0 +1,20 @@
+{
+  "title": "Job progress",
+  "description": "Simulated background job running over realtime push channels.",
+  "jobIdLabel": "Job ID",
+  "startJob": "Start demo job",
+  "statusLabel": "Status",
+  "progressLabel": "Progress",
+  "live": "Live",
+  "paused": "Live updates paused",
+  "copyLink": "Copy link",
+  "copied": "Copied!",
+  "newJob": "New job",
+  "status_idle": "Idle",
+  "status_queued": "Queued",
+  "status_running": "Running",
+  "status_succeeded": "Succeeded",
+  "status_failed": "Failed",
+  "frames": "Event log",
+  "noFrames": "No events received yet."
+}
