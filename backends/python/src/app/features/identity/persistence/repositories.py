@@ -17,6 +17,7 @@ from app.features.identity.domain.repositories import UserSearchQuery, UserSearc
 from app.features.identity.domain.value_objects import Email
 from app.features.identity.persistence.models import AuditLogModel, RefreshTokenModel, RoleModel, UserModel, UserRoleModel
 from app.shared.auditing.audit import AuditEntry
+from app.shared.persistence.datetimes import ensure_utc, ensure_utc_optional
 
 _SORTABLE_COLUMNS = {
     "email": UserModel.email,
@@ -28,21 +29,21 @@ _SORTABLE_COLUMNS = {
 
 def _role_to_domain(row: RoleModel) -> Role:
     role = Role(row.id, row.name, row.description, row.permissions)
-    role.created_at = row.created_at
-    role.updated_at = row.updated_at
+    role.created_at = ensure_utc_optional(row.created_at)
+    role.updated_at = ensure_utc_optional(row.updated_at)
     return role
 
 
 def _user_to_domain(row: UserModel) -> User:
     user = User(row.id, Email(row.email), row.password_hash, row.display_name)
     user.status = UserStatus(row.status)
-    user.last_login_at = row.last_login_at
-    user.deleted_at = row.deleted_at
-    user.created_at = row.created_at
-    user.updated_at = row.updated_at
+    user.last_login_at = ensure_utc_optional(row.last_login_at)
+    user.deleted_at = ensure_utc_optional(row.deleted_at)
+    user.created_at = ensure_utc_optional(row.created_at)
+    user.updated_at = ensure_utc_optional(row.updated_at)
     for link in row.user_roles:
         role = _role_to_domain(link.role)
-        user._user_roles.append(UserRole(user.id, role, link.assigned_at))  # noqa: SLF001 - repository is the mapping boundary
+        user._user_roles.append(UserRole(user.id, role, ensure_utc(link.assigned_at)))  # noqa: SLF001 - repository is the mapping boundary
     return user
 
 
@@ -183,7 +184,7 @@ class SqlAlchemyAuditLog:
                 action=row.action,
                 actor_id=row.actor_id,
                 correlation_id=row.correlation_id,
-                occurred_at=row.occurred_at,
+                occurred_at=ensure_utc(row.occurred_at),
                 details=row.details,
             )
             for row in result.scalars().all()
@@ -224,8 +225,8 @@ class SqlAlchemyRefreshTokenRepository:
         row = result.scalar_one_or_none()
         if row is None:
             return None
-        token = RefreshToken(row.id, row.user_id, row.token_hash, row.expires_at, row.created_at)
-        token.revoked_at = row.revoked_at
+        token = RefreshToken(row.id, row.user_id, row.token_hash, ensure_utc(row.expires_at), ensure_utc(row.created_at))
+        token.revoked_at = ensure_utc_optional(row.revoked_at)
         token.replaced_by_token_id = row.replaced_by_token_id
         return token
 

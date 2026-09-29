@@ -287,6 +287,9 @@ jobs:
           Database__Provider: mysql
           ConnectionStrings__MySql: "Server=127.0.0.1;Port=3306;Database=stackbraid;User=root;Password=ChangeMe!123"
           Jwt__AccessTokenLifetimeSeconds: '5'
+          Jobs__ConformanceEnabled: 'true'
+          Jobs__BaseRetryDelayMilliseconds: '50'
+          Jobs__PollIntervalMilliseconds: '50'
         run: |
           nohup dotnet run --no-restore --no-build --configuration Release --project src/Host --urls http://127.0.0.1:8080 > dotnet-mysql-backend.log 2>&1 &
           for i in $(seq 1 90); do
@@ -342,6 +345,25 @@ jobs:
       - name: Install dependencies (locked)
         working-directory: backends/python
         run: uv pip install --system -r requirements-lock.txt
+
+      - name: Create the conformance database on the SQL Server service container
+        # The container ships only the system databases. EF Core's Migrate()
+        # creates the database it targets, so the .NET leg needs nothing here,
+        # but Alembic will not create an absent one — it fails to connect with
+        # "Cannot open database 'stackbraid' requested by the login". Create it
+        # explicitly before the backend's startup migrations run.
+        run: |
+          python - <<'PY'
+          import pyodbc
+
+          connection = pyodbc.connect(
+              "DRIVER={ODBC Driver 18 for SQL Server};SERVER=127.0.0.1,1433;UID=sa;"
+              "PWD=ChangeMe!123;TrustServerCertificate=yes;DATABASE=master",
+              autocommit=True,
+          )
+          connection.cursor().execute("IF DB_ID('stackbraid') IS NULL CREATE DATABASE stackbraid")
+          connection.close()
+          PY
 
       - name: Start the Python backend against the SQL Server service container
         working-directory: backends/python

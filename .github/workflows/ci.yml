@@ -390,6 +390,13 @@ jobs:
         working-directory: backends/dotnet
         env:
           Jwt__AccessTokenLifetimeSeconds: '5'
+          # The background-job check group needs the conformance handlers and
+          # a short retry backoff, exactly as the conformance workflow's own
+          # .NET job configures them — without these the job endpoints are
+          # absent and enqueueing one returns 405.
+          Jobs__ConformanceEnabled: 'true'
+          Jobs__BaseRetryDelayMilliseconds: '50'
+          Jobs__PollIntervalMilliseconds: '50'
         run: |
           nohup dotnet run --no-restore --no-build --configuration Release --project src/Host --urls http://127.0.0.1:8080 > dotnet-backend.log 2>&1 &
           for i in $(seq 1 60); do
@@ -444,6 +451,13 @@ jobs:
         env:
           STACKBRAID_POSTGRES_DSN: "postgresql+asyncpg://postgres:postgres@localhost:5432/stackbraid_test"
           STACKBRAID_JWT_ACCESS_TOKEN_LIFETIME_SECONDS: '5'
+          # Background-job checks need the conformance handlers and a short
+          # retry backoff, exactly as the conformance workflow's own job sets
+          # them — without these the job endpoints are absent and enqueueing
+          # one returns 405.
+          STACKBRAID_JOBS_CONFORMANCE_ENABLED: 'true'
+          STACKBRAID_JOBS_BASE_RETRY_DELAY_SECONDS: '0.05'
+          STACKBRAID_JOBS_POLL_INTERVAL_SECONDS: '0.05'
         run: |
           nohup env PYTHONPATH=src uvicorn app.host.main:app --host 127.0.0.1 --port 8080 > python-backend.log 2>&1 &
           for i in $(seq 1 60); do
