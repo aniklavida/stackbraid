@@ -154,7 +154,7 @@ CLAUDE.md · GEMINI.md         thin — they point at AGENTS.md
 
 **Playbooks that ship:** `add-feature` · `add-endpoint` · `add-entity` · `add-migration` · `regenerate-clients` · `add-background-job` · `add-localized-string` · `run-conformance` · `design-screen` · `add-admin-screen` · `add-web-page` · `make-accessible` · `review-architecture` · `review-dependency`.
 
-Only the playbooks matching the chosen stacks are installed — an agent must never give instructions for code that is not in the project.
+Only the playbooks matching the chosen stacks are installed — an agent must never give instructions for code that is not in the project. `create` installs a playbook only when the project contains at least one stack it is for, and then filters its sections to those stacks, so a project with one of two frontends gets that frontend's steps and not the other's.
 
 **Why this is essential rather than a nice-to-have.** A skeleton's real failure mode is people abandoning its conventions: month three, someone adds an endpoint by hand, skips the contract, hand-writes a client, and it rots from inside. StackBraid has exactly one correct path, which is precisely what a playbook can encode.
 
@@ -170,6 +170,8 @@ npx stackbraid create acme
 ```
 
 It copies the chosen folders and writes configuration. **It is not a code generator** — the code you receive is exactly the code in this repository, idiomatic and readable. A .NET engineer opens a .NET-shaped project.
+
+Database options are read from the providers that exist, not hard-coded. A combination this repository documents as not working (`.NET + MySQL`, §8) is still offered — its code is there to read — but only with that stated on the prompt and repeated in the generated README and AGENTS.md, never silently.
 
 It ships first as an in-repo script requiring no npm publish, and becomes `npx stackbraid create` at v1.
 

@@ -16,6 +16,8 @@
 // risk of leaving a broken sentence or, worse, a token this pass missed
 // wrapped in new words that dodge the next run's own grep check.
 
+import { STACK_TOKEN_SOURCES } from './stacks.mjs';
+
 const LINE_COMMENT_STYLES = {
   '.py': '#',
   '.yaml': '#',
@@ -198,21 +200,10 @@ export function sanitizeComments(content, ext, forbidden) {
  */
 export function buildForbiddenRegex(chosen) {
   const chosenSet = new Set(chosen.map((s) => s.toLowerCase()));
-  // Each entry is a fully-formed regex fragment, not a bare word — ".NET"
-  // starts with a non-word character, so wrapping it in a leading `\b`
-  // (as a bare-word token would need) can never match: `\b` only fires at
-  // a transition between a word and non-word character, and ".NET" is
-  // almost always preceded by a space, i.e. two non-word characters in a
-  // row. Each fragment below supplies exactly the boundary it needs.
-  const ALL_STACK_TOKENS = {
-    dotnet: ['\\.NET\\b', '\\bdotnet\\b'],
-    python: ['\\bPython\\b'],
-    angular: ['\\bAngular\\b'],
-    nextjs: ['\\bNext\\.js\\b', '\\bNextjs\\b'],
-    flutter: ['\\bFlutter\\b'],
-  };
+  // One shared definition of "what names a stack" — see stacks.mjs for why
+  // each entry is a fully-formed regex source rather than a bare word.
   const parts = [];
-  for (const [stack, tokens] of Object.entries(ALL_STACK_TOKENS)) {
+  for (const [stack, tokens] of Object.entries(STACK_TOKEN_SOURCES)) {
     if (chosenSet.has(stack)) continue;
     parts.push(...tokens);
   }

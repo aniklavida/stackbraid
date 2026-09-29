@@ -24,9 +24,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import readline from 'node:readline/promises';
 
-import { discoverStacks, CONTEXTPACT_OFFER_AVAILABLE } from './lib/discover.mjs';
+import { discoverStacks, blockedReason, CONTEXTPACT_OFFER_AVAILABLE } from './lib/discover.mjs';
 import { copyTree, ensureEmptyDir, writeFile, copyFile } from './lib/copy.mjs';
 import { buildForbiddenRegex } from './lib/sanitize.mjs';
+import { listPlaybookNames, planPlaybooks } from './lib/playbooks.mjs';
 import { renderReadme, renderAgents, renderGitignore } from './lib/templates.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -50,12 +51,36 @@ function parseArgs(argv) {
   return args;
 }
 
+// `choices` is a list of `{ value, label }`: the value is what the user types,
+// the label is what they read. They differ only for a combination this
+// repository ships but documents as blocked, which must never be selected
+// silently.
 async function prompt(rl, question, choices) {
+  const byValue = new Map(choices.map((c) => [c.value.toLowerCase(), c]));
+  const labels = choices.map((c) => c.label);
   while (true) {
-    const answer = (await rl.question(`${question} [${choices.join('/')}]: `)).trim().toLowerCase();
-    if (choices.includes(answer)) return answer;
-    console.log(`  Please choose one of: ${choices.join(', ')}`);
+    const answer = (await rl.question(`${question} [${labels.join('/')}]: `)).trim().toLowerCase();
+    if (byValue.has(answer)) return answer;
+    console.log(`  Please choose one of: ${choices.map((c) => c.value).join(', ')}`);
   }
+}
+
+function choice(value, label = value) {
+  return { value, label };
+}
+
+// A database offered with a "blocked" label is still offered — its code is in
+// the repository to read — but never without the label. A user who picks it
+// has been told, at the moment they picked it.
+//
+// Exported so scripts/check-create-picker.mjs can assert the label itself: a
+// blocked provider that quietly lost its "(blocked …)" marker would be offered
+// silently, which is the one thing this exists to prevent.
+export function databaseChoices(backend, available) {
+  return available.map((database) => {
+    const blocked = blockedReason(backend, database);
+    return blocked ? choice(database, `${database} (blocked — not yet working)`) : choice(database);
+  });
 }
 
 async function resolveChoices(stacks, args) {
@@ -82,7 +107,7 @@ async function resolveChoices(stacks, args) {
 
     if (!backend) {
       if (!rl) throw new Error('--backend is required in non-interactive mode');
-      backend = await prompt(rl, `Backend`, stacks.backends);
+      backend = await prompt(rl, 'Backend', stacks.backends.map((b) => choice(b)));
     }
     if (!stacks.backends.includes(backend)) {
       throw new Error(
@@ -93,7 +118,7 @@ async function resolveChoices(stacks, args) {
     const availableDatabases = stacks.databasesForBackend(backend);
     if (!database) {
       database = availableDatabases.length === 1 && !rl ? availableDatabases[0] : undefined;
-      if (!database && rl) database = await prompt(rl, 'Database', availableDatabases);
+      if (!database && rl) database = await prompt(rl, 'Database', databaseChoices(backend, availableDatabases));
       if (!database) database = availableDatabases[0];
     }
     if (!availableDatabases.includes(database)) {
@@ -103,20 +128,22 @@ async function resolveChoices(stacks, args) {
       );
     }
 
-    const frontendChoices = [...stacks.frontends, 'none'];
+    const frontendChoices = [...stacks.frontends, 'none'].map((f) => choice(f));
     if (!frontend) {
       frontend = rl ? await prompt(rl, 'Frontend', frontendChoices) : 'none';
     }
-    if (!frontendChoices.includes(frontend)) {
-      throw new Error(`Unknown frontend "${frontend}". Available: ${frontendChoices.join(', ')}`);
+    if (!frontendChoices.some((c) => c.value === frontend)) {
+      throw new Error(`Unknown frontend "${frontend}". Available: ${frontendChoices.map((c) => c.value).join(', ')}`);
     }
 
-    const mobileChoices = [...stacks.mobilePlatforms.map(() => 'flutter').filter((v, i, a) => a.indexOf(v) === i), 'none'];
+    const mobileChoices = [...stacks.mobilePlatforms.map(() => 'flutter').filter((v, i, a) => a.indexOf(v) === i), 'none'].map(
+      (m) => choice(m),
+    );
     if (!mobile) {
       mobile = rl ? await prompt(rl, 'Mobile', mobileChoices) : 'none';
     }
-    if (!mobileChoices.includes(mobile)) {
-      throw new Error(`Unknown mobile choice "${mobile}". Available: ${mobileChoices.join(', ')}`);
+    if (!mobileChoices.some((c) => c.value === mobile)) {
+      throw new Error(`Unknown mobile choice "${mobile}". Available: ${mobileChoices.map((c) => c.value).join(', ')}`);
     }
 
     if (CONTEXTPACT_OFFER_AVAILABLE && rl) {
@@ -145,7 +172,7 @@ function planCopies(stacks, choices) {
   if (choices.mobile !== 'none') chosenTokens.push(choices.mobile);
   const forbidden = buildForbiddenRegex(chosenTokens);
 
-  return { forbidden };
+  return { forbidden, chosenStacks: new Set(chosenTokens) };
 }
 
 export function generate(repoRoot, choices, targetDir) {
@@ -153,8 +180,8 @@ export function generate(repoRoot, choices, targetDir) {
   if (!stacks.backends.includes(choices.backend)) {
     throw new Error(`Unknown backend "${choices.backend}"`);
   }
-  const { forbidden } = planCopies(stacks, choices);
-  const stats = { files: 0, redactedFiles: 0, redactions: 0 };
+  const { forbidden, chosenStacks } = planCopies(stacks, choices);
+  const stats = { files: 0, redactedFiles: 0, redactions: 0, playbooks: 0, playbooksTotal: 0 };
 
   ensureEmptyDir(targetDir);
 
@@ -250,9 +277,29 @@ export function generate(repoRoot, choices, targetDir) {
     if (existsSync(src)) copyFile(src, targetDir, file);
   }
 
+  // Host pointer files (Cursor today; the script writes or verifies them from
+  // AGENTS.md in any directory). Copied as-is, never regenerated: the
+  // generated project's own AGENTS.md is freshly written, and these pointers
+  // point at it, exactly as they point at this repository's.
+  if (existsSync(path.join(repoRoot, '.cursor'))) {
+    copyTree(path.join(repoRoot, '.cursor'), path.join(targetDir, '.cursor'), { forbidden, stats });
+  }
+
+  // --- Agent playbooks, filtered to the chosen stacks -----------------------
+  // An agent must never be handed a procedure for a stack this project does
+  // not contain — see create/lib/playbooks.mjs for how the filter works and
+  // what it deliberately does not do.
+  const playbooks = planPlaybooks(repoRoot, chosenStacks);
+  for (const playbook of playbooks) {
+    writeFile(targetDir, path.join('.agent', 'playbooks', playbook.name), playbook.content);
+    stats.files += 1;
+  }
+  stats.playbooks = playbooks.length;
+  stats.playbooksTotal = listPlaybookNames(repoRoot).length;
+
   // --- Freshly generated, stack-scoped config and docs ---------------------
-  writeFile(targetDir, 'README.md', renderReadme(choices));
-  writeFile(targetDir, 'AGENTS.md', renderAgents(choices));
+  writeFile(targetDir, 'README.md', renderReadme(choices, playbooks));
+  writeFile(targetDir, 'AGENTS.md', renderAgents(choices, playbooks));
   writeFile(targetDir, '.gitignore', renderGitignore(choices));
 
   return stats;
@@ -273,9 +320,18 @@ async function main() {
   console.log(`  frontend: ${choices.frontend}`);
   console.log(`  mobile:   ${choices.mobile}\n`);
 
+  const blocked = blockedReason(choices.backend, choices.database);
+  if (blocked) {
+    console.log(`  WARNING: ${choices.backend} + ${choices.database} is documented as not working — ${blocked}`);
+    console.log('  The code is copied so you can read it, and the generated README repeats this.\n');
+  }
+
   const stats = generate(REPO_ROOT, choices, targetDir);
 
   console.log(`Copied ${stats.files} file(s). Redacted ${stats.redactions} cross-stack comment(s) in ${stats.redactedFiles} file(s).`);
+  console.log(
+    `Installed ${stats.playbooks} of ${stats.playbooksTotal} agent playbooks, filtered to the stacks you chose.`,
+  );
   console.log(`\nDone. See ${path.join(targetDir, 'README.md')} for how to run it.`);
 }
 
