@@ -107,7 +107,7 @@ class SqlAlchemyUserRepository:
         a domain entity it loaded through ``get_by_id``/``get_by_email``.
         """
 
-        row = await self._session.get(UserModel, user.id)
+        row = await self._session.get(UserModel, user.id, execution_options={"include_deleted": True})
         if row is None:
             raise ValueError(f"User {user.id} was not found for an update.")
 
