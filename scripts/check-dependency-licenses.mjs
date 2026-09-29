@@ -23,6 +23,19 @@
 //     This is what would have caught Redis 7.4's RSALv2/SSPLv1 relicense if
 //     the image tag had drifted instead of being pinned.
 //
+// The class rule is enforced here against AGENTS.md's wording, not against
+// whatever docs/dependency-inventory.json happens to record. An inventory is a
+// record of a decision; it is not the decision. Before this was enforced
+// independently, QuestPDF's "Community" licence — free only under USD 1M
+// annual gross revenue, and unavailable to public companies and governments
+// outright — passed CI because its licence string sat in the allow-list below
+// and its inventory entry was marked accepted. Recording a licence does not
+// make it compliant, so a compiled-into-user-code entry is now rejected on the
+// strength of its licence alone, before anything recorded in the inventory is
+// consulted. `--policy-only --inventory <file>` runs just this half of the
+// check, which is how scripts/check-dependency-licenses.test.mjs exercises it
+// against fixtures without disturbing the real inventory.
+//
 // Zero runtime dependencies — Node built-ins only, matching the conformance
 // suite's own zero-dependency rule (nothing here needs its own licence audit).
 
@@ -34,8 +47,30 @@ import path from 'node:path';
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const p = (...parts) => path.join(rootDir, ...parts);
 
-const PERMISSIVE = new Set([
-  'MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'ISC', '0BSD', 'Python-2.0',
+// --- Command line ---------------------------------------------------------
+// `--inventory <path>` points the check at a different inventory file (used by
+// the test fixtures); `--policy-only` runs the AGENTS.md class rule over that
+// inventory and nothing else, skipping every resolved-vs-audited comparison,
+// which is about this repository's own manifests and not about the policy.
+const argv = process.argv.slice(2);
+function flagValue(name) {
+  const index = argv.indexOf(name);
+  return index === -1 ? null : argv[index + 1] ?? null;
+}
+const inventoryOverride = flagValue('--inventory');
+const policyOnly = argv.includes('--policy-only');
+
+const COMPILED_ALLOWED = new Set([
+  // AGENTS.md, "Compiled into user code | MIT, Apache or BSD only". The next
+  // three groups are the audited reading of that sentence already recorded in
+  // docs/dependency-inventory.json's own `rule` field and in CHANGELOG.md;
+  // each is an unconditional, non-reciprocal grant with no revenue, seat or
+  // company-size condition attached.
+  'MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', '0BSD',
+  'ISC', 'Python-2.0',
+  // PSF-2.0 (Python Software Foundation Licence) — permissive, BSD-style;
+  // covers typing_extensions, which the generated Dart/Python tooling chain pulls in.
+  'PSF-2.0',
   // The PostgreSQL Licence is OSI-approved and permissive — textually a BSD/MIT-style
   // grant (see postgres/postgres's own COPYRIGHT file). It appears here because Npgsql
   // and Npgsql.EntityFrameworkCore.PostgreSQL — the .NET driver, compiled into the
@@ -43,35 +78,33 @@ const PERMISSIVE = new Set([
   // itself, which is audited separately in this file under the infra-image ecosystem on
   // the separate-process rule.
   'PostgreSQL',
-  // PSF-2.0 (Python Software Foundation Licence) — permissive, BSD-style;
-  // covers a handful of Python stdlib-adjacent packages (e.g. typing_extensions).
-  'PSF-2.0',
-  // QuestPDF Community — dual-licensed, free for individuals and organisations under
-  // USD 1M annual gross revenue (see docs/DEPENDENCIES.md line 400 and QuestPDF
-  // License Selection Guide). Pre-approved for use behind IPdfGenerator.
-  'QuestPDF Community',
 ]);
-
-// Some PyPI packages report a compound SPDX expression (e.g. "MIT AND PSF-2.0",
-// "Apache-2.0 OR BSD-2-Clause") rather than a single identifier. For the
-// compiled-into-user-code rule this is permissive only if every "AND" branch,
-// or at least one "OR" branch, is itself permissive.
-function isPermissiveLicense(license) {
-  if (PERMISSIVE.has(license)) return true;
-  if (license.includes(' AND ')) {
-    return license.split(' AND ').every((part) => PERMISSIVE.has(part.trim()));
-  }
-  if (license.includes(' OR ')) {
-    return license.split(' OR ').some((part) => PERMISSIVE.has(part.trim()));
-  }
-  return false;
-}
 
 // Substrings checked case-insensitively against every recorded licence,
 // regardless of class. Presence anywhere is an automatic failure.
 const BANNED_SUBSTRINGS = [
   'rpl', 'sspl', 'rsal', 'bsl', 'business source license', 'commons clause',
   'proprietary', 'revenue-gated', 'revenue gated',
+];
+
+// Applied on top of the class rule to anything compiled into user code. These
+// name licences whose terms depend on who is using them — annual revenue,
+// headcount, sector, or whether the consumer sells what it builds — which is
+// precisely what AGENTS.md refuses, because a user who inherits the skeleton
+// inherits the obligation along with it and cannot audit it out by wrapping it
+// in an interface. QuestPDF's "QuestPDF Community" matched on `revenue` and is
+// why this list exists: it was admitted on the strength of StackBraid's own
+// qualification, which is not a qualification the package grants everyone.
+const COMPILED_BANNED_MARKERS = [
+  'revenue', 'free tier', 'free under', 'non-commercial', 'noncommercial',
+  'non commercial only',
+  // A vendor naming its own free tier "<Product> Community" / "<Product>
+  // Community Edition" is describing who the package is free *for* — the same
+  // conditional grant as a revenue gate, just gated on something other than
+  // money. QuestPDF's licence field is literally "QuestPDF Community"; this is
+  // what catches it when the free tier applies to some consumers and a paid
+  // licence to others.
+  ' community', 'community edition',
 ];
 
 let failures = [];
@@ -85,7 +118,9 @@ function warn(msg) {
 }
 
 // --- Load the audited inventory ---------------------------------------
-const inventoryPath = p('docs', 'dependency-inventory.json');
+const inventoryPath = inventoryOverride
+  ? path.resolve(process.cwd(), inventoryOverride)
+  : p('docs', 'dependency-inventory.json');
 if (!existsSync(inventoryPath)) {
   console.error(`FAIL: ${inventoryPath} is missing — there is no audited inventory to check against.`);
   process.exit(1);
@@ -100,16 +135,68 @@ for (const entry of inventory.entries) {
   byKey.get(key).set(String(entry.version), entry);
 }
 
-// --- Rule check: every inventory entry must respect the two-class rule --
+// Some PyPI packages report a compound SPDX expression (e.g. "MIT AND PSF-2.0",
+// "Apache-2.0 OR BSD-2-Clause") rather than a single identifier. For the
+// compiled-into-user-code rule this is permissive only if every "AND" branch,
+// or at least one "OR" branch, is itself permissive.
+function isPermissiveLicense(license) {
+  if (COMPILED_ALLOWED.has(license)) return true;
+  if (license.includes(' AND ')) {
+    return license.split(' AND ').every((part) => COMPILED_ALLOWED.has(part.trim()));
+  }
+  if (license.includes(' OR ')) {
+    return license.split(' OR ').some((part) => COMPILED_ALLOWED.has(part.trim()));
+  }
+  return false;
+}
+
+// --- Rule check: AGENTS.md's dependency policy, not the inventory's say-so.
+//
+// Deliberately independent of entry.notes, entry.class naming conventions the
+// author chose, and anything else the inventory asserts. The only inputs are
+// the package's licence string and the class it ships in, because those are the
+// only two facts a consumer of this skeleton inherits.
 for (const entry of inventory.entries) {
   const lic = (entry.license || '').toLowerCase();
+  const where = `${entry.ecosystem} ${entry.name}@${entry.version}`;
+
   if (BANNED_SUBSTRINGS.some((s) => lic.includes(s))) {
-    fail(`REJECTED LICENCE: ${entry.ecosystem} ${entry.name}@${entry.version} is "${entry.license}" — on the reciprocal-for-consumers reject list regardless of class.`);
+    fail(`REJECTED LICENCE: ${where} is "${entry.license}" — on the reciprocal-for-consumers reject list regardless of class.`);
     continue;
   }
-  if (entry.class === 'compiled-into-user-code' && !isPermissiveLicense(entry.license)) {
-    fail(`CLASS VIOLATION: ${entry.ecosystem} ${entry.name}@${entry.version} is compiled-into-user-code but licensed "${entry.license}" (must be MIT, Apache-2.0, BSD-2/3-Clause, ISC or 0BSD).`);
+
+  if (entry.class !== 'compiled-into-user-code') continue;
+
+  const gateMarker = COMPILED_BANNED_MARKERS.find((marker) => lic.includes(marker));
+  if (gateMarker) {
+    fail(`REVENUE-GATED LICENCE: ${where} is compiled-into-user-code but licensed "${entry.license}", which matches "${gateMarker}". AGENTS.md rejects a revenue-gated commercial licence outright for anything compiled into user code, whatever this project itself qualifies for — every consumer of the skeleton inherits its terms. Replacing the implementation is the fix; an entry in this inventory cannot record it away.`);
+    continue;
   }
+
+  if (!isPermissiveLicense(entry.license)) {
+    fail(`CLASS VIOLATION: ${where} is compiled-into-user-code but licensed "${entry.license}" (must be MIT, Apache-2.0 or BSD — plus the unconditional permissive grants listed in docs/DEPENDENCIES.md).`);
+  }
+}
+
+if (policyOnly) {
+  report('policy only — no manifest was compared');
+  process.exit(0);
+}
+
+// --- Report ---------------------------------------------------------------
+function report(scope = 'and what is actually resolved') {
+  console.log(`Checked ${inventory.entries.length} audited entries ${scope}.`);
+  if (warnings.length) {
+    console.log('\nWarnings:');
+    for (const w of warnings) console.log(`  - ${w}`);
+  }
+  if (failures.length) {
+    console.error('\nFAILED — a dependency slipped in unaudited, drifted, or carries a rejected licence:\n');
+    for (const f of failures) console.error(`  - ${f}`);
+    console.error(`\n${failures.length} problem(s). See docs/DEPENDENCIES.md for the audit process.`);
+    process.exit(1);
+  }
+  console.log('OK — every resolved dependency is in the audited inventory, at the audited version, with an accepted licence.');
 }
 
 // --- Helper: compare a resolved set of {name, version} against the inventory
@@ -360,15 +447,4 @@ if (resolvedVendored.length > 0) {
 }
 
 // --- Report ---------------------------------------------------------------
-console.log(`Checked ${inventory.entries.length} audited entries against what is actually resolved.`);
-if (warnings.length) {
-  console.log('\nWarnings:');
-  for (const w of warnings) console.log(`  - ${w}`);
-}
-if (failures.length) {
-  console.error('\nFAILED — a dependency slipped in unaudited, drifted, or carries a rejected licence:\n');
-  for (const f of failures) console.error(`  - ${f}`);
-  console.error(`\n${failures.length} problem(s). See docs/DEPENDENCIES.md for the audit process.`);
-  process.exit(1);
-}
-console.log('OK — every resolved dependency is in the audited inventory, at the audited version, with an accepted licence.');
+report();

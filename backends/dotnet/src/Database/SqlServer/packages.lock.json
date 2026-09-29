@@ -433,11 +433,6 @@
         "resolved": "13.0.4",
         "contentHash": "pdgNNMai3zv51W5aq268sujXUyx7SNdE2bj1wZcWjAQrKMFZV260lbqYop1d2GM67JI1huLRwxo9ZqnfF/lC6A=="
       },
-      "QuestPDF": {
-        "type": "Transitive",
-        "resolved": "2024.12.3",
-        "contentHash": "gdIoEC9cTnySnDdbwcguUfSS2+444rGEeecQH5n0IKUA9Tm4473eRrFjPk5HoD5I2BxjuyDW+WCGnwKa+OIXsw=="
-      },
       "RBush": {
         "type": "Transitive",
         "resolved": "4.0.0",
@@ -578,7 +573,6 @@
           "FluentValidation": "[12.1.1, )",
           "Mediator.Abstractions": "[3.0.2, )",
           "Microsoft.EntityFrameworkCore": "[10.0.12, )",
-          "QuestPDF": "[2024.12.3, )",
           "Serilog": "[4.4.0, )"
         }
       }

@@ -142,7 +142,7 @@ against any two running instances.
   | `IMessagePublisher` | in-process queue, logged | RabbitMQ |
   | `IMessageBus` | in-memory publish/subscribe fake with retry, exponential backoff, a dead-letter path and idempotent handlers | RabbitMQ |
   | `IJobScheduler` | Postgres-persistent (`PersistentJobScheduler`), with `InProcessJobScheduler` kept for the ephemeral delegate path | Postgres is the real store; Hangfire was not adopted (LGPL compiled into user code) — see docs/DEPENDENCIES.md |
-  | `IPdfGenerator` | QuestPDF (with `MinimalPdfGenerator` swappable fallback) | (implemented) |
+  | `IPdfGenerator` | `MinimalPdfGenerator` — dependency-free; single font, text lines only, plainer output. No layout engine, images or tables | (a richer generator can be registered here without touching callers) |
   | `IExcelExporter` | ClosedXML `.xlsx` (with `CsvExcelExporter` swappable fallback) | (implemented) |
   | `IExcelImporter` | ClosedXML `.xlsx` with row-level error reporting | (implemented) |
   | `ICache` | in-memory (`IMemoryCache`) | Redis |

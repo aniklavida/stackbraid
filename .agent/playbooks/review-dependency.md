@@ -27,7 +27,7 @@ StackBraid has rejected widely used packages for licence reasons. These preceden
 | **`MySql.Data`** | GPL-2.0-only (with proprietary exception sold by vendor) | **REJECTED.** StackBraid standardizes on `Pomelo.EntityFrameworkCore.MySql` (MIT) and `MySqlConnector` (MIT). |
 | **Redis 7.4+** | RSALv2 / SSPLv1 (reciprocal / source-available) | **REJECTED.** StackBraid pins `redis:7.2-alpine` (the last BSD-3-Clause release) and architected realtime backplanes to be swappable with Linux Foundation's Valkey (BSD-3-Clause). |
 | **Hangfire Core** | LGPL-3.0-only | **REJECTED for compiled backend scheduling.** StackBraid built a native Postgres/SQLServer/MySQL-backed `PersistentJobScheduler` using existing database connections, requiring zero external packages. |
-| **QuestPDF Community** | Revenue-gated Community tier | **ACCEPTED AS BOUNDARY CASE BEHIND ABSTRACTION.** Admitted under open-source qualification, but placed strictly behind `IPdfGenerator` so users outside the tier can swap to `MinimalPdfGenerator` without code changes. |
+| **QuestPDF Community** | Revenue-gated Community tier (free under USD 1M annual gross revenue; public companies and governments excluded) | **REJECTED.** Removed from the .NET backend. Being behind an abstraction does not make a revenue-gated licence acceptable — AGENTS.md rejects one outright for anything compiled into user code, and a user who inherits the skeleton would inherit the obligation with it. `IPdfGenerator` ships `MinimalPdfGenerator` (dependency-free) instead. |
 
 ---
 
@@ -77,7 +77,26 @@ node scripts/check-dependency-licenses.mjs
 
 **Expected output:**
 ```
-PASS: All dependencies verified against allowed licence policies.
+Checked <N> audited entries and what is actually resolved.
+OK — every resolved dependency is in the audited inventory, at the audited version, with an accepted licence.
 ```
 
 If a package is unrecorded, carries an unapproved licence, or has drifted from the inventory, this check fails and names the exact offender.
+
+**The gate judges the policy, not the inventory.** Adding an entry to
+`docs/dependency-inventory.json` records a decision; it does not make the
+decision. A `compiled-into-user-code` entry is accepted or rejected on its
+licence string and its class alone, and a licence naming a vendor's free or
+revenue-gated tier ("revenue", "free under", "<Product> Community") is refused
+outright — behind an abstraction, swappable, or qualified-for-by-this-project
+are not arguments the gate reads. If you think a licence should be admissible
+for compiled-into-user-code, that is a change to `AGENTS.md`, decided by a
+human and made before the package is added — not an entry to add afterwards.
+
+Run the gate's own tests when you change it:
+
+```bash
+node --test scripts/check-dependency-licenses.test.mjs
+```
+
+They run against fixtures under `scripts/fixtures/`, never the real inventory.

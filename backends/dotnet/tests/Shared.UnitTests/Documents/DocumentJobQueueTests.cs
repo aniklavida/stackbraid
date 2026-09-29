@@ -1,4 +1,3 @@
-using System.Text;
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -98,7 +97,15 @@ public sealed class DocumentJobQueueTests : IDisposable
     {
         // Arrange
         var scheduler = new ControlledJobScheduler();
-        var pdfGenerator = new QuestPdfGenerator();
+
+        // Resolve the generator the way the Host does, so this asserts the
+        // registered implementation — not just that MinimalPdfGenerator works —
+        // and the storage assert below covers the bytes it produced.
+        var services = new ServiceCollection();
+        services.AddDocuments();
+        using var provider = services.BuildServiceProvider();
+        var pdfGenerator = provider.GetRequiredService<IPdfGenerator>();
+
         var request = new PdfDocumentRequest(
             Title: "Invoice #1001",
             Lines: ["Customer: Acme Corp", "Amount: $500.00", "Status: Paid"]);
@@ -132,7 +139,7 @@ public sealed class DocumentJobQueueTests : IDisposable
         scheduler.ReleaseJob();
         await scheduler.WaitForJobCompletionAsync();
 
-        // Assert 2: The job completed and the PDF exists with valid PDF header
+        // Assert 2: The job completed and the stored bytes are a real, parseable PDF
         scheduler.IsJobCompleted.ShouldBeTrue();
 
         var savedFile = await _storage.GetAsync(jobResponse.StorageKey);
@@ -142,12 +149,19 @@ public sealed class DocumentJobQueueTests : IDisposable
         {
             using var ms = new MemoryStream();
             await savedFile.CopyToAsync(ms);
-            var bytes = ms.ToArray();
-            bytes.Length.ShouldBeGreaterThan(0);
-
-            var header = Encoding.ASCII.GetString(bytes.Take(5).ToArray());
-            header.ShouldBe("%PDF-");
+            PdfStructureAssert.IsParseable(ms.ToArray());
         }
+    }
+
+    [Fact]
+    public void Registered_IPdfGenerator_is_the_dependency_free_MinimalPdfGenerator()
+    {
+        var services = new ServiceCollection();
+        services.AddDocuments();
+
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<IPdfGenerator>().ShouldBeOfType<MinimalPdfGenerator>();
     }
 
     private sealed class ControlledJobScheduler : IJobScheduler

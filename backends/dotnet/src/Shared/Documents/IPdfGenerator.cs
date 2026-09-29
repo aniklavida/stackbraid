@@ -7,9 +7,9 @@ public sealed record PdfDocumentRequest(string Title, IReadOnlyList<string> Line
 /// <see cref="MinimalPdfGenerator"/> — a small, hand-written writer that
 /// emits valid single-font text pages directly in PDF syntax, with no
 /// third-party dependency. It has no support for images, tables or custom
-/// fonts; a richer generator (QuestPDF — see <c>docs/SPEC.md</c>'s
-/// dependency table) is planned as a second implementation behind this
-/// same interface, for when a real document needs those.
+/// fonts, and it produces plainer output than a layout engine would.
+/// The interface is the seam: a richer generator can be registered in its
+/// place without touching any caller.
 /// </summary>
 public interface IPdfGenerator
 {

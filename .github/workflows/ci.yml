@@ -323,6 +323,9 @@ jobs:
       - name: Check every resolved dependency is audited, at the audited version, on an accepted licence
         run: node scripts/check-dependency-licenses.mjs
 
+      - name: Check the licence gate itself rejects a revenue-gated compiled-into-user-code entry
+        run: node --test scripts/check-dependency-licenses.test.mjs
+
   create-picker:
     runs-on: ubuntu-latest
     steps:

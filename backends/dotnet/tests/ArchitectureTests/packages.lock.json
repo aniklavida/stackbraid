@@ -650,11 +650,6 @@
           "MySqlConnector": "2.4.0"
         }
       },
-      "QuestPDF": {
-        "type": "Transitive",
-        "resolved": "2024.12.3",
-        "contentHash": "gdIoEC9cTnySnDdbwcguUfSS2+444rGEeecQH5n0IKUA9Tm4473eRrFjPk5HoD5I2BxjuyDW+WCGnwKa+OIXsw=="
-      },
       "RBush": {
         "type": "Transitive",
         "resolved": "4.0.0",
@@ -951,7 +946,6 @@
           "FluentValidation": "[12.1.1, )",
           "Mediator.Abstractions": "[3.0.2, )",
           "Microsoft.EntityFrameworkCore": "[10.0.12, )",
-          "QuestPDF": "[2024.12.3, )",
           "Serilog": "[4.4.0, )"
         }
       }

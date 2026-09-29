@@ -76,10 +76,10 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IExcelExporter, ClosedXmlExcelExporter>();
         services.AddSingleton<IExcelImporter, ClosedXmlExcelImporter>();
-        services.AddSingleton<IPdfGenerator, QuestPdfGenerator>();
+        services.AddSingleton<IPdfGenerator, MinimalPdfGenerator>();
 
-        // Also register minimal implementations so callers outside the free tier or
-        // preferring zero-dependency CSV/PDF can resolve or swap them
+        // Also register the zero-dependency CSV exporter and the concrete PDF generator,
+        // so callers can resolve either directly instead of going through the interfaces
         services.AddSingleton<CsvExcelExporter>();
         services.AddSingleton<MinimalPdfGenerator>();
 

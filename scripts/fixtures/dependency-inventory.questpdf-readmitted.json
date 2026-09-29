@@ -1,0 +1,16 @@
+{
+  "$comment": "Test fixture for scripts/check-dependency-licenses.test.mjs. NOT an audit and NOT part of docs/dependency-inventory.json. The exact shape that shipped and then failed: QuestPDF Community, recorded as audited, compiled into the running .NET backend, behind IPdfGenerator so consumers could swap it. This is the regression the policy fix closes — the package was removed from backends/dotnet, but the gate must reject it if anyone puts it back, and it must do so by reading the licence, not by carrying a blocklist of package names.",
+  "rule": "fixture — see the test file",
+  "entries": [
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "QuestPDF",
+      "version": "2024.12.3",
+      "license": "QuestPDF Community",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2024-09-24",
+      "source": "fixture — reproduces the entry as it appeared in docs/dependency-inventory.json before removal",
+      "notes": "PDF generator behind IPdfGenerator; free under USD 1M revenue"
+    }
+  ]
+}

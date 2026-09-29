@@ -46,12 +46,6 @@
           "Microsoft.EntityFrameworkCore.Analyzers": "10.0.12"
         }
       },
-      "QuestPDF": {
-        "type": "Direct",
-        "requested": "[2024.12.3, )",
-        "resolved": "2024.12.3",
-        "contentHash": "gdIoEC9cTnySnDdbwcguUfSS2+444rGEeecQH5n0IKUA9Tm4473eRrFjPk5HoD5I2BxjuyDW+WCGnwKa+OIXsw=="
-      },
       "Serilog": {
         "type": "Direct",
         "requested": "[4.4.0, )",
