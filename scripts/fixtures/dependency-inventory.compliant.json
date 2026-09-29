@@ -1,0 +1,36 @@
+{
+  "$comment": "Test fixture for scripts/check-dependency-licenses.test.mjs. NOT an audit and NOT part of docs/dependency-inventory.json. The negative control for the revenue-gated fixture: every entry complies with AGENTS.md, so the gate must exit 0. If this fixture ever fails, the gate has started rejecting something it should not.",
+  "rule": "fixture — see the test file",
+  "entries": [
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Acme.Reporting",
+      "version": "1.4.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-30",
+      "source": "fixture",
+      "notes": "control"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Acme.Http",
+      "version": "2.0.0",
+      "license": "Apache-2.0 AND BSD-3-Clause",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-30",
+      "source": "fixture",
+      "notes": "control: a compound SPDX expression where every AND branch is permissive"
+    },
+    {
+      "ecosystem": "infra-image",
+      "name": "acme/broker",
+      "version": "1.0.0",
+      "license": "GPL-3.0-only",
+      "class": "separate-process",
+      "verifiedOn": "2026-09-30",
+      "source": "fixture",
+      "notes": "control: copyleft is acceptable on the separate-process rule"
+    }
+  ]
+}

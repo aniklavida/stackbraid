@@ -77,7 +77,7 @@ stated gap. **Planned** means not built — do not describe it as working.
 | RabbitMQ | **Planned.** `AddRabbitMqMessaging` throws and `select_message_bus` raises `NotImplementedError`. Only the in-memory bus is registered. `infra/compose.yaml` does start a RabbitMQ service, so the compose file implies more than the backends do |
 | File storage (local and S3-compatible) | Partial — .NET implements both and selects on `Storage:Provider`; Python has a `LocalFileStorage` class that is never registered or called |
 | Excel import with row-level error reporting, and export | Partial — .NET implements the importer, the exporter and two endpoints; the importer has no HTTP surface. Python has a CSV exporter only, no importer, no endpoints |
-| PDF generation | Partial — .NET ships QuestPDF behind `IPdfGenerator` and exposes `POST /v1/documents/export/pdf`; Python hand-writes PDF 1.4 as a library with no endpoint and no registration |
+| PDF generation | Partial — .NET exposes `POST /v1/documents/export/pdf`, backed by a minimal dependency-free generator (`MinimalPdfGenerator`: valid single-font text pages written straight in PDF syntax, no images, tables or custom fonts, so plainer output than a layout engine); Python hand-writes PDF 1.4 as a library with no endpoint and no registration |
 | Templated email | **Partial and weaker than it sounds.** Both backends' `IEmailSender`/`EmailSender` implementations only append to an in-memory capture list. There is no SMTP client, no template engine and no per-locale rendering. The `IEmailSender` doc comment claims otherwise; treat the code as the truth |
 | Audit log | Implemented on both backends, written automatically on user create/update/delete/restore, read via `GET /v1/audit`. Scoped to `User` changes only |
 | Soft delete and restore | Implemented, both backends, with the global query filter load-bearing under a sabotage test |
@@ -189,7 +189,7 @@ It ships first as an in-repo script requiring no npm publish, and becomes `npx s
 | Mapping | **hand-written** | — |
 | Validation | FluentValidation | Apache-2.0 |
 | Background jobs | Postgres-backed scheduler (`PersistentJobScheduler`, no new dependency); Hangfire not adopted (LGPL compiled into user code) | MIT |
-| PDF | QuestPDF | Community — free under USD 1M revenue |
+| PDF | **none** — hand-written `MinimalPdfGenerator`, no dependency | — |
 | Excel | ClosedXML | MIT |
 | Logging | Serilog | Apache-2.0 |
 | Observability | OpenTelemetry → Prometheus · Loki · Grafana | Apache-2.0 |
@@ -201,7 +201,7 @@ It ships first as an in-repo script requiring no npm publish, and becomes `npx s
 
 **Rejected:** MediatR and AutoMapper (RPL 1.5 or paid) · FluentAssertions v8+ (non-commercial only) · EPPlus (paid for commercial use) · `MySql.Data` (GPL-2.0).
 
-PDF generation and job scheduling sit behind `IPdfGenerator` and `IJobScheduler`, so a user outside QuestPDF's free tier swaps one class.
+PDF generation and job scheduling sit behind `IPdfGenerator` and `IJobScheduler`, so swapping either implementation is a one-line registration change. `IPdfGenerator` today resolves to the dependency-free `MinimalPdfGenerator`: QuestPDF was removed because its Community licence is revenue-gated (free only under USD 1M annual revenue, and excluded for public companies and governments), which the dependency policy rejects outright for anything compiled into user code — see `docs/DEPENDENCIES.md`.
 
 **Token storage:** an httpOnly refresh cookie plus an access token held in memory. Browser local storage is simpler and is what most tutorials do, but it is readable by any cross-site scripting flaw — and a skeleton inherited by many projects should demonstrate the safe pattern.
 

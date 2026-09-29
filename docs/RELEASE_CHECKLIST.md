@@ -21,14 +21,16 @@ ticked on the strength of a claim in a document — only on a check that ran.
       dependency table and `AGENTS.md` were cross-checked against the actual
       `package.json`, `pyproject.toml`, `*.csproj` and `pubspec.yaml` files.
 
-**Open truth item, deliberately not closed here:** `AGENTS.md` rejects "a
-revenue-gated commercial licence" outright, but `QuestPDF` Community — free
-under USD 1M annual revenue — ships compiled into the .NET backend. This is a
-real contradiction between the stated policy and what shipped, not a
-documentation slip. It is mitigated (swappable behind `IPdfGenerator`, which
-already has a dependency-free `MinimalPdfGenerator` fallback) and defended at
-length in `docs/DEPENDENCIES.md`, but the policy sentence and the shipped
-dependency have to be reconciled deliberately by a human. Tracked in #18.
+**Closed truth item, #18:** `AGENTS.md` rejects "a revenue-gated commercial
+licence" outright, yet `QuestPDF` Community — free under USD 1M annual revenue,
+and excluded for public companies and governments — was shipped compiled into
+the .NET backend, with the contradiction defended at length in
+`docs/DEPENDENCIES.md` rather than resolved. It is resolved: QuestPDF was
+removed and `IPdfGenerator` resolves to the dependency-free
+`MinimalPdfGenerator`. The licence gate now enforces the policy itself — a
+`compiled-into-user-code` entry outside MIT/Apache-2.0/BSD fails CI whatever
+the inventory records — so the contradiction cannot be reintroduced by an entry
+marked accepted.
 
 ## Product
 
@@ -50,16 +52,16 @@ dependency have to be reconciled deliberately by a human. Tracked in #18.
 ## Repository
 
 - [x] Every shipped dependency is listed with its licence and passes the audit.
-      `node scripts/check-dependency-licenses.mjs` → `Checked 2138 audited
-      entries against what is actually resolved. OK — every resolved dependency
+      `node scripts/check-dependency-licenses.mjs` → `Checked 2137 audited
+      entries and what is actually resolved. OK — every resolved dependency
       is in the audited inventory, at the audited version, with an accepted
-      licence.` The inventory covers 2,138 entries across 10 ecosystems
+      licence.` The inventory covers 2,137 entries across 10 ecosystems
       (npm ×3, Dart ×2, NuGet, PyPI, Docker images, CI tooling, vendored
       assets). Spot-checked the direct dependencies actually declared in
       `backends/dotnet/src/**.csproj` and `backends/python/pyproject.toml`
-      against the inventory — all present, none stale. **One policy conflict
-      found and escalated rather than silently closed — see the Truth section
-      and #18.**
+      against the inventory — all present, none stale. **The one policy
+      conflict, QuestPDF's revenue-gated Community licence, is now resolved —
+      see the Truth section and #18.**
 - [x] README, specification, architecture, structure and troubleshooting are complete.
       README, `docs/SPEC.md`, `docs/ARCHITECTURE.md` and `docs/STRUCTURE.md`
       all existed. **Troubleshooting did not exist at all** and is named in

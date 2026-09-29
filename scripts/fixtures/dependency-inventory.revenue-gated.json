@@ -1,0 +1,36 @@
+{
+  "$comment": "Test fixture for scripts/check-dependency-licenses.test.mjs. NOT an audit and NOT part of docs/dependency-inventory.json — every entry here is invented. It exists to prove that the licence gate rejects a revenue-gated licence compiled into user code no matter what the inventory records, which is the failure #18 found in the real inventory. Deliberately never wired into CI's dependency-licences job.",
+  "rule": "fixture — see the test file",
+  "entries": [
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Acme.Reporting",
+      "version": "1.4.0",
+      "license": "MIT",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-30",
+      "source": "fixture",
+      "notes": "control: a plainly permissive compiled dependency must still pass"
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "RevenuePDF",
+      "version": "2026.1.0",
+      "license": "RevenuePDF Community — free under USD 1M annual gross revenue",
+      "class": "compiled-into-user-code",
+      "verifiedOn": "2026-09-30",
+      "source": "fixture",
+      "notes": "the #18 shape: revenue-gated, recorded as accepted, and behind an interface so consumers can swap it — all of which used to be read as qualifying. None of it is."
+    },
+    {
+      "ecosystem": "nuget-dotnet-backend",
+      "name": "Acme.Pdf",
+      "version": "3.0.1",
+      "license": "GPL-3.0-only",
+      "class": "separate-process",
+      "verifiedOn": "2026-09-30",
+      "source": "fixture",
+      "notes": "control: copyleft is fine as a separate process, so this must NOT be reported"
+    }
+  ]
+}

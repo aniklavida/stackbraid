@@ -1,7 +1,7 @@
 {
   "$comment": "Machine-readable dependency licence inventory for StackBraid. Source of truth for scripts/check-dependency-licenses.mjs. Human-readable narrative in docs/DEPENDENCIES.md. Update both together — see docs/DEPENDENCIES.md '# Keeping this current'.",
   "rule": {
-    "compiled-into-user-code": "MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, Python-2.0 only",
+    "compiled-into-user-code": "Unconditional permissive grants only — MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, Python-2.0, PSF-2.0, PostgreSQL. Recording a licence here does not make it compliant: scripts/check-dependency-licenses.mjs re-derives this rule from AGENTS.md and decides on the licence string and the class alone, so an entry cannot admit a licence the policy rejects (which is how QuestPDF's revenue-gated Community licence once passed).",
     "separate-process": "Copyleft acceptable — it never reaches the user's code",
     "build-tooling": "Invoked via CLI/codegen at build or test time, never linked into or shipped inside the user's compiled application — copyleft acceptable on the same basis as separate-process",
     "ci-only": "Installed by a CI workflow to check the repository itself, never installed on an end user's machine or shipped in a release artifact — copyleft acceptable, invoked via CLI only, never linked",
@@ -14,6 +14,12 @@
       "Commons Clause",
       "proprietary",
       "revenue-gated commercial"
+    ],
+    "bannedWhenCompiledIntoUserCode": [
+      "revenue-gated",
+      "free tier",
+      "free under",
+      "vendor free tier named as \"<Product> Community\""
     ]
   },
   "entries": [
@@ -20956,16 +20962,6 @@
       "verifiedOn": "2026-09-24",
       "source": "backends/dotnet/**/packages.lock.json (nuget.org nuspec license field)",
       "notes": "transitive dependency of ClosedXML"
-    },
-    {
-      "ecosystem": "nuget-dotnet-backend",
-      "name": "QuestPDF",
-      "version": "2024.12.3",
-      "license": "QuestPDF Community",
-      "class": "compiled-into-user-code",
-      "verifiedOn": "2026-09-24",
-      "source": "backends/dotnet/**/packages.lock.json (nuget.org PackageLicense.md)",
-      "notes": "PDF generator behind IPdfGenerator; free under USD 1M revenue"
     },
     {
       "ecosystem": "nuget-dotnet-backend",
