@@ -31,6 +31,9 @@ class SessionController extends ChangeNotifier implements SessionPort {
   final TokenStore _tokenStore;
   Timer? _refreshTimer;
   bool _bootstrapped = false;
+  // Bumped whenever the session is cleared so a refresh that was already in
+  // flight cannot sign the user back in after they signed out.
+  int _generation = 0;
 
   AuthStatus status = AuthStatus.loading;
   User? user;
@@ -72,11 +75,12 @@ class SessionController extends ChangeNotifier implements SessionPort {
   @override
   Future<User> adoptSession(TokenPair tokens) => _adopt(tokens);
 
-  Future<User> _adopt(TokenPair tokens) async {
+  Future<User> _adopt(TokenPair tokens, {int? generation}) async {
     final userResponse = await _apiClient.authApi.getCurrentUser(
       headers: {'Authorization': 'Bearer ${tokens.accessToken}'},
     );
     final resolvedUser = userResponse.data!;
+    if (generation != null && generation != _generation) return resolvedUser;
 
     _accessToken = tokens.accessToken;
     _expiresAt = tokens.expiresAt;
@@ -91,6 +95,7 @@ class SessionController extends ChangeNotifier implements SessionPort {
 
   @override
   Future<void> clearSession() async {
+    _generation++;
     _refreshTimer?.cancel();
     _refreshTimer = null;
     _accessToken = null;
@@ -118,12 +123,15 @@ class SessionController extends ChangeNotifier implements SessionPort {
       await clearSession();
       return;
     }
+    final generation = _generation;
     try {
       final response = await _apiClient.authApi.refreshToken(
         refreshRequest: RefreshRequest(refreshToken: refreshToken),
       );
-      await _adopt(response.data!);
+      if (generation != _generation) return;
+      await _adopt(response.data!, generation: generation);
     } catch (_) {
+      if (generation != _generation) return;
       await clearSession();
     }
   }
