@@ -1,30 +1,41 @@
-<div class="flex min-h-screen flex-1 flex-col">
-  <header class="border-b border-gray-200">
-    <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-      <a routerLink="/" class="text-lg font-semibold tracking-tight">{{ "appName" | transloco }}</a>
-      <nav role="navigation" class="flex items-center gap-2">
-        <a mat-button routerLink="/">{{ "nav.home" | transloco }}</a>
+<div class="flex min-h-screen flex-1 flex-col bg-[var(--bg)] text-[var(--ink)]">
+  <header class="sticky top-0 z-40 border-b border-[var(--bd)] bg-[var(--surf)]/90 backdrop-blur-sm">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-3 sm:px-6 h-[var(--h-xl)] overflow-x-auto">
+      <a
+        routerLink="/"
+        class="font-display text-lg font-semibold tracking-tight text-[var(--ink)] hover:text-[var(--acc)] transition-colors shrink-0 mr-2"
+      >
+        {{ "appName" | transloco }}
+      </a>
+      <nav role="navigation" class="flex items-center gap-1 sm:gap-2 shrink-0">
+        <a routerLink="/" class="btn-ghost btn-sm">{{ "nav.home" | transloco }}</a>
         @if (auth.status() === "authenticated") {
-          <a mat-button routerLink="/profile">{{ "nav.profile" | transloco }}</a>
-          <a mat-button routerLink="/jobs">{{ "nav.jobs" | transloco }}</a>
+          <a routerLink="/profile" class="btn-ghost btn-sm">{{ "nav.profile" | transloco }}</a>
+          <a routerLink="/jobs" class="btn-ghost btn-sm">{{ "nav.jobs" | transloco }}</a>
         }
         @if (auth.status() === "authenticated" && auth.hasPermission("users:read")) {
-          <a mat-button routerLink="/admin">{{ "nav.admin" | transloco }}</a>
+          <a routerLink="/admin" class="btn-ghost btn-sm">{{ "nav.admin" | transloco }}</a>
         }
         @if (auth.status() === "authenticated") {
-          <button mat-stroked-button (click)="logout()">{{ "nav.logout" | transloco }}</button>
+          <button type="button" class="btn-outline btn-sm" (click)="logout()">{{ "nav.logout" | transloco }}</button>
         } @else {
-          <a mat-button routerLink="/login">{{ "nav.login" | transloco }}</a>
-          <a mat-flat-button color="primary" routerLink="/register">{{ "nav.register" | transloco }}</a>
+          <a routerLink="/login" class="btn-ghost btn-sm">{{ "nav.login" | transloco }}</a>
+          <a routerLink="/register" class="btn-primary btn-sm">{{ "nav.register" | transloco }}</a>
         }
-        <app-locale-switcher />
+        <div class="flex items-center gap-1 border-l border-[var(--bd)] pl-2 ml-1">
+          <app-locale-switcher />
+          <app-theme-toggle />
+        </div>
       </nav>
     </div>
   </header>
-  <main class="mx-auto flex w-full max-w-5xl flex-1 items-start justify-center px-6 py-16">
+  <main class="mx-auto flex w-full max-w-5xl flex-1 items-start justify-center px-4 sm:px-6 py-8 sm:py-12">
     <router-outlet />
   </main>
-  <footer class="border-t border-gray-200">
-    <div class="mx-auto max-w-5xl px-6 py-6 text-sm text-gray-500">{{ "footer.tagline" | transloco }}</div>
+  <footer class="border-t border-[var(--bd)] bg-[var(--surf)]">
+    <div class="mx-auto flex max-w-5xl items-center justify-between px-4 sm:px-6 py-4 text-xs text-[var(--mut)]">
+      <span>{{ "footer.tagline" | transloco }}</span>
+      <span class="font-mono text-[11px] text-[var(--faint)]">StackBraid</span>
+    </div>
   </footer>
 </div>

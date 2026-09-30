@@ -1,5 +1,4 @@
 import { Component } from "@angular/core";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { TranslocoPipe } from "@jsverse/transloco";
 
 import { useRoles } from "../application/use-roles";
@@ -7,7 +6,7 @@ import { useRoles } from "../application/use-roles";
 @Component({
   selector: "app-roles-page",
   standalone: true,
-  imports: [MatProgressBarModule, TranslocoPipe],
+  imports: [TranslocoPipe],
   templateUrl: "./roles-page.html",
 })
 export class RolesPageComponent {

@@ -1,8 +1,4 @@
 import { Component, OnDestroy, inject } from "@angular/core";
-import { MatCardModule } from "@angular/material/card";
-import { MatChipsModule } from "@angular/material/chips";
-import { MatDividerModule } from "@angular/material/divider";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 
 import { useOwnProfile } from "../application/use-own-profile";
@@ -21,7 +17,7 @@ function initials(name: string): string {
 @Component({
   selector: "app-profile-page",
   standalone: true,
-  imports: [MatCardModule, MatChipsModule, MatDividerModule, MatProgressBarModule, TranslocoPipe],
+  imports: [TranslocoPipe],
   templateUrl: "./profile-page.html",
 })
 export class ProfilePageComponent implements OnDestroy {

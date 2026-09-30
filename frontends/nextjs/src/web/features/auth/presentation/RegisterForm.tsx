@@ -57,17 +57,17 @@ export function RegisterForm() {
       <form onSubmit={handleSubmit} noValidate>
         <CardHeader>
           <CardTitle>
-            <h1>{t("register.title")}</h1>
+            <h1 className="font-display text-xl font-semibold tracking-tight">{t("register.title")}</h1>
           </CardTitle>
-          <CardDescription>{t("register.subtitle")}</CardDescription>
+          <CardDescription className="text-xs text-[var(--mut)]">{t("register.subtitle")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {formError && (
-            <p role="alert" className="text-sm text-destructive">
+            <div role="alert" className="rounded-[var(--r-sm)] border border-[var(--bad)]/25 bg-[var(--badbg)] p-2.5 text-xs text-[var(--bad)] font-medium">
               {formError}
-            </p>
+            </div>
           )}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="register-display-name">{t("register.displayName")}</Label>
             <Input
               id="register-display-name"
@@ -78,12 +78,12 @@ export function RegisterForm() {
               aria-describedby={fieldErrors.displayName ? "register-display-name-error" : undefined}
             />
             {fieldErrors.displayName && (
-              <p id="register-display-name-error" className="text-sm text-destructive">
+              <p id="register-display-name-error" className="text-xs text-[var(--bad)]">
                 {fieldErrors.displayName}
               </p>
             )}
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="register-email">{t("register.email")}</Label>
             <Input
               id="register-email"
@@ -95,12 +95,12 @@ export function RegisterForm() {
               aria-describedby={fieldErrors.email ? "register-email-error" : undefined}
             />
             {fieldErrors.email && (
-              <p id="register-email-error" className="text-sm text-destructive">
+              <p id="register-email-error" className="text-xs text-[var(--bad)]">
                 {fieldErrors.email}
               </p>
             )}
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="register-password">{t("register.password")}</Label>
             <Input
               id="register-password"
@@ -111,18 +111,18 @@ export function RegisterForm() {
               aria-invalid={Boolean(fieldErrors.password)}
               aria-describedby="register-password-hint"
             />
-            <p id="register-password-hint" className="text-sm text-muted-foreground">
+            <p id="register-password-hint" className="text-xs text-[var(--mut)]">
               {fieldErrors.password ?? t("register.passwordHint")}
             </p>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col items-stretch gap-3">
-          <Button type="submit" disabled={submitting}>
-            {t("register.submit")}
+          <Button type="submit" disabled={submitting} className="w-full">
+            {submitting ? "…" : t("register.submit")}
           </Button>
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-xs text-[var(--mut)]">
             {t("register.hasAccount")}{" "}
-            <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
+            <Link href="/login" className="font-medium text-[var(--acc)] hover:text-[var(--acc2)] underline underline-offset-4">
               {t("register.loginLink")}
             </Link>
           </p>

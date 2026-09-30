@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -20,14 +21,14 @@ export function NotificationArea({ source }: { source?: NotificationsSource }) {
     <Card className="w-full max-w-lg">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-base font-semibold">
-          <h2>{t("notificationsTitle")}</h2>
+          <h2 className="font-display text-base font-semibold tracking-tight text-[var(--ink)]">{t("notificationsTitle")}</h2>
         </CardTitle>
         {connectionStatus === "connected" ? (
-          <Badge variant="outline" className="border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+          <Badge variant="success">
             {t("notificationsLive")}
           </Badge>
         ) : (
-          <Badge variant="outline" className="border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300" role="status">
+          <Badge variant="warning" role="status">
             {t("notificationsPaused")}
           </Badge>
         )}
@@ -35,21 +36,24 @@ export function NotificationArea({ source }: { source?: NotificationsSource }) {
       <CardContent className="flex flex-col gap-3">
         <Separator />
         {notifications.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t("notificationsEmpty")}</p>
+          <div className="flex flex-col items-center justify-center py-6 text-center text-xs text-[var(--mut)]">
+            <Bell className="size-5 mb-1.5 text-[var(--faint)]" />
+            <p>{t("notificationsEmpty")}</p>
+          </div>
         ) : (
           <ul className="flex flex-col gap-2">
             {notifications.map((item) => (
               <li
                 key={item.id}
-                className="flex flex-col gap-0.5 rounded-md border p-2 text-sm"
+                className="flex flex-col gap-1 rounded-[var(--r-sm)] border border-[var(--bd)] bg-[var(--subtle)]/40 p-2.5 text-xs"
               >
                 <div className="flex items-center justify-between font-medium">
-                  <span>
+                  <span className="text-[var(--ink)]">
                     {item.type === "user.deactivated"
                       ? t("userDeactivated")
                       : `${t("userRoleChanged")}: ${item.detail}`}
                   </span>
-                  <span className="text-xs text-muted-foreground font-normal">
+                  <span className="font-mono text-[11px] text-[var(--mut)] font-normal">
                     {dateFormatter.format(new Date(item.occurredAt))}
                   </span>
                 </div>

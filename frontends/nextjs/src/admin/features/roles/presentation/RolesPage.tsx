@@ -14,15 +14,20 @@ export function RolesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground">{t("subtitle")}</p>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--ink)]">{t("title")}</h1>
+        <p className="text-xs text-[var(--mut)]">{t("subtitle")}</p>
       </div>
 
-      {isPending && <Skeleton className="h-40 w-full" />}
+      {isPending && (
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-36 w-full" />
+        </div>
+      )}
       {isError && (
-        <p role="alert" className="text-destructive">
+        <div role="alert" className="rounded-[var(--r-md)] border border-[var(--bad)]/25 bg-[var(--badbg)] p-4 text-xs text-[var(--bad)] font-medium">
           {t("error")}
-        </p>
+        </div>
       )}
 
       {roles && (
@@ -37,12 +42,12 @@ export function RolesPage() {
           <TableBody>
             {roles.map((role) => (
               <TableRow key={role.id}>
-                <TableCell className="font-medium">{role.name}</TableCell>
-                <TableCell className="text-muted-foreground">{role.description}</TableCell>
+                <TableCell className="font-medium text-[var(--ink)]">{role.name}</TableCell>
+                <TableCell className="text-xs text-[var(--mut)]">{role.description}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
                     {role.permissions.map((permission) => (
-                      <Badge key={permission} variant="outline">
+                      <Badge key={permission} variant="outline" className="font-mono text-xs">
                         {permission}
                       </Badge>
                     ))}

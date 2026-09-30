@@ -1,74 +1,87 @@
 @if (profile.isPending()) {
-  <mat-card class="w-full max-w-lg">
-    <mat-card-content>
-      <mat-progress-bar mode="indeterminate" />
-    </mat-card-content>
-  </mat-card>
+  <div class="card-container w-full max-w-lg gap-4">
+    <div class="h-6 w-32 rounded bg-[var(--subtle)] animate-pulse"></div>
+    <div class="flex flex-col gap-3">
+      <div class="h-4 w-full rounded bg-[var(--subtle)] animate-pulse"></div>
+      <div class="h-4 w-2/3 rounded bg-[var(--subtle)] animate-pulse"></div>
+      <div class="h-4 w-1/2 rounded bg-[var(--subtle)] animate-pulse"></div>
+    </div>
+  </div>
 } @else if (profile.isError() || !profile.data()) {
-  <p role="alert" class="text-red-600">{{ "profile.error" | transloco }}</p>
+  <p role="alert" class="rounded-[var(--r-sm)] border border-[var(--bad)]/25 bg-[var(--badbg)] p-3 text-sm text-[var(--bad)]">
+    {{ "profile.error" | transloco }}
+  </p>
 } @else {
   @let data = profile.data()!;
   <div class="flex w-full max-w-lg flex-col gap-6">
-    <mat-card class="w-full">
-      <mat-card-header class="flex flex-row items-center gap-4">
-        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 font-medium">{{ initials(data.displayName) }}</div>
-        <div>
-          <mat-card-title><h1>{{ data.displayName }}</h1></mat-card-title>
-          <p class="text-sm text-gray-500">{{ data.email }}</p>
+    <div class="card-container w-full gap-4">
+      <div class="flex flex-row items-center gap-4">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--subtle)] border border-[var(--bd)] font-medium text-base text-[var(--ink)]">
+          {{ initials(data.displayName) }}
         </div>
-      </mat-card-header>
-      <mat-card-content class="flex flex-col gap-4">
-        <mat-divider />
+        <div>
+          <h1 class="text-xl font-semibold">{{ data.displayName }}</h1>
+          <p class="text-sm text-[var(--mut)]">{{ data.email }}</p>
+        </div>
+      </div>
+
+      <div class="border-t border-[var(--line)] pt-4">
         <dl class="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-3 text-sm">
-          <dt class="text-gray-500">{{ "profile.status" | transloco }}</dt>
+          <dt class="text-[var(--mut)]">{{ "profile.status" | transloco }}</dt>
           <dd>
-            <mat-chip [highlighted]="data.status === 'active'">{{ (data.status === "active" ? "profile.status_active" : "profile.status_inactive") | transloco }}</mat-chip>
+            <span class="badge" [class.badge-default]="data.status === 'active'" [class.badge-secondary]="data.status !== 'active'">
+              {{ (data.status === "active" ? "profile.status_active" : "profile.status_inactive") | transloco }}
+            </span>
           </dd>
 
-          <dt class="text-gray-500">{{ "profile.roles" | transloco }}</dt>
+          <dt class="text-[var(--mut)]">{{ "profile.roles" | transloco }}</dt>
           <dd class="flex flex-wrap gap-1">
             @for (name of roleNames(data); track name) {
-              <mat-chip>{{ name }}</mat-chip>
+              <span class="badge badge-outline">{{ name }}</span>
             }
           </dd>
 
-          <dt class="text-gray-500">{{ "profile.memberSince" | transloco }}</dt>
-          <dd>{{ formatDate(data.createdAt) }}</dd>
+          <dt class="text-[var(--mut)]">{{ "profile.memberSince" | transloco }}</dt>
+          <dd class="text-[var(--ink)]">{{ formatDate(data.createdAt) }}</dd>
 
-          <dt class="text-gray-500">{{ "profile.lastLogin" | transloco }}</dt>
-          <dd>{{ data.lastLoginAt ? formatDate(data.lastLoginAt) : ("profile.lastLogin_never" | transloco) }}</dd>
+          <dt class="text-[var(--mut)]">{{ "profile.lastLogin" | transloco }}</dt>
+          <dd class="text-[var(--ink)]">{{ data.lastLoginAt ? formatDate(data.lastLoginAt) : ("profile.lastLogin_never" | transloco) }}</dd>
         </dl>
-      </mat-card-content>
-    </mat-card>
+      </div>
+    </div>
 
-    <mat-card class="w-full">
-      <mat-card-header class="flex flex-row items-center justify-between pb-3">
-        <mat-card-title><h2>{{ "profile.notificationsTitle" | transloco }}</h2></mat-card-title>
+    <div class="card-container w-full gap-3">
+      <div class="flex flex-row items-center justify-between pb-1">
+        <h2 class="text-base font-semibold">{{ "profile.notificationsTitle" | transloco }}</h2>
         @if (notificationsService.connectionStatus() === 'connected') {
-          <mat-chip class="border-emerald-500 bg-emerald-50 text-emerald-700">{{ "profile.notificationsLive" | transloco }}</mat-chip>
+          <span class="badge border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            {{ "profile.notificationsLive" | transloco }}
+          </span>
         } @else {
-          <mat-chip class="border-amber-500 bg-amber-50 text-amber-700" role="status">{{ "profile.notificationsPaused" | transloco }}</mat-chip>
+          <span class="badge border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400" role="status">
+            {{ "profile.notificationsPaused" | transloco }}
+          </span>
         }
-      </mat-card-header>
-      <mat-card-content class="flex flex-col gap-3">
-        <mat-divider />
+      </div>
+
+      <div class="border-t border-[var(--line)] pt-3">
         @if (notificationsService.notifications().length === 0) {
-          <p class="text-sm text-gray-500">{{ "profile.notificationsEmpty" | transloco }}</p>
+          <p class="text-sm text-[var(--mut)]">{{ "profile.notificationsEmpty" | transloco }}</p>
         } @else {
           <ul class="flex flex-col gap-2">
             @for (item of notificationsService.notifications(); track item.id) {
-              <li class="flex flex-col gap-0.5 rounded-md border p-2 text-sm">
+              <li class="flex flex-col gap-0.5 rounded-[var(--r-sm)] border border-[var(--bd)] bg-[var(--surf)] p-2.5 text-sm">
                 <div class="flex items-center justify-between font-medium">
-                  <span>
+                  <span class="text-[var(--ink)]">
                     {{ (item.type === 'user.deactivated' ? 'profile.userDeactivated' : 'profile.userRoleChanged') | transloco }}: {{ item.detail }}
                   </span>
-                  <span class="text-xs text-gray-500 font-normal">{{ formatTime(item.occurredAt) }}</span>
+                  <span class="text-xs text-[var(--mut)] font-normal">{{ formatTime(item.occurredAt) }}</span>
                 </div>
               </li>
             }
           </ul>
         }
-      </mat-card-content>
-    </mat-card>
+      </div>
+    </div>
   </div>
 }

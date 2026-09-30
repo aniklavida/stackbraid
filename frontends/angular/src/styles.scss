@@ -1,41 +1,507 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+@import "./tokens.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html {
-  height: 100%;
-  @include mat.theme((
-    color: (
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
+/* ==========================================================================
+   SELF-HOSTED FONTS
+   IBM Plex Sans (400, 500, 600) + IBM Plex Mono (400, 500)
+   Zero third-party runtime requests.
+   ========================================================================== */
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/ibm_plex_sans_latin.woff2') format('woff2');
 }
 
-body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-400.woff2') format('woff2');
+}
 
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-500.woff2') format('woff2');
+}
 
-  // Reset the user agent margin.
+/* ==========================================================================
+   BASE & RESET
+   ========================================================================== */
+html, body {
+  min-height: 100%;
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  line-height: var(--lh);
+  -webkit-font-smoothing: antialiased;
   margin: 0;
-  height: 100%;
 }
-/* You can add global styles to this file, and also import other style files */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+a {
+  color: var(--acc);
+  text-decoration: none;
+  transition: color var(--t-fast) var(--ease);
+}
+a:hover {
+  color: var(--acc2);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* ==========================================================================
+   FOUNDRY COMPONENT SYSTEM
+   ========================================================================== */
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  font-weight: 500;
+  font-size: var(--fs-base);
+  height: var(--h-md);
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  background: var(--acc);
+  color: var(--on-acc);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  transition: background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+
+  &:hover {
+    background: var(--acc2);
+    color: var(--on-acc);
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+  &:disabled, &[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  font-weight: 500;
+  font-size: var(--fs-base);
+  height: var(--h-md);
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  background: var(--surf);
+  color: var(--ink);
+  border: 1px solid var(--bd);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  transition: all var(--t-fast) var(--ease);
+
+  &:hover {
+    background: var(--subtle);
+    border-color: var(--bd2);
+    color: var(--ink);
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+  &:disabled, &[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  font-weight: 500;
+  font-size: var(--fs-base);
+  height: var(--h-md);
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  background: var(--subtle);
+  color: var(--ink);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  transition: all var(--t-fast) var(--ease);
+
+  &:hover {
+    background: var(--hov);
+    color: var(--ink);
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+  &:disabled, &[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  font-weight: 500;
+  font-size: var(--fs-base);
+  height: var(--h-md);
+  padding: 0 12px;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  transition: all var(--t-fast) var(--ease);
+
+  &:hover {
+    background: var(--hov);
+    color: var(--ink);
+  }
+  &:active {
+    background: var(--act);
+  }
+  &:disabled, &[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.btn-sm {
+  height: var(--h-sm);
+  padding: 0 10px;
+  font-size: var(--fs-sm);
+  border-radius: var(--r-sm);
+}
+
+.btn-icon-sm {
+  width: var(--h-sm);
+  height: var(--h-sm);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+}
+
+/* Inputs & Form Controls */
+.input-control {
+  display: flex;
+  height: var(--h-md);
+  width: 100%;
+  min-width: 0;
+  border-radius: var(--r-md);
+  border: 1px solid var(--bd);
+  background: var(--surf);
+  padding: 6px 12px;
+  font-size: var(--fs-base);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  outline: none;
+  box-shadow: var(--shadow-card);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+
+  &::placeholder {
+    color: var(--faint);
+  }
+  &:focus {
+    border-color: var(--acc);
+    box-shadow: 0 0 0 2px oklch(from var(--acc) l c h / 0.25);
+  }
+  &:disabled, &[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: var(--subtle);
+  }
+  &[aria-invalid="true"] {
+    border-color: var(--bad);
+    box-shadow: 0 0 0 2px oklch(from var(--bad) l c h / 0.2);
+  }
+}
+
+.select-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--h-md);
+  border-radius: var(--r-md);
+  border: 1px solid var(--bd);
+  background: var(--surf);
+  padding: 0 12px;
+  font-size: var(--fs-base);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease);
+
+  &:focus {
+    border-color: var(--acc);
+  }
+}
+
+/* Cards */
+.card-container {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-lg);
+  background: var(--surf);
+  border: 1px solid var(--bd);
+  padding: var(--sp-6);
+  color: var(--ink);
+  box-shadow: var(--shadow-card);
+}
+
+.card-container-sm {
+  padding: var(--sp-4);
+  gap: var(--sp-3);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  height: 20px;
+  padding: 0 8px;
+  border-radius: var(--r-xs);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.badge-default {
+  background: var(--accbg);
+  color: var(--acc);
+  border: 1px solid oklch(from var(--acc) l c h / 0.25);
+}
+
+.badge-secondary {
+  background: var(--subtle);
+  color: var(--ink2);
+  border: 1px solid var(--bd);
+}
+
+.badge-outline {
+  border: 1px solid var(--bd);
+  color: var(--ink2);
+  background: transparent;
+}
+
+.badge-success {
+  border: 1px solid oklch(from var(--ok) l c h / 0.35);
+  background: var(--okbg);
+  color: var(--ok);
+}
+
+.badge-warning {
+  border: 1px solid oklch(from var(--warn) l c h / 0.35);
+  background: var(--warnbg);
+  color: var(--warn);
+}
+
+.badge-destructive {
+  background: var(--badbg);
+  color: var(--bad);
+  border: 1px solid oklch(from var(--bad) l c h / 0.25);
+}
+
+/* Tables */
+.table-wrapper {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--r-md);
+  border: 1px solid var(--bd);
+  background: var(--surf);
+}
+
+.table-root {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-base);
+
+  th {
+    height: 40px;
+    padding: 0 14px;
+    text-align: left;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--mut);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--subtle);
+    border-bottom: 1px solid var(--bd);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: var(--hov);
+  }
+}
+
+/* Progress bar */
+.progress-root {
+  position: relative;
+  height: 16px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--r-pill);
+  background: var(--subtle);
+}
+
+.progress-indicator {
+  height: 100%;
+  background: var(--acc);
+  transition: width var(--t-slow) var(--ease);
+}
+
+/* ==========================================================================
+   ANGULAR MATERIAL THEME OVERRIDES
+   ========================================================================== */
+.mat-mdc-menu-panel {
+  background: var(--surf) !important;
+  border: 1px solid var(--bd) !important;
+  border-radius: var(--r-md) !important;
+  box-shadow: var(--shadow-menu) !important;
+  padding: 4px !important;
+}
+
+.mat-mdc-menu-item {
+  color: var(--ink) !important;
+  font-size: var(--fs-base) !important;
+  font-family: var(--font-ui) !important;
+  height: var(--h-md) !important;
+  border-radius: var(--r-sm) !important;
+  transition: background var(--t-fast) var(--ease) !important;
+
+  &:hover {
+    background: var(--hov) !important;
+  }
+}
+
+.mat-mdc-select-panel {
+  background: var(--surf) !important;
+  border: 1px solid var(--bd) !important;
+  border-radius: var(--r-md) !important;
+  box-shadow: var(--shadow-menu) !important;
+  padding: 4px !important;
+}
+
+.mat-mdc-option {
+  color: var(--ink) !important;
+  font-size: var(--fs-base) !important;
+  font-family: var(--font-ui) !important;
+  border-radius: var(--r-sm) !important;
+  min-height: 36px !important;
+
+  &:hover {
+    background: var(--hov) !important;
+  }
+  &.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+    background: var(--subtle) !important;
+    .mdc-list-item__primary-text {
+      color: var(--ink) !important;
+      font-weight: 500 !important;
+    }
+  }
+}
+
+/* Select trigger inside mat-form-field */
+.mat-mdc-form-field {
+  font-family: var(--font-ui) !important;
+
+  .mdc-notched-outline__leading,
+  .mdc-notched-outline__notch,
+  .mdc-notched-outline__trailing {
+    border-color: var(--bd) !important;
+  }
+  &:hover .mdc-notched-outline__leading,
+  &:hover .mdc-notched-outline__notch,
+  &:hover .mdc-notched-outline__trailing {
+    border-color: var(--bd2) !important;
+  }
+  &.mat-focused .mdc-notched-outline__leading,
+  &.mat-focused .mdc-notched-outline__notch,
+  &.mat-focused .mdc-notched-outline__trailing {
+    border-color: var(--acc) !important;
+    border-width: 2px !important;
+  }
+  .mat-mdc-select-value-text {
+    color: var(--ink) !important;
+  }
+  .mat-mdc-select-arrow {
+    color: var(--mut) !important;
+  }
+  .mat-mdc-floating-label {
+    color: var(--mut) !important;
+  }
+}
+
+/* Material Snack Bar Toast */
+.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  background-color: var(--surf) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--bd) !important;
+  border-radius: var(--r-md) !important;
+  box-shadow: var(--shadow-modal) !important;
+  font-family: var(--font-ui) !important;
+}
+
+.mat-mdc-snack-bar-container .mdc-snackbar__label {
+  color: var(--ink) !important;
+}

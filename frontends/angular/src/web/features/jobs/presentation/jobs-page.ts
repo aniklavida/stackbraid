@@ -1,13 +1,5 @@
 import { Component, OnDestroy, inject, signal } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { FormsModule } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
-import { MatCardModule } from "@angular/material/card";
-import { MatChipsModule } from "@angular/material/chips";
-import { MatDividerModule } from "@angular/material/divider";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 
 import { JobProgressService, type JobsSource } from "../application/job-progress.service";
@@ -16,14 +8,6 @@ import { JobProgressService, type JobsSource } from "../application/job-progress
   selector: "app-jobs-page",
   standalone: true,
   imports: [
-    FormsModule,
-    MatButtonModule,
-    MatCardModule,
-    MatChipsModule,
-    MatDividerModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatProgressBarModule,
     TranslocoPipe,
   ],
   providers: [JobProgressService],

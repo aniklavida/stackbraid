@@ -1,9 +1,6 @@
 import { Component, inject, signal } from "@angular/core";
 import { RouterLink } from "@angular/router";
-import { MatButtonModule } from "@angular/material/button";
 import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatSelectModule } from "@angular/material/select";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
@@ -14,7 +11,7 @@ import { useDeactivateUser, useRestoreUser, useUsers } from "../application/use-
 @Component({
   selector: "app-users-page",
   standalone: true,
-  imports: [RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule, MatProgressBarModule, MatSelectModule, TranslocoPipe],
+  imports: [RouterLink, MatFormFieldModule, MatSelectModule, TranslocoPipe],
   templateUrl: "./users-page.html",
 })
 export class UsersPageComponent {

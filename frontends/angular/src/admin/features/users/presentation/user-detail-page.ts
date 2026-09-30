@@ -2,10 +2,7 @@ import { Component, computed, inject, signal } from "@angular/core";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { map } from "rxjs";
-import { MatButtonModule } from "@angular/material/button";
-import { MatCardModule } from "@angular/material/card";
 import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatSelectModule } from "@angular/material/select";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
@@ -16,7 +13,7 @@ import { useAssignRole, useRestoreUser, useRevokeRole, useUser, useUserAudit } f
 @Component({
   selector: "app-user-detail-page",
   standalone: true,
-  imports: [RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatProgressBarModule, MatSelectModule, TranslocoPipe],
+  imports: [RouterLink, MatFormFieldModule, MatSelectModule, TranslocoPipe],
   templateUrl: "./user-detail-page.html",
 })
 export class UserDetailPageComponent {
