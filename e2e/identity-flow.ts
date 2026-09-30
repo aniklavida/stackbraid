@@ -141,8 +141,10 @@ export function registerIdentityFlowSpec(test: TestType<PlaywrightTestArgs, obje
     await page.getByRole("button", { name: /start demo job/i }).click();
 
     // Verify progress reaches 100% and finishes with succeeded on the second tab
-    await expect(page2.getByText("100%")).toBeVisible({ timeout: 15_000 });
-    await expect(page2.getByText(/succeeded/i)).toBeVisible({ timeout: 5_000 });
+    // "100%" also appears in the event history list, so assert on the one
+    // progress bar itself rather than on text that occurs twice.
+    await expect(page2.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100", { timeout: 15_000 });
+    await expect(page2.getByText(/succeeded/i).first()).toBeVisible({ timeout: 5_000 });
     await shot(page2, "11-jobs-tab2-succeeded");
 
     await page2.close();
