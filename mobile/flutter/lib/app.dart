@@ -13,6 +13,7 @@ import 'shared/i18n/common_strings.dart';
 import 'shared/i18n/locale_controller.dart';
 import 'shared/i18n/translations.dart';
 import 'shared/theme/app_theme.dart';
+import 'shared/theme/tokens.dart';
 import 'shared/widgets/staleness_indicator.dart';
 
 final Translations _allTranslations = mergeTranslations([commonStrings, authStrings]);
@@ -52,10 +53,28 @@ class AppRouter {
         settings: settings,
         builder: (_) => Scaffold(
           appBar: AppBar(title: const Text('Admin')),
-          body: const Center(
-            child: Text(
-              'Administration is a desktop job; no admin surface on mobile.',
-              textAlign: TextAlign.center,
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.desktop_windows_outlined, size: 40),
+                        SizedBox(height: 16),
+                        Text(
+                          'Administration is a desktop job; no admin surface on mobile.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -158,7 +177,10 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: widget.dependencies.localeController,
+      listenable: Listenable.merge([
+        widget.dependencies.localeController,
+        widget.dependencies.themeController,
+      ]),
       builder: (context, _) {
         final localizations = AppLocalizations(widget.dependencies.localeController.locale, _allTranslations);
         return I18nScope(
@@ -170,6 +192,7 @@ class _AppState extends State<App> {
               debugShowCheckedModeBanner: false,
               theme: AppTheme.light,
               darkTheme: AppTheme.dark,
+              themeMode: widget.dependencies.themeController.themeMode,
               supportedLocales: supportedLocales,
               locale: widget.dependencies.localeController.locale,
               localizationsDelegates: const [
@@ -205,7 +228,15 @@ class _AuthGate extends StatelessWidget {
       builder: (context, _) {
         switch (dependencies.session.status) {
           case AuthStatus.loading:
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            return const Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2.5),
+                ),
+              ),
+            );
           case AuthStatus.anonymous:
             return LoginScreen(
               useCases: dependencies.authUseCases,
@@ -286,6 +317,7 @@ class _SignedInShellState extends State<SignedInShell> {
         useCases: widget.dependencies.authUseCases,
         session: widget.dependencies.session,
         localeController: widget.dependencies.localeController,
+        themeController: widget.dependencies.themeController,
       ),
     ];
 
@@ -324,64 +356,93 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final width = MediaQuery.sizeOf(context).width;
+    final horizontalPadding = width >= 430 ? AppTokens.screenMarginWide : AppTokens.screenMargin;
     final displayName = user?.displayName ?? '';
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.t('common.appTitle')),
+        title: Text(
+          context.t('common.appTitle'),
+          style: TextStyle(
+            fontFamily: AppTokens.fontDisplay,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.4,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            Text(
-              '${context.t('common.homeWelcome')}${displayName.isNotEmpty ? ', $displayName' : ''}',
-              style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              context.t('common.homeReadySubtitle'),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: ListView(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 20),
+              children: [
+                Text(
+                  '${context.t('common.homeWelcome')}${displayName.isNotEmpty ? ', $displayName' : ''}',
+                  style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  context.t('common.homeReadySubtitle'),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.dashboard_customize, color: theme.colorScheme.primary),
-                        const SizedBox(width: 8),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.dashboard_customize_outlined,
+                              size: 20,
+                              color: theme.colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              context.t('common.homeReadyTitle'),
+                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
                         Text(
-                          context.t('common.homeReadyTitle'),
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                          context.t('common.homeReadySubtitle'),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      context.t('common.homeReadySubtitle'),
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.person_outline, size: 22),
+                    title: Text(context.t('auth.profileTitle')),
+                    subtitle: Text(
+                      user?.email ?? '',
+                      style: TextStyle(
+                        fontFamily: AppTokens.fontMono,
+                        fontSize: 12.5,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right, size: 20),
+                    onTap: onGoToProfile,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.person),
-                title: Text(context.t('auth.profileTitle')),
-                subtitle: Text(user?.email ?? ''),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: onGoToProfile,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

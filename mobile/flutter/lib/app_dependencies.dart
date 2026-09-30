@@ -9,6 +9,8 @@ import 'shared/http/staleness_controller.dart';
 import 'shared/i18n/locale_controller.dart';
 import 'shared/notifications/push_notification_service.dart';
 
+import 'shared/theme/theme_controller.dart';
+
 /// The composition root — the mobile equivalent of a backend's `Host` or
 /// a web frontend's `app.config.ts` providers list: the one place allowed to
 /// import across `shared/` **and** `features/` at once and wire concrete
@@ -25,10 +27,12 @@ class AppDependencies {
     ApiClient? apiClient,
     TokenStore? tokenStore,
     LocaleController? localeController,
+    ThemeController? themeController,
   })  : networkStatus = networkStatus ?? apiClient?.networkStatus ?? NetworkStatus(),
         offlineQueue = offlineQueue ?? apiClient?.offlineQueue ?? OfflineQueue(),
         tokenStore = tokenStore ?? SecureTokenStore(),
         localeController = localeController ?? LocaleController(),
+        themeController = themeController ?? ThemeController(),
         apiClient = apiClient ??
             ApiClient(
               networkStatus: networkStatus,
@@ -51,15 +55,20 @@ class AppDependencies {
   final ApiClient apiClient;
   final TokenStore tokenStore;
   final LocaleController localeController;
+  final ThemeController themeController;
   late final SessionController session;
   late final AuthRepository authRepository;
   late final AuthUseCases authUseCases;
   late final PushNotificationService pushNotifications;
 
-  /// Called once at startup — restores the language preference and attempts
-  /// to hydrate a session from the persisted refresh token.
+  /// Called once at startup — restores the language and theme preferences,
+  /// and attempts to hydrate a session from the persisted refresh token.
   Future<void> bootstrap() async {
-    await Future.wait([localeController.restore(), session.bootstrap()]);
+    await Future.wait([
+      localeController.restore(),
+      themeController.restore(),
+      session.bootstrap(),
+    ]);
     _syncPushNotifications();
   }
 
