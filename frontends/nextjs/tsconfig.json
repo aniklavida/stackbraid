@@ -20,6 +20,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      "@stackbraid/client-typescript/realtime": ["../../clients/typescript/src/realtime.ts"],
       "@stackbraid/client-typescript": ["../../clients/typescript/src/generated/index.ts"],
       "@stackbraid/client-typescript/*": ["../../clients/typescript/*"],
       "@playwright/test": ["./node_modules/@playwright/test"]

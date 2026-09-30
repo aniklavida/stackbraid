@@ -1,0 +1,79 @@
+<mat-card class="w-full max-w-xl">
+  <mat-card-header class="flex flex-row items-start justify-between pb-4">
+    <div>
+      <mat-card-title><h1 class="text-xl font-semibold">{{ "jobs.title" | transloco }}</h1></mat-card-title>
+      <p class="mt-1 text-sm text-gray-500">{{ "jobs.description" | transloco }}</p>
+    </div>
+    @if (jobService.connectionStatus() === 'connected') {
+      <mat-chip class="border-emerald-500 bg-emerald-50 text-emerald-700">{{ "jobs.live" | transloco }}</mat-chip>
+    } @else {
+      <mat-chip class="border-amber-500 bg-amber-50 text-amber-700" role="status">{{ "jobs.paused" | transloco }}</mat-chip>
+    }
+  </mat-card-header>
+
+  <mat-card-content class="flex flex-col gap-6">
+    <div class="flex flex-col gap-2">
+      <span class="text-sm font-medium">{{ "jobs.jobIdLabel" | transloco }}</span>
+      <div class="flex gap-2">
+        <input
+          matInput
+          [value]="jobId()"
+          readonly
+          class="flex-1 rounded-md border border-gray-300 px-3 py-1.5 font-mono text-xs text-gray-900 bg-gray-50"
+        />
+        <button mat-stroked-button (click)="handleCopyLink()">
+          {{ (copied() ? "jobs.copied" : "jobs.copyLink") | transloco }}
+        </button>
+        <button mat-stroked-button (click)="handleNewJob()">
+          {{ "jobs.newJob" | transloco }}
+        </button>
+      </div>
+    </div>
+
+    <mat-divider />
+
+    <div class="flex flex-col gap-3">
+      <div class="flex items-center justify-between text-sm">
+        <span class="font-medium">{{ "jobs.progressLabel" | transloco }}</span>
+        <div class="flex items-center gap-2">
+          <mat-chip [highlighted]="jobService.status() === 'succeeded'">
+            {{ "jobs.status_" + jobService.status() | transloco }}
+          </mat-chip>
+          <span class="font-mono font-semibold">{{ jobService.progress() }}%</span>
+        </div>
+      </div>
+      <mat-progress-bar mode="determinate" [value]="jobService.progress()" />
+    </div>
+
+    <div>
+      <button
+        mat-flat-button
+        color="primary"
+        class="w-full"
+        (click)="handleStartJob()"
+        [disabled]="jobService.status() === 'running' || jobService.status() === 'queued' || jobService.connectionStatus() === 'paused'"
+      >
+        {{ "jobs.startJob" | transloco }}
+      </button>
+    </div>
+
+    <mat-divider />
+
+    <div class="flex flex-col gap-2">
+      <span class="text-sm font-medium">{{ "jobs.frames" | transloco }}</span>
+      @if (jobService.frames().length === 0) {
+        <p class="text-sm text-gray-500">{{ "jobs.noFrames" | transloco }}</p>
+      } @else {
+        <ul class="flex flex-col gap-1">
+          @for (frame of jobService.frames(); track $index) {
+            <li class="flex items-center justify-between rounded border p-2 text-xs font-mono">
+              <span class="font-medium capitalize">{{ "jobs.status_" + frame.status | transloco }}</span>
+              <span>{{ frame.progress }}%</span>
+              <span class="text-gray-500">{{ formatTime(frame.occurredAt) }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>

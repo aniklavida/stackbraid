@@ -27,3 +27,10 @@ export interface Profile {
 export function roleNames(profile: Profile): string[] {
   return profile.roles.map((role) => role.name);
 }
+
+export interface RealtimeNotification {
+  id: string;
+  type: "user.deactivated" | "user.role_changed";
+  occurredAt: string;
+  detail: string;
+}

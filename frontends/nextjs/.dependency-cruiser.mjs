@@ -20,6 +20,7 @@ const FEATURES = [
   { app: "web", name: "auth" },
   { app: "web", name: "home" },
   { app: "web", name: "profile" },
+  { app: "web", name: "jobs" },
   { app: "admin", name: "users" },
   { app: "admin", name: "roles" },
 ];

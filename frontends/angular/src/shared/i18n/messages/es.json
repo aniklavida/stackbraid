@@ -3,6 +3,7 @@
   "nav": {
     "home": "Inicio",
     "profile": "Perfil",
+    "jobs": "Tareas",
     "login": "Iniciar sesión",
     "register": "Crear cuenta",
     "logout": "Cerrar sesión",

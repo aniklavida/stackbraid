@@ -16,6 +16,7 @@
     "module": "preserve",
     "baseUrl": ".",
     "paths": {
+      "@stackbraid/client-typescript/realtime": ["../../clients/typescript/src/realtime.ts"],
       "@stackbraid/client-typescript": ["../../clients/typescript/src/generated/index.ts"],
       "@stackbraid/client-typescript/*": ["../../clients/typescript/*"]
     }

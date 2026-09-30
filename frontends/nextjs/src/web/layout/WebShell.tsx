@@ -29,6 +29,11 @@ export function WebShell({ children }: { children: ReactNode }) {
                 <Link href="/profile">{t("nav.profile")}</Link>
               </Button>
             )}
+            {auth.status === "authenticated" && (
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/jobs">{t("nav.jobs")}</Link>
+              </Button>
+            )}
             {auth.status === "authenticated" && auth.hasPermission("users:read") && (
               <Button asChild variant="ghost" size="sm">
                 <Link href="/admin">{t("nav.admin")}</Link>

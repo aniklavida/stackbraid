@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOwnProfile } from "../application/use-own-profile";
 import { roleNames } from "../domain/profile";
+import { NotificationArea } from "./NotificationArea";
 
 function initials(name: string): string {
   return name
@@ -50,44 +51,47 @@ export function ProfilePage() {
   const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "long" });
 
   return (
-    <Card className="w-full max-w-lg">
-      <CardHeader className="flex flex-row items-center gap-4">
-        <Avatar className="h-12 w-12">
-          <AvatarFallback>{initials(profile.displayName)}</AvatarFallback>
-        </Avatar>
-        <div>
-          <CardTitle>
-            <h1>{profile.displayName}</h1>
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">{profile.email}</p>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <Separator />
-        <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-3 text-sm">
-          <dt className="text-muted-foreground">{t("status")}</dt>
-          <dd>
-            <Badge variant={profile.status === "active" ? "default" : "secondary"}>
-              {t(profile.status === "active" ? "status_active" : "status_inactive")}
-            </Badge>
-          </dd>
-
-          <dt className="text-muted-foreground">{t("roles")}</dt>
-          <dd className="flex flex-wrap gap-1">
-            {roleNames(profile).map((name) => (
-              <Badge key={name} variant="outline">
-                {name}
+    <div className="flex w-full max-w-lg flex-col gap-6">
+      <Card className="w-full">
+        <CardHeader className="flex flex-row items-center gap-4">
+          <Avatar className="h-12 w-12">
+            <AvatarFallback>{initials(profile.displayName)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <CardTitle>
+              <h1>{profile.displayName}</h1>
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">{profile.email}</p>
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <Separator />
+          <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-3 text-sm">
+            <dt className="text-muted-foreground">{t("status")}</dt>
+            <dd>
+              <Badge variant={profile.status === "active" ? "default" : "secondary"}>
+                {t(profile.status === "active" ? "status_active" : "status_inactive")}
               </Badge>
-            ))}
-          </dd>
+            </dd>
 
-          <dt className="text-muted-foreground">{t("memberSince")}</dt>
-          <dd>{dateFormatter.format(new Date(profile.createdAt))}</dd>
+            <dt className="text-muted-foreground">{t("roles")}</dt>
+            <dd className="flex flex-wrap gap-1">
+              {roleNames(profile).map((name) => (
+                <Badge key={name} variant="outline">
+                  {name}
+                </Badge>
+              ))}
+            </dd>
 
-          <dt className="text-muted-foreground">{t("lastLogin")}</dt>
-          <dd>{profile.lastLoginAt ? dateFormatter.format(new Date(profile.lastLoginAt)) : t("lastLogin_never")}</dd>
-        </dl>
-      </CardContent>
-    </Card>
+            <dt className="text-muted-foreground">{t("memberSince")}</dt>
+            <dd>{dateFormatter.format(new Date(profile.createdAt))}</dd>
+
+            <dt className="text-muted-foreground">{t("lastLogin")}</dt>
+            <dd>{profile.lastLoginAt ? dateFormatter.format(new Date(profile.lastLoginAt)) : t("lastLogin_never")}</dd>
+          </dl>
+        </CardContent>
+      </Card>
+      <NotificationArea />
+    </div>
   );
 }
