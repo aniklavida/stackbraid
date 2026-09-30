@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:stackbraid_client/stackbraid_client.dart';
 
 import 'app_dependencies.dart';
 import 'features/auth/presentation/i18n/auth_strings.dart';
@@ -12,6 +13,7 @@ import 'shared/i18n/common_strings.dart';
 import 'shared/i18n/locale_controller.dart';
 import 'shared/i18n/translations.dart';
 import 'shared/theme/app_theme.dart';
+import 'shared/widgets/staleness_indicator.dart';
 
 final Translations _allTranslations = mergeTranslations([commonStrings, authStrings]);
 
@@ -21,6 +23,118 @@ final Translations _allTranslations = mergeTranslations([commonStrings, authStri
 /// .takeScreenshot()` (`MissingPluginException: captureScreenshot`, tried
 /// first), so this is the fallback that works on every target.
 final GlobalKey screenshotBoundaryKey = GlobalKey();
+
+abstract final class AppRoutes {
+  static const String initial = '/';
+  static const String login = '/login';
+  static const String register = '/register';
+  static const String home = '/home';
+  static const String profile = '/profile';
+}
+
+/// The mobile application router.
+///
+/// Provides named routing, session-aware route guards, the signed-in shell
+/// for authenticated screens, and enforces the rule that mobile carries
+/// no admin surface (`docs/STRUCTURE.md`: administration is a desktop job).
+class AppRouter {
+  AppRouter({required this.dependencies});
+
+  final AppDependencies dependencies;
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  Route<dynamic> onGenerateRoute(RouteSettings settings) {
+    final isAuthenticated = dependencies.session.status == AuthStatus.authenticated;
+
+    // Explicitly reject admin routes on mobile
+    if (settings.name != null && settings.name!.startsWith('/admin')) {
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => Scaffold(
+          appBar: AppBar(title: const Text('Admin')),
+          body: const Center(
+            child: Text(
+              'Administration is a desktop job; no admin surface on mobile.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    switch (settings.name) {
+      case AppRoutes.login:
+        if (isAuthenticated) {
+          return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => SignedInShell(dependencies: dependencies),
+          );
+        }
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (context) => LoginScreen(
+            useCases: dependencies.authUseCases,
+            session: dependencies.session,
+            onCreateAccount: () => Navigator.of(context).pushNamed(AppRoutes.register),
+          ),
+        );
+
+      case AppRoutes.register:
+        if (isAuthenticated) {
+          return MaterialPageRoute(
+            settings: settings,
+            builder: (_) => SignedInShell(dependencies: dependencies),
+          );
+        }
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => RegisterScreen(
+            useCases: dependencies.authUseCases,
+            session: dependencies.session,
+          ),
+        );
+
+      case AppRoutes.home:
+        if (!isAuthenticated) {
+          return MaterialPageRoute(
+            settings: const RouteSettings(name: AppRoutes.login),
+            builder: (context) => LoginScreen(
+              useCases: dependencies.authUseCases,
+              session: dependencies.session,
+              onCreateAccount: () => Navigator.of(context).pushNamed(AppRoutes.register),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => SignedInShell(dependencies: dependencies, initialTab: 0),
+        );
+
+      case AppRoutes.profile:
+        if (!isAuthenticated) {
+          return MaterialPageRoute(
+            settings: const RouteSettings(name: AppRoutes.login),
+            builder: (context) => LoginScreen(
+              useCases: dependencies.authUseCases,
+              session: dependencies.session,
+              onCreateAccount: () => Navigator.of(context).pushNamed(AppRoutes.register),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => SignedInShell(dependencies: dependencies, initialTab: 1),
+        );
+
+      case AppRoutes.initial:
+      default:
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => _AuthGate(dependencies: dependencies),
+        );
+    }
+  }
+}
 
 class App extends StatefulWidget {
   const App({super.key, required this.dependencies});
@@ -32,9 +146,12 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
+  late final AppRouter _router;
+
   @override
   void initState() {
     super.initState();
+    _router = AppRouter(dependencies: widget.dependencies);
     widget.dependencies.bootstrap();
   }
 
@@ -60,6 +177,8 @@ class _AppState extends State<App> {
                 GlobalWidgetsLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
               ],
+              navigatorKey: _router.navigatorKey,
+              onGenerateRoute: _router.onGenerateRoute,
               home: _AuthGate(dependencies: widget.dependencies),
             ),
           ),
@@ -94,6 +213,7 @@ class _AuthGate extends StatelessWidget {
               onCreateAccount: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
+                    settings: const RouteSettings(name: AppRoutes.register),
                     builder: (_) => RegisterScreen(
                       useCases: dependencies.authUseCases,
                       session: dependencies.session,
@@ -103,13 +223,167 @@ class _AuthGate extends StatelessWidget {
               },
             );
           case AuthStatus.authenticated:
-            return ProfileScreen(
-              useCases: dependencies.authUseCases,
-              session: dependencies.session,
-              localeController: dependencies.localeController,
+            return SignedInShell(
+              dependencies: dependencies,
+              initialTab: 1, // Lands directly on profile for the identity flow
             );
         }
       },
+    );
+  }
+}
+
+/// The signed-in shell wrapping authenticated screens.
+///
+/// Provides top-level staleness indication (never presenting stale data as current),
+/// bottom navigation bar between available features, and readiness for future domain screens.
+class SignedInShell extends StatefulWidget {
+  const SignedInShell({
+    super.key,
+    required this.dependencies,
+    this.initialTab = 1,
+  });
+
+  final AppDependencies dependencies;
+  final int initialTab;
+
+  @override
+  State<SignedInShell> createState() => _SignedInShellState();
+}
+
+class _SignedInShellState extends State<SignedInShell> {
+  late int _selectedTab;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTab = widget.initialTab;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final destinations = [
+      NavigationDestination(
+        key: const Key('nav-home'),
+        icon: const Icon(Icons.home_outlined),
+        selectedIcon: const Icon(Icons.home),
+        label: context.t('common.navHome'),
+      ),
+      NavigationDestination(
+        key: const Key('nav-profile'),
+        icon: const Icon(Icons.person_outline),
+        selectedIcon: const Icon(Icons.person),
+        label: context.t('common.navProfile'),
+      ),
+    ];
+
+    final screens = [
+      HomeScreen(
+        user: widget.dependencies.session.user,
+        onGoToProfile: () => setState(() => _selectedTab = 1),
+      ),
+      ProfileScreen(
+        useCases: widget.dependencies.authUseCases,
+        session: widget.dependencies.session,
+        localeController: widget.dependencies.localeController,
+      ),
+    ];
+
+    return Scaffold(
+      body: Column(
+        children: [
+          StalenessIndicator(controller: widget.dependencies.stalenessController),
+          Expanded(
+            child: IndexedStack(
+              index: _selectedTab,
+              children: screens,
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedTab,
+        onDestinationSelected: (index) => setState(() => _selectedTab = index),
+        destinations: destinations,
+      ),
+    );
+  }
+}
+
+/// Home screen for the signed-in shell — ready for more domain features.
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({
+    super.key,
+    this.user,
+    required this.onGoToProfile,
+  });
+
+  final User? user;
+  final VoidCallback onGoToProfile;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final displayName = user?.displayName ?? '';
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(context.t('common.appTitle')),
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            Text(
+              '${context.t('common.homeWelcome')}${displayName.isNotEmpty ? ', $displayName' : ''}',
+              style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              context.t('common.homeReadySubtitle'),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.dashboard_customize, color: theme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          context.t('common.homeReadyTitle'),
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      context.t('common.homeReadySubtitle'),
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.person),
+                title: Text(context.t('auth.profileTitle')),
+                subtitle: Text(user?.email ?? ''),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: onGoToProfile,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
