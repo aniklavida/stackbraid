@@ -75,267 +75,300 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final width = MediaQuery.sizeOf(context).width;
-    final horizontalPadding = width >= 430 ? AppTokens.screenMarginWide : AppTokens.screenMargin;
+    final horizontalPadding = width >= 430
+        ? AppTokens.screenMarginWide
+        : AppTokens.screenMargin;
 
     final user = widget.session.user;
     if (user == null) {
       return const SizedBox.shrink();
     }
 
-    final initial = user.displayName.isEmpty ? '?' : user.displayName.characters.first.toUpperCase();
+    final initial = user.displayName.isEmpty
+        ? '?'
+        : user.displayName.characters.first.toUpperCase();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.t('auth.profileTitle')),
-      ),
+      appBar: AppBar(title: Text(context.t('auth.profileTitle'))),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 440),
-            child: ListView(
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 20),
-              children: [
-                // Identity card with avatar and member since
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 36,
-                          backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                          child: Text(
-                            initial,
-                            style: TextStyle(
-                              fontFamily: AppTokens.fontDisplay,
-                              fontSize: 26,
+            // A plain scroll view + column (not a lazy ListView) so every
+            // action, including sign out, is always built and reachable.
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: 20,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Identity card with avatar and member since
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 36,
+                            backgroundColor:
+                                theme.colorScheme.surfaceContainerHighest,
+                            child: Text(
+                              initial,
+                              style: TextStyle(
+                                fontFamily: AppTokens.fontDisplay,
+                                fontSize: 26,
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            user.displayName,
+                            style: theme.textTheme.headlineMedium?.copyWith(
                               fontWeight: FontWeight.w600,
-                              color: theme.colorScheme.onSurface,
                             ),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          user.displayName,
-                          style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          user.email,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        const Divider(height: 1),
-                        const SizedBox(height: 14),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              context.t('auth.memberSince'),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                formatLongDate(user.createdAt, AppLocalizations.of(context).locale),
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                  color: theme.colorScheme.onSurface,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Roles section
-                _SectionHeader(title: context.t('auth.rolesLabel')),
-                const SizedBox(height: 8),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: user.roles.isEmpty
-                        ? Text(
-                            context.t('auth.noRoles'),
+                          const SizedBox(height: 4),
+                          Text(
+                            user.email,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
-                          )
-                        : Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: user.roles.map((role) {
-                              return Chip(
-                                label: Text(role.name),
-                              );
-                            }).toList(),
+                            textAlign: TextAlign.center,
                           ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Notifications section
-                Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 8,
-                  runSpacing: 6,
-                  children: [
-                    _SectionHeader(title: context.t('auth.notificationsTitle')),
-                    ListenableBuilder(
-                      listenable: _notificationsController,
-                      builder: (context, _) {
-                        final isConnected = _notificationsController.isConnected;
-                        final indicatorColor = isConnected ? theme.colorScheme.primary : theme.colorScheme.error;
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isConnected
-                                ? theme.colorScheme.primaryContainer
-                                : theme.colorScheme.errorContainer,
-                            borderRadius: BorderRadius.circular(AppTokens.rPill),
-                            border: Border.all(color: indicatorColor.withValues(alpha: 0.2)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                          const SizedBox(height: 16),
+                          const Divider(height: 1),
+                          const SizedBox(height: 14),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Container(
-                                width: 7,
-                                height: 7,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: indicatorColor,
+                              Text(
+                                context.t('auth.memberSince'),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              Text(
-                                isConnected
-                                    ? context.t('auth.notificationsLive')
-                                    : context.t('auth.notificationsPaused'),
-                                style: TextStyle(
-                                  fontFamily: AppTokens.fontUi,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: isConnected
-                                      ? theme.colorScheme.onPrimaryContainer
-                                      : theme.colorScheme.onErrorContainer,
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  formatLongDate(
+                                    user.createdAt,
+                                    AppLocalizations.of(context).locale,
+                                  ),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
                           ),
-                        );
-                      },
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                ListenableBuilder(
-                  listenable: _notificationsController,
-                  builder: (context, _) {
-                    final notifications = _notificationsController.notifications;
-                    if (notifications.isEmpty) {
-                      return Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Text(
-                            context.t('auth.notificationsEmpty'),
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      );
-                    }
+                  ),
+                  const SizedBox(height: 20),
 
-                    return Card(
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: notifications.length,
-                        separatorBuilder: (_, _) => const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          final n = notifications[index];
-                          final titleKey = n.type == 'user.deactivated'
-                              ? 'auth.userDeactivated'
-                              : 'auth.userRoleChanged';
-                          final timeStr =
-                              '${n.occurredAt.toLocal().hour.toString().padLeft(2, '0')}:${n.occurredAt.toLocal().minute.toString().padLeft(2, '0')}:${n.occurredAt.toLocal().second.toString().padLeft(2, '0')}';
-                          return ListTile(
-                            dense: true,
-                            leading: Icon(
-                              n.type == 'user.deactivated' ? Icons.person_off_outlined : Icons.badge_outlined,
-                              size: 20,
-                              color: theme.colorScheme.primary,
-                            ),
-                            title: Text(context.t(titleKey)),
-                            subtitle: Text(n.detail),
-                            trailing: Text(
-                              timeStr,
-                              style: TextStyle(
-                                fontFamily: AppTokens.fontMono,
-                                fontSize: 12,
+                  // Roles section
+                  _SectionHeader(title: context.t('auth.rolesLabel')),
+                  const SizedBox(height: 8),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: user.roles.isEmpty
+                          ? Text(
+                              context.t('auth.noRoles'),
+                              style: theme.textTheme.bodyMedium?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
+                            )
+                          : Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: user.roles.map((role) {
+                                return Chip(label: Text(role.name));
+                              }).toList(),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Notifications section
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: [
+                      _SectionHeader(
+                        title: context.t('auth.notificationsTitle'),
+                      ),
+                      ListenableBuilder(
+                        listenable: _notificationsController,
+                        builder: (context, _) {
+                          final isConnected =
+                              _notificationsController.isConnected;
+                          final indicatorColor = isConnected
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.error;
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isConnected
+                                  ? theme.colorScheme.primaryContainer
+                                  : theme.colorScheme.errorContainer,
+                              borderRadius: BorderRadius.circular(
+                                AppTokens.rPill,
+                              ),
+                              border: Border.all(
+                                color: indicatorColor.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 7,
+                                  height: 7,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: indicatorColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isConnected
+                                      ? context.t('auth.notificationsLive')
+                                      : context.t('auth.notificationsPaused'),
+                                  style: TextStyle(
+                                    fontFamily: AppTokens.fontUi,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: isConnected
+                                        ? theme.colorScheme.onPrimaryContainer
+                                        : theme.colorScheme.onErrorContainer,
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         },
                       ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 20),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ListenableBuilder(
+                    listenable: _notificationsController,
+                    builder: (context, _) {
+                      final notifications =
+                          _notificationsController.notifications;
+                      if (notifications.isEmpty) {
+                        return Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(
+                              context.t('auth.notificationsEmpty'),
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
 
-                // Preferences section: Language
-                _SectionHeader(title: context.t('common.language')),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: LanguageSwitcher(controller: widget.localeController),
-                ),
-                const SizedBox(height: 20),
+                      return Card(
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: notifications.length,
+                          separatorBuilder: (_, _) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final n = notifications[index];
+                            final titleKey = n.type == 'user.deactivated'
+                                ? 'auth.userDeactivated'
+                                : 'auth.userRoleChanged';
+                            final timeStr =
+                                '${n.occurredAt.toLocal().hour.toString().padLeft(2, '0')}:${n.occurredAt.toLocal().minute.toString().padLeft(2, '0')}:${n.occurredAt.toLocal().second.toString().padLeft(2, '0')}';
+                            return ListTile(
+                              dense: true,
+                              leading: Icon(
+                                n.type == 'user.deactivated'
+                                    ? Icons.person_off_outlined
+                                    : Icons.badge_outlined,
+                                size: 20,
+                                color: theme.colorScheme.primary,
+                              ),
+                              title: Text(context.t(titleKey)),
+                              subtitle: Text(n.detail),
+                              trailing: Text(
+                                timeStr,
+                                style: TextStyle(
+                                  fontFamily: AppTokens.fontMono,
+                                  fontSize: 12,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
 
-                // Preferences section: Theme
-                if (widget.themeController != null) ...[
-                  _SectionHeader(title: context.t('common.theme')),
+                  // Preferences section: Language
+                  _SectionHeader(title: context.t('common.language')),
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
-                    child: ThemeModeSwitcher(controller: widget.themeController!),
+                    child: LanguageSwitcher(
+                      controller: widget.localeController,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Preferences section: Theme
+                  if (widget.themeController != null) ...[
+                    _SectionHeader(title: context.t('common.theme')),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ThemeModeSwitcher(
+                        controller: widget.themeController!,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Sign out button (secondary, full width, 50px tall)
+                  SizedBox(
+                    height: AppTokens.buttonHeight,
+                    child: OutlinedButton(
+                      key: const Key('profile-sign-out'),
+                      onPressed: _signingOut ? null : _signOut,
+                      child: _signingOut
+                          ? SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            )
+                          : Text(context.t('auth.signOutButton')),
+                    ),
                   ),
                   const SizedBox(height: 24),
                 ],
-
-                // Sign out button (secondary, full width, 50px tall)
-                SizedBox(
-                  height: AppTokens.buttonHeight,
-                  child: OutlinedButton(
-                    key: const Key('profile-sign-out'),
-                    onPressed: _signingOut ? null : _signOut,
-                    child: _signingOut
-                        ? SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                          )
-                        : Text(context.t('auth.signOutButton')),
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
+              ),
             ),
           ),
         ),
