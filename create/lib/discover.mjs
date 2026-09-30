@@ -58,6 +58,40 @@ export function discoverStacks(repoRoot) {
 }
 
 /**
+ * Backend x provider combinations this repository ships but that are
+ * documented as not working, and why.
+ *
+ * A folder existing is not the same as a combination working: `.NET + MySQL`
+ * has its provider folder, its migrations and its CI job, and it still cannot
+ * build, because Pomelo — the only MySQL EF Core provider with an accepted
+ * licence — targets EF Core 9 while this backend's baseline is EF Core 10.
+ * The picker still offers it (the code is there to read), but it says so out
+ * loud at the prompt, in the generated README, and in the generated
+ * AGENTS.md, rather than letting a user discover it at `dotnet build`.
+ *
+ * Every entry must point at the place in this repository's documentation that
+ * says the same thing; the check in scripts/check-create-picker.mjs fails if a
+ * combination is blocked in code but absent from the generated project's
+ * README, which is what keeps this table and the docs from drifting apart.
+ * The source of truth for "blocked" is docs/SPEC.md §8.
+ */
+export const BLOCKED_COMBINATIONS = {
+  'dotnet+mysql': {
+    reason:
+      'the only MySQL EF Core provider with an accepted licence (Pomelo.EntityFrameworkCore.MySql 9.0.0, MIT) ' +
+      'targets EF Core 9 and cannot build its model on this backend EF Core 10 baseline. The provider folder and ' +
+      'its migrations are here, so you can read them, but `dotnet build` fails until Pomelo ships an EF Core 10 ' +
+      'release, and this combination is not covered by the conformance suite.',
+    reference: 'docs/SPEC.md §8 and README.md ("`.NET + MySQL` does not build")',
+  },
+};
+
+/** The honest label for one combination, or null when it is expected to work. */
+export function blockedReason(backend, database) {
+  return BLOCKED_COMBINATIONS[`${backend}+${database}`]?.reason ?? null;
+}
+
+/**
  * Whether ContextPact can honestly be offered as an optional install.
  *
  * Deliberately NOT a filesystem probe against a sibling checkout: this

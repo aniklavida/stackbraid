@@ -7,29 +7,82 @@
 // remove every cross-reference from prose written for a different
 // audience. See create/README.md for the reasoning.
 
+import { blockedReason } from './discover.mjs';
+
 const BACKEND_LABEL = { dotnet: '.NET', python: 'Python' };
 const FRONTEND_LABEL = { angular: 'Angular', nextjs: 'Next.js', none: null };
 const DATABASE_LABEL = { postgres: 'PostgreSQL', sqlserver: 'SQL Server', mysql: 'MySQL' };
 
-function backendRunInstructions(choices) {
-  if (choices.backend === 'dotnet') {
-    return [
+// How each provider is pointed at a real database, and — honestly — which of
+// them can be started on this machine without Docker. Only PostgreSQL ships a
+// throwaway-cluster script; the other two need an instance the user already
+// has, and the generated README says so rather than printing a Postgres
+// command that cannot work.
+const DATABASE_SETUP = {
+  dotnet: {
+    postgres: [
       '```bash',
       'cd backends/dotnet',
-      './scripts/start-local-postgres.sh   # or point ConnectionStrings:Default at your own Postgres',
+      './scripts/start-local-postgres.sh   # or point ConnectionStrings:Postgres at your own Postgres',
       'dotnet run --project src/Host --urls http://127.0.0.1:8080',
       '```',
-    ].join('\n');
-  }
-  return [
-    '```bash',
-    'cd backends/python',
-    './scripts/start-local-postgres.sh   # or point DATABASE_URL at your own Postgres',
-    'python -m venv .venv && source .venv/bin/activate',
-    'pip install -r requirements-lock.txt',
-    'PYTHONPATH=src uvicorn app.host.main:app --port 8080',
-    '```',
-  ].join('\n');
+    ].join('\n'),
+    sqlserver: [
+      '```bash',
+      'cd backends/dotnet',
+      '# Set Database:Provider to "sqlserver" and ConnectionStrings:SqlServer in',
+      '# src/Host/appsettings.json (or the environment) to your own SQL Server',
+      '# instance. No throwaway local script ships for this provider.',
+      'dotnet run --project src/Host --urls http://127.0.0.1:8080',
+      '```',
+    ].join('\n'),
+    mysql: [
+      '```bash',
+      'cd backends/dotnet',
+      '# Set Database:Provider to "mysql" and ConnectionStrings:MySql in',
+      '# src/Host/appsettings.json (or the environment) to your own MySQL',
+      '# instance. No throwaway local script ships for this provider.',
+      'dotnet run --project src/Host --urls http://127.0.0.1:8080',
+      '```',
+    ].join('\n'),
+  },
+  python: {
+    postgres: [
+      '```bash',
+      'cd backends/python',
+      './scripts/start-local-postgres.sh   # or point STACKBRAID_POSTGRES_DSN at your own Postgres',
+      'python -m venv .venv && source .venv/bin/activate',
+      'pip install -r requirements-lock.txt',
+      'PYTHONPATH=src uvicorn app.host.main:app --port 8080',
+      '```',
+    ].join('\n'),
+    sqlserver: [
+      '```bash',
+      'cd backends/python',
+      '# Point STACKBRAID_DATABASE_PROVIDER=sqlserver and STACKBRAID_SQLSERVER_DSN at',
+      '# your own SQL Server instance. No throwaway local script ships for',
+      '# this provider.',
+      'python -m venv .venv && source .venv/bin/activate',
+      'pip install -r requirements-lock.txt',
+      'PYTHONPATH=src uvicorn app.host.main:app --port 8080',
+      '```',
+    ].join('\n'),
+    mysql: [
+      '```bash',
+      'cd backends/python',
+      '# Point STACKBRAID_DATABASE_PROVIDER=mysql and STACKBRAID_MYSQL_DSN at your',
+      '# own MySQL instance. No throwaway local script ships for this provider.',
+      'python -m venv .venv && source .venv/bin/activate',
+      'pip install -r requirements-lock.txt',
+      'PYTHONPATH=src uvicorn app.host.main:app --port 8080',
+      '```',
+    ].join('\n'),
+  },
+};
+
+function backendRunInstructions(choices) {
+  const byBackend = DATABASE_SETUP[choices.backend] ?? {};
+  return byBackend[choices.database] ?? byBackend.postgres;
 }
 
 function frontendRunInstructions(choices) {
@@ -56,15 +109,16 @@ function mobileRunInstructions(choices) {
   ].join('\n');
 }
 
-export function renderReadme(choices) {
+export function renderReadme(choices, playbooks = []) {
   const backendLabel = BACKEND_LABEL[choices.backend];
   const databaseLabel = DATABASE_LABEL[choices.database] ?? choices.database;
   const frontendLabel = FRONTEND_LABEL[choices.frontend];
   const mobileIncluded = choices.mobile !== 'none';
+  const blocked = blockedReason(choices.backend, choices.database);
 
   const includedRows = [
     `| Backend | ${backendLabel} |`,
-    `| Database | ${databaseLabel} |`,
+    `| Database | ${databaseLabel}${blocked ? ' — **not working yet**, see below' : ''} |`,
     `| Frontend | ${frontendLabel ?? 'none'} |`,
     `| Mobile | ${mobileIncluded ? 'Flutter' : 'none'} |`,
   ];
@@ -78,6 +132,16 @@ export function renderReadme(choices) {
   );
   sections.push('## What this project includes\n');
   sections.push('| Piece | Choice |\n|---|---|\n' + includedRows.join('\n') + '\n');
+
+  if (blocked) {
+    sections.push('## Read this first: this database combination does not build yet\n');
+    sections.push(
+      `**${backendLabel} + ${databaseLabel} was generated, and it is known not to work.** ${blocked}\n\n` +
+        'The provider code is here so you can read it and follow it, but do not expect `dotnet build` ' +
+        'to succeed, and do not treat this project as proven. Choose a different database provider if ' +
+        'you need a backend that runs today.\n',
+    );
+  }
 
   sections.push('## Running the backend\n');
   sections.push(backendRunInstructions(choices) + '\n');
@@ -115,16 +179,27 @@ export function renderReadme(choices) {
     ].join('\n') + '\n',
   );
 
+  if (playbooks.length > 0) {
+    sections.push('## Working with a coding agent\n');
+    sections.push(
+      'Read `AGENTS.md` first. The procedures that apply to this project live in ' +
+        '`.agent/playbooks/`, filtered to the stacks chosen above — a playbook for a stack this project ' +
+        'does not contain is not installed, so nothing there can send an agent after code that is not here: ' +
+        `${playbooks.map((p) => '`' + p.name.replace(/\.md$/, '') + '`').join(' · ')}.\n`,
+    );
+  }
+
   sections.push('## Licence\n');
   sections.push('MIT. See [LICENSE](LICENSE).\n');
 
   return sections.join('\n');
 }
 
-export function renderAgents(choices) {
+export function renderAgents(choices, playbooks = []) {
   const backendLabel = BACKEND_LABEL[choices.backend];
   const frontendLabel = FRONTEND_LABEL[choices.frontend];
   const mobileIncluded = choices.mobile !== 'none';
+  const blocked = blockedReason(choices.backend, choices.database);
 
   const pieces = [backendLabel, frontendLabel, mobileIncluded ? 'Flutter' : null].filter(Boolean);
 
@@ -132,11 +207,20 @@ export function renderAgents(choices) {
   if (choices.frontend !== 'none') clientLines.push('- Regenerate `clients/typescript` (TypeScript).');
   if (mobileIncluded) clientLines.push('- Regenerate `clients/dart` (Dart).');
 
+  // The integration tier runs against the provider this project actually
+  // chose, not a hard-coded Postgres: a SQL Server project is not covered by
+  // a table that says "real Postgres".
+  const providerLabel = DATABASE_LABEL[choices.database] ?? choices.database;
+  const integrationTier = blocked
+    ? `real ${providerLabel}, once the limitation above is resolved`
+    : `real ${providerLabel}`;
   const testLines = [];
   if (choices.backend === 'dotnet') {
-    testLines.push('| Backend (.NET) | xUnit + Shouldly + NSubstitute | Testcontainers-free, real Postgres | NetArchTest |');
+    testLines.push(
+      `| Backend (.NET) | xUnit + Shouldly + NSubstitute | Testcontainers-free, ${integrationTier} | NetArchTest |`,
+    );
   } else {
-    testLines.push('| Backend (Python) | pytest + pytest-asyncio | real Postgres | import-linter |');
+    testLines.push(`| Backend (Python) | pytest + pytest-asyncio | ${integrationTier} | import-linter |`);
   }
   if (choices.frontend === 'angular') {
     testLines.push('| Frontend (Angular) | Vitest | Playwright | dependency-cruiser |');
@@ -158,7 +242,11 @@ Tool-neutral: Claude, Codex, Cursor, Gemini CLI and others can read this file.
 A product skeleton generated from [StackBraid](https://github.com/aniklavida/stackbraid),
 containing exactly the pieces chosen at generation time: **${pieces.join(', ')}**, on
 **${DATABASE_LABEL[choices.database] ?? choices.database}**. Nothing else is present — do not write instructions or
-code assuming a stack this project does not include.
+code assuming a stack this project does not include.${
+    blocked
+      ? `\n\n**Known limitation — this project does not build today.** ${blocked} Label it *unsupported* in anything you write about it, and do not spend time debugging it as if it were a mistake in this repository's code.`
+      : ''
+  }
 
 ## The one rule that matters
 
@@ -233,6 +321,22 @@ ${
   clientLines.length
     ? '`clients/` and any `api/` folder are generated and committed. **Never hand-edit them.** Regenerate from `contract/openapi.yaml` instead.'
     : 'No client is generated in this project because no frontend or mobile app was chosen — the backend is consumed directly over HTTP.'
+}
+
+## Playbooks
+
+${
+  playbooks.length
+    ? [
+        'Procedures live in `.agent/playbooks/`, one file each, already filtered to the stacks this ' +
+          'project contains — a playbook for a stack that is not here is not installed, so nothing in ' +
+          'there can send an agent after code that does not exist:',
+        '',
+        playbooks
+          .map((p) => `- [\`${p.name.replace(/\.md$/, '')}\`](.agent/playbooks/${p.name})`)
+          .join('\n'),
+      ].join('\n')
+    : 'No playbook applies to the stacks in this project, so `.agent/playbooks/` is empty. Write down the procedure you follow as you add the first one.'
 }
 
 ## Tests

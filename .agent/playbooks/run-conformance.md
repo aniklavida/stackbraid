@@ -26,12 +26,14 @@ This playbook describes how to execute the contract conformance suite against an
 
 ### Step 1: Start a Throwaway Test Database (No Docker)
 
+#### .NET Backend
 ```bash
-# For .NET:
 cd backends/dotnet
 export STACKBRAID_TEST_POSTGRES_CONNECTION_STRING="$(./scripts/start-local-postgres.sh)"
+```
 
-# For Python:
+#### Python Backend
+```bash
 cd backends/python
 export STACKBRAID_POSTGRES_DSN="$(./scripts/start-local-postgres.sh)"
 ```
