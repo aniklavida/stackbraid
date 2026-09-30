@@ -3,6 +3,9 @@ import 'features/auth/data/auth_repository.dart';
 import 'shared/auth/session_controller.dart';
 import 'shared/auth/token_store.dart';
 import 'shared/http/api_client.dart';
+import 'shared/http/network_status.dart';
+import 'shared/http/offline_queue.dart';
+import 'shared/http/staleness_controller.dart';
 import 'shared/i18n/locale_controller.dart';
 import 'shared/notifications/push_notification_service.dart';
 
@@ -16,18 +19,35 @@ import 'shared/notifications/push_notification_service.dart';
 /// to depend on everything, the same exemption `docs/STRUCTURE.md` gives
 /// every stack's own `Host`/`app` layer.
 class AppDependencies {
-  AppDependencies()
-      : apiClient = ApiClient(),
-        tokenStore = SecureTokenStore(),
-        localeController = LocaleController() {
-     session = SessionController(apiClient: apiClient, tokenStore: tokenStore);
-     authRepository = AuthRepositoryImpl(apiClient.authApi, apiClient.client.dio);
-     authUseCases = AuthUseCases(authRepository);
-     pushNotifications = PushNotificationService(apiClient);
-     session.addListener(_syncPushNotifications);
-
+  AppDependencies({
+    NetworkStatus? networkStatus,
+    OfflineQueue? offlineQueue,
+    ApiClient? apiClient,
+    TokenStore? tokenStore,
+    LocaleController? localeController,
+  })  : networkStatus = networkStatus ?? apiClient?.networkStatus ?? NetworkStatus(),
+        offlineQueue = offlineQueue ?? apiClient?.offlineQueue ?? OfflineQueue(),
+        tokenStore = tokenStore ?? SecureTokenStore(),
+        localeController = localeController ?? LocaleController(),
+        apiClient = apiClient ??
+            ApiClient(
+              networkStatus: networkStatus,
+              offlineQueue: offlineQueue,
+            ) {
+    stalenessController = StalenessController(
+      networkStatus: this.networkStatus,
+      offlineQueue: this.offlineQueue,
+    );
+    session = SessionController(apiClient: this.apiClient, tokenStore: this.tokenStore);
+    authRepository = AuthRepositoryImpl(this.apiClient.authApi, this.apiClient.client.dio);
+    authUseCases = AuthUseCases(authRepository);
+    pushNotifications = PushNotificationService(this.apiClient);
+    session.addListener(_syncPushNotifications);
   }
 
+  final NetworkStatus networkStatus;
+  final OfflineQueue offlineQueue;
+  late final StalenessController stalenessController;
   final ApiClient apiClient;
   final TokenStore tokenStore;
   final LocaleController localeController;

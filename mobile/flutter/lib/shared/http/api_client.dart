@@ -1,8 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:stackbraid_client/stackbraid_client.dart';
 
 import '../config/app_config.dart';
 import 'log_redaction.dart';
+import 'network_status.dart';
+import 'offline_interceptor.dart';
+import 'offline_queue.dart';
 
 /// One `Dio`/generated-client instance for the whole app, built once at
 /// startup and handed to every feature's data layer — the only place a
@@ -10,8 +14,16 @@ import 'log_redaction.dart';
 /// the backend exclusively through `clients/dart` (`stackbraid_client`),
 /// used unchanged: no hand-written HTTP calls, no copied models.
 class ApiClient {
-  ApiClient({AppConfig config = AppConfig.instance})
-      : client = StackbraidClient(basePathOverride: config.apiBaseUrl) {
+  ApiClient({
+    AppConfig config = AppConfig.instance,
+    NetworkStatus? networkStatus,
+    OfflineQueue? offlineQueue,
+  })  : networkStatus = networkStatus ?? NetworkStatus(),
+        offlineQueue = offlineQueue ?? OfflineQueue(),
+        client = StackbraidClient(basePathOverride: config.apiBaseUrl) {
+    client.dio.interceptors.add(
+      OfflineInterceptor(networkStatus: this.networkStatus, offlineQueue: this.offlineQueue),
+    );
     // `StackbraidClient`'s own constructor only installs its default
     // security interceptors (including the `BearerAuthInterceptor` every
     // bearer-secured operation — `logout`, `listUsers`, `assignRole` and
@@ -24,9 +36,37 @@ class ApiClient {
     if (kDebugMode) {
       client.dio.interceptors.add(RedactingLogInterceptor());
     }
+
+    this.networkStatus.addListener(_onNetworkStatusChanged);
   }
 
   final StackbraidClient client;
+  final NetworkStatus networkStatus;
+  final OfflineQueue offlineQueue;
+
+  void _onNetworkStatusChanged() {
+    if (networkStatus.isOnline && offlineQueue.hasPendingWrites && !offlineQueue.isReplaying) {
+      replayQueuedWrites();
+    }
+  }
+
+  /// Replays pending writes queued while offline using Dio.
+  Future<void> replayQueuedWrites() {
+    return offlineQueue.replay(
+      executor: (write) async {
+        return await client.dio.request<dynamic>(
+          write.path,
+          data: write.data,
+          options: Options(
+            method: write.method,
+            headers: Map<String, dynamic>.from(write.headers),
+            extra: {'skipOfflineQueue': true},
+          ),
+          queryParameters: write.queryParameters,
+        );
+      },
+    );
+  }
 
   late final AuthApi authApi = AuthApi(client.dio);
   late final UsersApi usersApi = UsersApi(client.dio);
