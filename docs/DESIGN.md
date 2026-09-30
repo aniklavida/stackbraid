@@ -63,3 +63,7 @@ All typography is self-hosted with zero third-party font requests at runtime.
 - **Self-hosted typography:** IBM Plex Sans and IBM Plex Mono served from `public/fonts/` with `@font-face` definitions in `src/styles.scss`. Google Fonts links removed from `src/index.html`.
 - **Theme management:** `ThemeService` and `ThemeToggleComponent` persisted in `localStorage` under `stackbraid.theme`, controlling the `data-theme` attribute on the root element (dark default, light secondary).
 - **Component styling:** Component styles implemented adhering strictly to design rules (one primary action per screen, accent budget under 5%, labels above inputs, no zebra tables, no gradients, no colored left borders).
+
+### Flutter (`mobile/flutter`)
+- **Tokens layer:** `lib/shared/theme/tokens.dart` holds the same brand values (hue, chroma, radius scale) as the web token files, exposed as light and dark `ThemeData` in `app_theme.dart`; a theme controller follows the system setting by default and can be overridden.
+- **Bundled typography:** IBM Plex Sans (400, 500, 600) and IBM Plex Mono (400, 500) ship as font assets under `assets/fonts/` with their OFL-1.1 licence texts alongside; no fonts are fetched at runtime.
