@@ -133,6 +133,14 @@ void main() {
       // token, fresh SessionController) reading back the SAME persisted
       // refresh token — see the file header for exactly what this does and
       // does not prove.
+      //
+      // Tear the first instance down the way a real relaunch does before
+      // starting the second: otherwise its session controller's refresh
+      // timer keeps running and can rotate the same persisted refresh token
+      // at the moment the new instance hydrates, so one of the two refreshes
+      // is rejected with 401 and the test fails intermittently.
+      await tester.pumpWidget(const SizedBox.shrink());
+      dependencies.session.dispose();
       dependencies = AppDependencies();
       await tester.pumpWidget(App(key: UniqueKey(), dependencies: dependencies));
       await settle(tester);
