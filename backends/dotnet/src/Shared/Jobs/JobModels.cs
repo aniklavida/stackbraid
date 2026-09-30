@@ -37,6 +37,15 @@ public sealed class JobRecord
     public DateTimeOffset UpdatedAt { get; set; }
     public DateTimeOffset? NextAttemptAt { get; set; }
 
+    /// <summary>The correlation ID of the request that enqueued this job, carried so the worker's own log lines can be matched to it.</summary>
+    public string? CorrelationId { get; set; }
+
+    /// <summary>The W3C <c>traceparent</c> of the request that enqueued this job, so the worker's span joins that same trace.</summary>
+    public string? TraceParent { get; set; }
+
+    /// <summary>The W3C <c>tracestate</c> accompanying <see cref="TraceParent"/>, or null.</summary>
+    public string? TraceState { get; set; }
+
     public JobRecord Clone() => (JobRecord)MemberwiseClone();
 
     public JobStatus ToStatus() =>

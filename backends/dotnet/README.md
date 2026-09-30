@@ -160,8 +160,14 @@ against any two running instances.
   table before returning, so it survives an API restart; the worker retries a
   failure with exponential backoff and dead-letters the job once its attempt
   budget is spent, and a job's owner can read its status at
-  `GET /v1/jobs/{jobId}`. `src/Worker` is a separate process that drains the
-  same queue, so the API can stay request-only. Real RabbitMQ connectivity is
+  `GET /v1/jobs/{jobId}`. A job is stored with the correlation ID and W3C trace
+  context of the request that enqueued it; the worker restores them so its span
+  joins that request's trace and its log lines carry the same correlation ID,
+  and it records the `stackbraid.jobs.duration` histogram and
+  `stackbraid.jobs.failures` counter matching
+  `infra/grafana/dashboards/background-jobs.json`. `src/Worker` is a separate
+  process that drains the same queue, so the API can stay request-only. Real
+  RabbitMQ connectivity is
   **not** compiled into this build: `IMessageBus` ships with its in-memory
   fake only, and selecting the RabbitMQ provider fails loudly rather than
   pretending to broker anything.

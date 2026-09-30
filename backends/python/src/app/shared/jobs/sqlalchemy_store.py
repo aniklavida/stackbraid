@@ -35,6 +35,9 @@ class JobModel(OrmBase):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     next_attempt_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    correlation_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    trace_parent: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    trace_state: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
 
 class SqlAlchemyJobStore:
@@ -106,6 +109,9 @@ def _to_model(job: JobRecord) -> JobModel:
         created_at=job.created_at,
         updated_at=job.updated_at,
         next_attempt_at=job.next_attempt_at,
+        correlation_id=job.correlation_id,
+        trace_parent=job.trace_parent,
+        trace_state=job.trace_state,
     )
 
 
@@ -122,4 +128,7 @@ def _to_record(model: JobModel) -> JobRecord:
         created_at=model.created_at,
         updated_at=model.updated_at,
         next_attempt_at=model.next_attempt_at,
+        correlation_id=model.correlation_id,
+        trace_parent=model.trace_parent,
+        trace_state=model.trace_state,
     )

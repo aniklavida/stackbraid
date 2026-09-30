@@ -13,7 +13,15 @@ namespace StackBraid.Database.MySql;
 public sealed class MySqlJobStore : IJobStore
 {
     private const string SelectColumns =
-        "id, type, payload, owner_id, state, attempts, max_attempts, last_error, created_at, updated_at, next_attempt_at";
+        "id, type, payload, owner_id, state, attempts, max_attempts, last_error, created_at, updated_at, next_attempt_at, correlation_id, trace_parent, trace_state";
+
+    /// <summary>Columns added after the table first shipped, applied idempotently to an existing table.</summary>
+    private static readonly (string Column, string Ddl)[] AddedColumns =
+    [
+        ("correlation_id", "ALTER TABLE shared_jobs ADD COLUMN correlation_id VARCHAR(64) NULL"),
+        ("trace_parent", "ALTER TABLE shared_jobs ADD COLUMN trace_parent VARCHAR(128) NULL"),
+        ("trace_state", "ALTER TABLE shared_jobs ADD COLUMN trace_state VARCHAR(512) NULL"),
+    ];
 
     private readonly string _connectionString;
 
@@ -38,6 +46,9 @@ public sealed class MySqlJobStore : IJobStore
                 created_at DATETIME(6) NOT NULL,
                 updated_at DATETIME(6) NOT NULL,
                 next_attempt_at DATETIME(6) NULL,
+                correlation_id VARCHAR(64) NULL,
+                trace_parent VARCHAR(128) NULL,
+                trace_state VARCHAR(512) NULL,
                 INDEX ix_shared_jobs_state_next_attempt_at (state, next_attempt_at),
                 INDEX ix_shared_jobs_owner_id (owner_id)
             )
@@ -45,17 +56,44 @@ public sealed class MySqlJobStore : IJobStore
 
         await using var connection = new MySqlConnection(_connectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        await using var command = new MySqlCommand(sql, connection);
-        await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        await using (var command = new MySqlCommand(sql, connection))
+        {
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        // MySQL has no ADD COLUMN IF NOT EXISTS (a MariaDB extension), so an
+        // existing table is upgraded by checking information_schema first.
+        var existingColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using (var read = new MySqlCommand(
+            "SELECT column_name FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'shared_jobs'",
+            connection))
+        await using (var reader = await read.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
+        {
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                existingColumns.Add(reader.GetString(0));
+            }
+        }
+
+        foreach (var (column, ddl) in AddedColumns)
+        {
+            if (existingColumns.Contains(column))
+            {
+                continue;
+            }
+
+            await using var alter = new MySqlCommand(ddl, connection);
+            await alter.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     public async Task AddAsync(JobRecord job, CancellationToken cancellationToken = default)
     {
         const string sql = """
             INSERT INTO shared_jobs
-                (id, type, payload, owner_id, state, attempts, max_attempts, last_error, created_at, updated_at, next_attempt_at)
+                (id, type, payload, owner_id, state, attempts, max_attempts, last_error, created_at, updated_at, next_attempt_at, correlation_id, trace_parent, trace_state)
             VALUES
-                (@id, @type, @payload, @owner_id, @state, @attempts, @max_attempts, @last_error, @created_at, @updated_at, @next_attempt_at)
+                (@id, @type, @payload, @owner_id, @state, @attempts, @max_attempts, @last_error, @created_at, @updated_at, @next_attempt_at, @correlation_id, @trace_parent, @trace_state)
             """;
 
         await using var connection = new MySqlConnection(_connectionString);
@@ -153,6 +191,9 @@ public sealed class MySqlJobStore : IJobStore
         command.Parameters.Add("@created_at", MySqlDbType.DateTime).Value = job.CreatedAt.UtcDateTime;
         command.Parameters.Add("@updated_at", MySqlDbType.DateTime).Value = job.UpdatedAt.UtcDateTime;
         command.Parameters.Add(NullableTimestamp("@next_attempt_at", job.NextAttemptAt));
+        command.Parameters.Add(NullableText("@correlation_id", job.CorrelationId));
+        command.Parameters.Add(NullableText("@trace_parent", job.TraceParent));
+        command.Parameters.Add(NullableText("@trace_state", job.TraceState));
     }
 
     private static MySqlParameter NullableText(string name, string? value) =>
@@ -186,6 +227,9 @@ public sealed class MySqlJobStore : IJobStore
         CreatedAt = AsUtc(reader.GetDateTime(8)),
         UpdatedAt = AsUtc(reader.GetDateTime(9)),
         NextAttemptAt = reader.IsDBNull(10) ? null : AsUtc(reader.GetDateTime(10)),
+        CorrelationId = reader.IsDBNull(11) ? null : reader.GetString(11),
+        TraceParent = reader.IsDBNull(12) ? null : reader.GetString(12),
+        TraceState = reader.IsDBNull(13) ? null : reader.GetString(13),
     };
 
     private static DateTimeOffset AsUtc(DateTime value) =>

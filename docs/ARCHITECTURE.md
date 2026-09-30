@@ -49,7 +49,9 @@ One instrumentation layer the operator can point anywhere, rather than a hard wi
 
 Every request's correlation ID (`X-Correlation-Id`) is stamped onto that request's own span as `app.correlation_id`, and every structured log line written while handling that request carries the same correlation ID plus the span's trace/span id — so a trace and a log line can each be found from the other, and a request's whole story is retrievable from either side.
 
-Both backends carry a test proving no secret — a password, a refresh token, an `Authorization` header — ever reaches a log line or a span attribute, run against the real Identity flow with real instrumentation, not a mock.
+Background work carries that context across the queue. A job enqueued during a request is stored with the request's correlation ID and W3C trace context; when a worker later picks it up — in the API process or a dedicated worker — its span is parented to the originating request's trace (so both share one trace ID) and its own log lines carry the request's correlation ID and trace/span ID. Each attempt records a duration histogram and each failure a counter, named `stackbraid.jobs.duration` and `stackbraid.jobs.failures` to match `infra/grafana/dashboards/background-jobs.json`. Metric *emission* is verified through the console exporter, on both backends; the dashboard itself has **not** been rendered against a live Prometheus/Grafana, which cannot run under this repository's no-Docker testing rules.
+
+Both backends carry a test proving no secret — a password, a refresh token, an `Authorization` header — ever reaches a log line or a span attribute, run against the real Identity flow with real instrumentation, not a mock. Each backend also carries a test that enqueues a job over real HTTP and asserts the worker's log line and span carry the enqueuing request's correlation ID and trace ID.
 
 ## Localization
 

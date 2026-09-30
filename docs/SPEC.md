@@ -63,7 +63,7 @@ stated gap. **Planned** means not built — do not describe it as working.
 | Pagination, filtering and sorting conventions | Implemented |
 | Migrations and seeding | Implemented for all three SQL providers, per backend |
 | Configuration and secret management | Implemented |
-| Structured logging with correlation IDs | Implemented, with a test that no secret reaches a log line |
+| Structured logging with correlation IDs, carried into background jobs | Implemented, with a test that no secret reaches a log line, and a per-backend test that a worker's log line and span carry the enqueuing request's correlation ID and trace ID |
 | Health and readiness endpoints | Implemented |
 | Docker Compose for the whole system | **Partial** — `infra/compose.yaml` exists and is validated in CI, but `docker compose up` has never been run end to end on a clean machine |
 | CI running build, test, lint, architecture and conformance | Implemented |
@@ -73,7 +73,7 @@ stated gap. **Planned** means not built — do not describe it as working.
 
 | Capability | Status |
 |---|---|
-| Background jobs | Partial — durable queue, retry, backoff and dead-letter on both backends, but the only registered handlers are conformance fixtures; no feature enqueues real work |
+| Background jobs | Partial — durable queue, retry, backoff and dead-letter on both backends; a job carries its enqueuing request's correlation ID and trace context, which the worker restores into its span and log lines, and the worker emits duration/failure metrics matching `infra/grafana/dashboards/background-jobs.json` (metric emission verified via the console exporter; the dashboard is unrendered — no Grafana here). The only registered handlers are conformance fixtures; no feature enqueues real work |
 | RabbitMQ | **Planned.** `AddRabbitMqMessaging` throws and `select_message_bus` raises `NotImplementedError`. Only the in-memory bus is registered. `infra/compose.yaml` does start a RabbitMQ service, so the compose file implies more than the backends do |
 | File storage (local and S3-compatible) | Partial — .NET implements both and selects on `Storage:Provider`; Python has a `LocalFileStorage` class that is never registered or called |
 | Excel import with row-level error reporting, and export | Partial — .NET implements the importer, the exporter and two endpoints; the importer has no HTTP surface. Python has a CSV exporter only, no importer, no endpoints |

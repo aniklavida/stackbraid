@@ -9,10 +9,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from datetime import datetime, timedelta, timezone
 from typing import Callable
 from uuid import UUID, uuid4
 
+from app.shared.jobs import telemetry
 from app.shared.jobs.handlers import JobContext, JobHandlerRegistry, JobPayload
 from app.shared.jobs.models import BackoffPolicy, JobRecord, JobRequest, JobStates, JobStatus, JobWorkerOptions
 from app.shared.jobs.scheduler import Job, InProcessJobScheduler
@@ -38,6 +40,10 @@ class PersistentJobScheduler:
 
     async def enqueue_request(self, request: JobRequest) -> UUID:
         now = self._now()
+        # Captured from the enqueuing request's ambient context — its span
+        # already carries the correlation ID and the W3C trace context, so the
+        # worker can restore both and join the same trace.
+        correlation_id, trace_parent, trace_state = telemetry.current_context()
         record = JobRecord(
             id=uuid4(),
             type=request.type,
@@ -49,6 +55,9 @@ class PersistentJobScheduler:
             last_error=None,
             created_at=now,
             updated_at=now,
+            correlation_id=correlation_id,
+            trace_parent=trace_parent,
+            trace_state=trace_state,
         )
         await self._store.add(record)
         return record.id
@@ -93,36 +102,46 @@ class JobWorker:
             await asyncio.sleep(self.options.poll_interval_seconds)
 
     async def _execute(self, job: JobRecord) -> None:
-        handler = self._registry.resolve(job.type)
-        if handler is None:
-            await self._fail(job, f"No handler is registered for job type '{job.type}'.")
-            return
+        # The job's own span joins the trace that enqueued it (the persisted
+        # traceparent is its remote parent) and both it and every log line
+        # emitted below carry the correlation ID captured at enqueue time.
+        started = time.perf_counter()
+        with telemetry.job_span(job):
+            handler = self._registry.resolve(job.type)
+            if handler is None:
+                outcome = await self._fail(job, f"No handler is registered for job type '{job.type}'.", telemetry.NO_HANDLER_REASON)
+                telemetry.record_duration(job.type, outcome, time.perf_counter() - started)
+                return
 
-        try:
-            await handler.handle(JobContext(job.id, job.type, job.owner_id, job.attempts), JobPayload(job.payload_json))
-            job.state = JobStates.SUCCEEDED
-            job.last_error = None
-            job.next_attempt_at = None
-            job.updated_at = self._now()
-            await self._store.update(job)
-            logger.info("Job %s (%s) succeeded on attempt %s.", job.id, job.type, job.attempts)
-        except Exception as exc:  # noqa: BLE001 - any handler failure is a retryable attempt
-            await self._fail(job, str(exc))
+            try:
+                await handler.handle(JobContext(job.id, job.type, job.owner_id, job.attempts), JobPayload(job.payload_json))
+                job.state = JobStates.SUCCEEDED
+                job.last_error = None
+                job.next_attempt_at = None
+                job.updated_at = self._now()
+                await self._store.update(job)
+                telemetry.record_duration(job.type, telemetry.SUCCEEDED_OUTCOME, time.perf_counter() - started)
+                logger.info("Job %s (%s) succeeded on attempt %s.", job.id, job.type, job.attempts)
+            except Exception as exc:  # noqa: BLE001 - any handler failure is a retryable attempt
+                outcome = await self._fail(job, str(exc), telemetry.HANDLER_ERROR_REASON)
+                telemetry.record_duration(job.type, outcome, time.perf_counter() - started)
 
-    async def _fail(self, job: JobRecord, error: str) -> None:
+    async def _fail(self, job: JobRecord, error: str, reason: str) -> str:
         now = self._now()
         job.last_error = error
         job.updated_at = now
+        telemetry.record_failure(job.type, reason)
 
         if job.attempts >= job.max_attempts:
             job.state = JobStates.DEAD_LETTERED
             job.next_attempt_at = None
             await self._store.update(job)
             logger.error("Job %s (%s) exhausted its %s attempt(s) and was dead-lettered: %s", job.id, job.type, job.attempts, error)
-            return
+            return telemetry.DEAD_LETTERED_OUTCOME
 
         delay = BackoffPolicy.compute(job.attempts, self.options.base_retry_delay_seconds, self.options.max_retry_delay_seconds)
         job.state = JobStates.QUEUED
         job.next_attempt_at = now + timedelta(seconds=delay)
         await self._store.update(job)
         logger.warning("Job %s (%s) failed on attempt %s; retrying in %ss: %s", job.id, job.type, job.attempts, delay, error)
+        return telemetry.RETRYING_OUTCOME

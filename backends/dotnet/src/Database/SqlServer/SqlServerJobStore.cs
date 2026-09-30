@@ -13,7 +13,7 @@ namespace StackBraid.Database.SqlServer;
 public sealed class SqlServerJobStore : IJobStore
 {
     private const string SelectColumns =
-        "id, type, payload, owner_id, state, attempts, max_attempts, last_error, created_at, updated_at, next_attempt_at";
+        "id, type, payload, owner_id, state, attempts, max_attempts, last_error, created_at, updated_at, next_attempt_at, correlation_id, trace_parent, trace_state";
 
     private readonly string _connectionString;
 
@@ -39,11 +39,17 @@ public sealed class SqlServerJobStore : IJobStore
                     last_error NVARCHAR(MAX) NULL,
                     created_at DATETIMEOFFSET NOT NULL,
                     updated_at DATETIMEOFFSET NOT NULL,
-                    next_attempt_at DATETIMEOFFSET NULL
+                    next_attempt_at DATETIMEOFFSET NULL,
+                    correlation_id NVARCHAR(64) NULL,
+                    trace_parent NVARCHAR(128) NULL,
+                    trace_state NVARCHAR(512) NULL
                 );
                 CREATE INDEX ix_shared_jobs_state_next_attempt_at ON shared_jobs (state, next_attempt_at);
                 CREATE INDEX ix_shared_jobs_owner_id ON shared_jobs (owner_id);
             END
+            IF COL_LENGTH(N'shared_jobs', N'correlation_id') IS NULL ALTER TABLE shared_jobs ADD correlation_id NVARCHAR(64) NULL;
+            IF COL_LENGTH(N'shared_jobs', N'trace_parent') IS NULL ALTER TABLE shared_jobs ADD trace_parent NVARCHAR(128) NULL;
+            IF COL_LENGTH(N'shared_jobs', N'trace_state') IS NULL ALTER TABLE shared_jobs ADD trace_state NVARCHAR(512) NULL;
             """;
 
         await using var connection = new SqlConnection(_connectionString);
@@ -56,9 +62,9 @@ public sealed class SqlServerJobStore : IJobStore
     {
         const string sql = """
             INSERT INTO shared_jobs
-                (id, type, payload, owner_id, state, attempts, max_attempts, last_error, created_at, updated_at, next_attempt_at)
+                (id, type, payload, owner_id, state, attempts, max_attempts, last_error, created_at, updated_at, next_attempt_at, correlation_id, trace_parent, trace_state)
             VALUES
-                (@id, @type, @payload, @owner_id, @state, @attempts, @max_attempts, @last_error, @created_at, @updated_at, @next_attempt_at)
+                (@id, @type, @payload, @owner_id, @state, @attempts, @max_attempts, @last_error, @created_at, @updated_at, @next_attempt_at, @correlation_id, @trace_parent, @trace_state)
             """;
 
         await using var connection = new SqlConnection(_connectionString);
@@ -97,7 +103,8 @@ public sealed class SqlServerJobStore : IJobStore
             SET state = N'running', attempts = attempts + 1, updated_at = @now, next_attempt_at = NULL
             OUTPUT INSERTED.id, INSERTED.type, INSERTED.payload, INSERTED.owner_id, INSERTED.state,
                    INSERTED.attempts, INSERTED.max_attempts, INSERTED.last_error, INSERTED.created_at,
-                   INSERTED.updated_at, INSERTED.next_attempt_at
+                   INSERTED.updated_at, INSERTED.next_attempt_at, INSERTED.correlation_id,
+                   INSERTED.trace_parent, INSERTED.trace_state
             WHERE id IN (
                 SELECT TOP (@max) id
                 FROM shared_jobs WITH (UPDLOCK, READPAST, ROWLOCK)
@@ -147,6 +154,9 @@ public sealed class SqlServerJobStore : IJobStore
         command.Parameters.Add("@created_at", SqlDbType.DateTimeOffset).Value = job.CreatedAt;
         command.Parameters.Add("@updated_at", SqlDbType.DateTimeOffset).Value = job.UpdatedAt;
         command.Parameters.Add(NullableTimestamp("@next_attempt_at", job.NextAttemptAt));
+        command.Parameters.Add(NullableText("@correlation_id", job.CorrelationId));
+        command.Parameters.Add(NullableText("@trace_parent", job.TraceParent));
+        command.Parameters.Add(NullableText("@trace_state", job.TraceState));
     }
 
     private static SqlParameter NullableText(string name, string? value) =>
@@ -180,5 +190,8 @@ public sealed class SqlServerJobStore : IJobStore
         CreatedAt = reader.GetFieldValue<DateTimeOffset>(8),
         UpdatedAt = reader.GetFieldValue<DateTimeOffset>(9),
         NextAttemptAt = reader.IsDBNull(10) ? null : reader.GetFieldValue<DateTimeOffset>(10),
+        CorrelationId = reader.IsDBNull(11) ? null : reader.GetString(11),
+        TraceParent = reader.IsDBNull(12) ? null : reader.GetString(12),
+        TraceState = reader.IsDBNull(13) ? null : reader.GetString(13),
     };
 }

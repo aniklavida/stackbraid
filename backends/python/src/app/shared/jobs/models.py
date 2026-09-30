@@ -42,6 +42,12 @@ class JobRecord:
     created_at: datetime
     updated_at: datetime
     next_attempt_at: datetime | None = None
+    # The enqueuing request's correlation ID and W3C trace context, carried so
+    # the worker can restore them and join the same trace. Nullable for jobs
+    # enqueued with no ambient request (a startup job, a test).
+    correlation_id: str | None = None
+    trace_parent: str | None = None
+    trace_state: str | None = None
 
     def to_status(self) -> "JobStatus":
         return JobStatus(
