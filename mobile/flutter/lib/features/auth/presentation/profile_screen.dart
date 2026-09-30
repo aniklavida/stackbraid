@@ -89,7 +89,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
         : user.displayName.characters.first.toUpperCase();
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.t('auth.profileTitle'))),
+      appBar: AppBar(
+        title: Text(context.t('auth.profileTitle')),
+        // Sign out lives in the top bar so it is on screen at every window
+        // size and text scale, never below the fold of a long profile.
+        actions: [
+          TextButton(
+            key: const Key('profile-sign-out'),
+            onPressed: _signingOut ? null : _signOut,
+            child: _signingOut
+                ? SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  )
+                : Text(context.t('auth.signOutButton')),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -348,24 +369,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 24),
                   ],
 
-                  // Sign out button (secondary, full width, 50px tall)
-                  SizedBox(
-                    height: AppTokens.buttonHeight,
-                    child: OutlinedButton(
-                      key: const Key('profile-sign-out'),
-                      onPressed: _signingOut ? null : _signOut,
-                      child: _signingOut
-                          ? SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            )
-                          : Text(context.t('auth.signOutButton')),
-                    ),
-                  ),
                   const SizedBox(height: 24),
                 ],
               ),
