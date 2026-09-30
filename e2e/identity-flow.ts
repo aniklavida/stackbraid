@@ -88,6 +88,9 @@ export function registerIdentityFlowSpec(test: TestType<PlaywrightTestArgs, obje
     await expect(page).toHaveURL(/\/profile$/);
     await expect(page.getByRole("heading", { name: displayName })).toBeVisible();
     await page.getByRole("button", { name: "Sign out" }).click();
+    // Wait for the sign-out to complete before signing in again: otherwise a
+    // late sign-out response can clear the administrator's new session.
+    await expect(nav.getByRole("link", { name: "Sign in" })).toBeVisible();
 
     // --- The seeded administrator can reach it -----------------------------------
     await page.goto("/login");
