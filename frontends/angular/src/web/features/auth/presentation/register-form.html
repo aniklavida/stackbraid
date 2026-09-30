@@ -1,72 +1,91 @@
-<mat-card class="flex w-full max-w-sm flex-col">
-  <form (ngSubmit)="submit()" novalidate>
-    <mat-card-header>
-      <mat-card-title>
-        <h1>{{ "auth.register.title" | transloco }}</h1>
-      </mat-card-title>
-      <mat-card-subtitle>{{ "auth.register.subtitle" | transloco }}</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content class="flex flex-col gap-4 pt-4">
-      @if (formError()) {
-        <p role="alert" class="text-sm text-red-600">{{ formError() }}</p>
-      }
+<div class="card-container w-full max-w-sm">
+  <form (ngSubmit)="submit()" novalidate class="flex flex-col gap-6">
+    <div class="flex flex-col gap-1.5">
+      <h1 class="text-xl font-semibold">{{ "auth.register.title" | transloco }}</h1>
+      <p class="text-xs text-[var(--mut)]">{{ "auth.register.subtitle" | transloco }}</p>
+    </div>
 
-      <mat-form-field appearance="outline">
-        <mat-label>{{ "auth.register.displayName" | transloco }}</mat-label>
+    @if (formError()) {
+      <div role="alert" class="rounded-[var(--r-sm)] border border-[var(--bad)]/25 bg-[var(--badbg)] p-2.5 text-xs text-[var(--bad)] font-medium">
+        {{ formError() }}
+      </div>
+    }
+
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label for="register-display-name" class="text-sm font-medium text-[var(--ink)]">
+          {{ "auth.register.displayName" | transloco }}
+        </label>
         <input
-          matInput
           id="register-display-name"
           autocomplete="name"
           [ngModel]="values().displayName"
           (ngModelChange)="setField('displayName', $event)"
           name="displayName"
+          class="input-control"
           [attr.aria-invalid]="!!fieldErrors().displayName"
+          [attr.aria-describedby]="fieldErrors().displayName ? 'register-display-name-error' : null"
         />
         @if (fieldErrors().displayName) {
-          <mat-error>{{ fieldErrors().displayName }}</mat-error>
+          <p id="register-display-name-error" class="text-xs text-[var(--bad)] mt-0.5">
+            {{ fieldErrors().displayName }}
+          </p>
         }
-      </mat-form-field>
+      </div>
 
-      <mat-form-field appearance="outline">
-        <mat-label>{{ "auth.register.email" | transloco }}</mat-label>
+      <div class="flex flex-col gap-1.5">
+        <label for="register-email" class="text-sm font-medium text-[var(--ink)]">
+          {{ "auth.register.email" | transloco }}
+        </label>
         <input
-          matInput
           id="register-email"
           type="email"
           autocomplete="email"
           [ngModel]="values().email"
           (ngModelChange)="setField('email', $event)"
           name="email"
+          class="input-control"
           [attr.aria-invalid]="!!fieldErrors().email"
+          [attr.aria-describedby]="fieldErrors().email ? 'register-email-error' : null"
         />
         @if (fieldErrors().email) {
-          <mat-error>{{ fieldErrors().email }}</mat-error>
+          <p id="register-email-error" class="text-xs text-[var(--bad)] mt-0.5">
+            {{ fieldErrors().email }}
+          </p>
         }
-      </mat-form-field>
+      </div>
 
-      <mat-form-field appearance="outline">
-        <mat-label>{{ "auth.register.password" | transloco }}</mat-label>
+      <div class="flex flex-col gap-1.5">
+        <label for="register-password" class="text-sm font-medium text-[var(--ink)]">
+          {{ "auth.register.password" | transloco }}
+        </label>
         <input
-          matInput
           id="register-password"
           type="password"
           autocomplete="new-password"
           [ngModel]="values().password"
           (ngModelChange)="setField('password', $event)"
           name="password"
+          class="input-control"
           [attr.aria-invalid]="!!fieldErrors().password"
+          aria-describedby="register-password-hint"
         />
-        <mat-hint>{{ fieldErrors().password ?? ("auth.register.passwordHint" | transloco) }}</mat-hint>
-      </mat-form-field>
-    </mat-card-content>
-    <mat-card-actions class="flex flex-col items-stretch gap-3 px-4 pb-4">
-      <button mat-flat-button color="primary" type="submit" [disabled]="submitting()">
-        {{ "auth.register.submit" | transloco }}
+        <p id="register-password-hint" class="text-xs text-[var(--mut)] mt-0.5">
+          {{ fieldErrors().password ?? ("auth.register.passwordHint" | transloco) }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-col items-stretch gap-3">
+      <button type="submit" class="btn-primary w-full" [disabled]="submitting()">
+        {{ submitting() ? "…" : ("auth.register.submit" | transloco) }}
       </button>
-      <p class="text-center text-sm text-gray-500">
+      <p class="text-center text-xs text-[var(--mut)]">
         {{ "auth.register.hasAccount" | transloco }}
-        <a routerLink="/login" class="font-medium underline underline-offset-4">{{ "auth.register.loginLink" | transloco }}</a>
+        <a routerLink="/login" class="font-medium text-[var(--acc)] hover:text-[var(--acc2)] underline underline-offset-4">
+          {{ "auth.register.loginLink" | transloco }}
+        </a>
       </p>
-    </mat-card-actions>
+    </div>
   </form>
-</mat-card>
+</div>

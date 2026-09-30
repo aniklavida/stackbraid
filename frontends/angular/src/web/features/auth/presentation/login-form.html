@@ -1,58 +1,72 @@
-<mat-card class="flex w-full max-w-sm flex-col">
-  <form (ngSubmit)="submit()" novalidate>
-    <mat-card-header>
-      <mat-card-title>
-        <h1>{{ "auth.login.title" | transloco }}</h1>
-      </mat-card-title>
-      <mat-card-subtitle>{{ "auth.login.subtitle" | transloco }}</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content class="flex flex-col gap-4 pt-4">
-      @if (formError()) {
-        <p role="alert" class="text-sm text-red-600">{{ formError() }}</p>
-      }
+<div class="card-container w-full max-w-sm">
+  <form (ngSubmit)="submit()" novalidate class="flex flex-col gap-6">
+    <div class="flex flex-col gap-1.5">
+      <h1 class="text-xl font-semibold">{{ "auth.login.title" | transloco }}</h1>
+      <p class="text-sm text-[var(--mut)]">{{ "auth.login.subtitle" | transloco }}</p>
+    </div>
 
-      <mat-form-field appearance="outline">
-        <mat-label>{{ "auth.login.email" | transloco }}</mat-label>
+    @if (formError()) {
+      <p role="alert" class="rounded-[var(--r-sm)] border border-[var(--bad)]/25 bg-[var(--badbg)] p-3 text-sm text-[var(--bad)]">
+        {{ formError() }}
+      </p>
+    }
+
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label for="login-email" class="text-sm font-medium text-[var(--ink)]">
+          {{ "auth.login.email" | transloco }}
+        </label>
         <input
-          matInput
           id="login-email"
           type="email"
           autocomplete="email"
           [ngModel]="values().email"
           (ngModelChange)="setEmail($event)"
           name="email"
+          class="input-control"
           [attr.aria-invalid]="!!fieldErrors().email"
+          [attr.aria-describedby]="fieldErrors().email ? 'login-email-error' : null"
         />
         @if (fieldErrors().email) {
-          <mat-error>{{ fieldErrors().email }}</mat-error>
+          <p id="login-email-error" class="text-xs text-[var(--bad)] mt-0.5">
+            {{ fieldErrors().email }}
+          </p>
         }
-      </mat-form-field>
+      </div>
 
-      <mat-form-field appearance="outline">
-        <mat-label>{{ "auth.login.password" | transloco }}</mat-label>
+      <div class="flex flex-col gap-1.5">
+        <label for="login-password" class="text-sm font-medium text-[var(--ink)]">
+          {{ "auth.login.password" | transloco }}
+        </label>
         <input
-          matInput
           id="login-password"
           type="password"
           autocomplete="current-password"
           [ngModel]="values().password"
           (ngModelChange)="setPassword($event)"
           name="password"
+          class="input-control"
           [attr.aria-invalid]="!!fieldErrors().password"
+          [attr.aria-describedby]="fieldErrors().password ? 'login-password-error' : null"
         />
         @if (fieldErrors().password) {
-          <mat-error>{{ fieldErrors().password }}</mat-error>
+          <p id="login-password-error" class="text-xs text-[var(--bad)] mt-0.5">
+            {{ fieldErrors().password }}
+          </p>
         }
-      </mat-form-field>
-    </mat-card-content>
-    <mat-card-actions class="flex flex-col items-stretch gap-3 px-4 pb-4">
-      <button mat-flat-button color="primary" type="submit" [disabled]="submitting()">
+      </div>
+    </div>
+
+    <div class="flex flex-col items-stretch gap-3">
+      <button type="submit" class="btn-primary w-full" [disabled]="submitting()">
         {{ "auth.login.submit" | transloco }}
       </button>
-      <p class="text-center text-sm text-gray-500">
+      <p class="text-center text-sm text-[var(--mut)]">
         {{ "auth.login.noAccount" | transloco }}
-        <a routerLink="/register" class="font-medium underline underline-offset-4">{{ "auth.login.registerLink" | transloco }}</a>
+        <a routerLink="/register" class="font-medium text-[var(--ink)] underline underline-offset-4">
+          {{ "auth.login.registerLink" | transloco }}
+        </a>
       </p>
-    </mat-card-actions>
+    </div>
   </form>
-</mat-card>
+</div>

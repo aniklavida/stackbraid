@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
 import { TranslocoPipe } from "@jsverse/transloco";
 
 import { LocaleSwitcherComponent } from "../../shared/i18n/locale-switcher";
+import { ThemeToggleComponent } from "../../shared/theme/theme-toggle.component";
 
 /**
  * Unlike the Next.js version of this shell — which cannot gate this area in
@@ -16,7 +17,7 @@ import { LocaleSwitcherComponent } from "../../shared/i18n/locale-switcher";
 @Component({
   selector: "app-admin-shell",
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslocoPipe, LocaleSwitcherComponent],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslocoPipe, LocaleSwitcherComponent, ThemeToggleComponent],
   templateUrl: "./admin-shell.html",
 })
 export class AdminShellComponent {}

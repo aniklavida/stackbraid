@@ -12,7 +12,8 @@ const STORAGE_KEY = "stackbraid.locale";
   imports: [MatButtonModule, MatMenuModule, TranslocoPipe],
   template: `
     <button
-      mat-button
+      type="button"
+      class="btn-ghost btn-sm"
       [attr.aria-label]="'language.label' | transloco"
       [matMenuTriggerFor]="menu"
     >

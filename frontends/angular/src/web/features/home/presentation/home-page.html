@@ -1,18 +1,111 @@
 @if (auth.status() === "loading") {
-  <p class="text-gray-500">{{ "home.loading" | transloco }}</p>
+  <div class="flex w-full max-w-2xl flex-col items-center justify-center py-16 gap-3">
+    <div class="h-5 w-5 rounded-full border-2 border-[var(--acc)] border-t-transparent animate-spin"></div>
+    <p class="text-sm font-medium text-[var(--mut)]">{{ "home.loading" | transloco }}</p>
+  </div>
 } @else if (auth.status() === "authenticated" && auth.user(); as user) {
-  <div class="flex max-w-xl flex-col gap-4">
-    <h1 class="text-3xl font-semibold tracking-tight">{{ "home.signedIn.greeting" | transloco: { name: user.displayName } }}</h1>
-    <p class="text-gray-500">{{ "home.signedIn.body" | transloco }}</p>
-    <a mat-flat-button color="primary" class="w-fit" routerLink="/profile">{{ "home.signedIn.profileCta" | transloco }}</a>
+  <div class="flex w-full max-w-2xl flex-col gap-8">
+    <div class="flex flex-col gap-3">
+      <h1 class="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--ink)]">
+        {{ "home.signedIn.greeting" | transloco: { name: user.displayName } }}
+      </h1>
+      <p class="text-base text-[var(--mut)] leading-relaxed">
+        {{ "home.signedIn.body" | transloco }}
+      </p>
+      <div class="pt-2">
+        <a routerLink="/profile" class="btn-primary">
+          {{ "home.signedIn.profileCta" | transloco }}
+        </a>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[var(--line)]">
+      <div class="card-container card-container-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-[var(--acc)]">
+          <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+        <span class="text-sm font-semibold text-[var(--ink)]">Session</span>
+        <span class="text-xs text-[var(--mut)]">
+          Active JWT with httpOnly refresh cookie verification.
+        </span>
+      </div>
+
+      <div class="card-container card-container-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-[var(--acc)]">
+          <rect width="16" height="16" x="4" y="4" rx="2"/>
+          <rect width="6" height="6" x="9" y="9" rx="1"/>
+          <path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/>
+        </svg>
+        <span class="text-sm font-semibold text-[var(--ink)]">Jobs</span>
+        <span class="text-xs text-[var(--mut)]">
+          Realtime progress events streamed across multi-tab sessions.
+        </span>
+      </div>
+
+      <div class="card-container card-container-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-[var(--acc)]">
+          <path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/>
+        </svg>
+        <span class="text-sm font-semibold text-[var(--ink)]">Contract</span>
+        <span class="text-xs text-[var(--mut)]">
+          100% conforming endpoints verified against OpenAPI.
+        </span>
+      </div>
+    </div>
   </div>
 } @else {
-  <div class="flex max-w-xl flex-col gap-4">
-    <h1 class="text-3xl font-semibold tracking-tight">{{ "home.signedOut.heading" | transloco }}</h1>
-    <p class="text-gray-500">{{ "home.signedOut.body" | transloco }}</p>
-    <div class="flex gap-3">
-      <a mat-flat-button color="primary" routerLink="/login">{{ "home.signedOut.loginCta" | transloco }}</a>
-      <a mat-stroked-button routerLink="/register">{{ "home.signedOut.registerCta" | transloco }}</a>
+  <div class="flex w-full max-w-2xl flex-col gap-8">
+    <div class="flex flex-col gap-4">
+      <h1 class="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-[var(--ink)]">
+        {{ "home.signedOut.heading" | transloco }}
+      </h1>
+      <p class="text-base text-[var(--mut)] leading-relaxed">
+        {{ "home.signedOut.body" | transloco }}
+      </p>
+      <div class="flex items-center gap-3 pt-2">
+        <a routerLink="/login" class="btn-primary">
+          {{ "home.signedOut.loginCta" | transloco }}
+        </a>
+        <a routerLink="/register" class="btn-outline">
+          {{ "home.signedOut.registerCta" | transloco }}
+        </a>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[var(--line)]">
+      <div class="card-container card-container-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-[var(--acc)]">
+          <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+        <span class="text-sm font-semibold text-[var(--ink)]">Identity flow</span>
+        <span class="text-xs text-[var(--mut)]">
+          Role-gated administrative surfaces and authenticated user profile.
+        </span>
+      </div>
+
+      <div class="card-container card-container-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-[var(--acc)]">
+          <rect width="16" height="16" x="4" y="4" rx="2"/>
+          <rect width="6" height="6" x="9" y="9" rx="1"/>
+          <path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/>
+        </svg>
+        <span class="text-sm font-semibold text-[var(--ink)]">Realtime jobs</span>
+        <span class="text-xs text-[var(--mut)]">
+          Live event-streamed job execution across tabs and clients.
+        </span>
+      </div>
+
+      <div class="card-container card-container-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-[var(--acc)]">
+          <path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/>
+        </svg>
+        <span class="text-sm font-semibold text-[var(--ink)]">Shared contract</span>
+        <span class="text-xs text-[var(--mut)]">
+          OpenAPI-backed type-safe clients across TypeScript and Dart.
+        </span>
+      </div>
     </div>
   </div>
 }

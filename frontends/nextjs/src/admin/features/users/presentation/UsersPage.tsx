@@ -24,11 +24,11 @@ export function UsersPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground">{t("subtitle")}</p>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--ink)]">{t("title")}</h1>
+        <p className="text-xs text-[var(--mut)]">{t("subtitle")}</p>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-2.5">
         <Input
           placeholder={t("searchPlaceholder")}
           className="max-w-xs"
@@ -39,7 +39,7 @@ export function UsersPage() {
           value={filter.status ?? "all"}
           onValueChange={(value) => setFilter((prev) => ({ ...prev, page: 1, status: value === "all" ? undefined : (value as AccountStatus) }))}
         >
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-36">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -49,18 +49,24 @@ export function UsersPage() {
           </SelectContent>
         </Select>
         <Button
-          variant={filter.includeDeleted ? "default" : "outline"}
+          variant="outline"
+          size="default"
           onClick={() => setFilter((prev) => ({ ...prev, page: 1, includeDeleted: !prev.includeDeleted }))}
         >
           {t(filter.includeDeleted ? "actions.hideDeleted" : "actions.includeDeleted")}
         </Button>
       </div>
 
-      {isPending && <Skeleton className="h-64 w-full" />}
+      {isPending && (
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-48 w-full" />
+        </div>
+      )}
       {isError && (
-        <p role="alert" className="text-destructive">
+        <div role="alert" className="rounded-[var(--r-md)] border border-[var(--bad)]/25 bg-[var(--badbg)] p-4 text-xs text-[var(--bad)] font-medium">
           {t("error")}
-        </p>
+        </div>
       )}
 
       {data && (
@@ -78,25 +84,24 @@ export function UsersPage() {
             <TableBody>
               {data.items.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="py-8 text-center text-xs text-[var(--mut)]">
                     {t("empty")}
                   </TableCell>
                 </TableRow>
               )}
               {data.items.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.displayName}</TableCell>
-                  <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                  <TableCell className="font-medium text-[var(--ink)]">{user.displayName}</TableCell>
+                  <TableCell className="font-mono text-xs text-[var(--mut)]">{user.email}</TableCell>
                   <TableCell>
-                       <Badge variant={user.deletedAt ? "destructive" : user.status === "active" ? "default" : "secondary"}>
-                         {t(user.deletedAt ? "statusDeleted" : user.status === "active" ? "statusActive" : "statusInactive")}
-                       </Badge>
-
+                    <Badge variant={user.deletedAt ? "destructive" : user.status === "active" ? "success" : "secondary"}>
+                      {t(user.deletedAt ? "statusDeleted" : user.status === "active" ? "statusActive" : "statusInactive")}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {user.roles.map((role) => (
-                        <Badge key={role.id} variant="outline">
+                        <Badge key={role.id} variant="outline" className="font-mono text-xs">
                           {role.name}
                         </Badge>
                       ))}
@@ -106,37 +111,36 @@ export function UsersPage() {
                     <Button asChild variant="ghost" size="sm">
                       <Link href={`/admin/users/${user.id}`}>{t("actions.view")}</Link>
                     </Button>
-                     {user.deletedAt ? (
-                       <Button
-                         variant="outline"
-                         size="sm"
-                         disabled={restore.isPending}
-                         onClick={() => restore.mutate(user.id, { onSuccess: () => toast.success(t("actions.restored", { name: user.displayName })) })}
-                       >
-                         {t("actions.restore")}
-                       </Button>
-                     ) : (
-                       <Button
-                         variant="outline"
-                         size="sm"
-                         disabled={user.status === "inactive" || deactivate.isPending}
-                         onClick={() =>
-                           deactivate.mutate(user.id, {
-                             onSuccess: () => toast.success(t("actions.deactivated", { name: user.displayName })),
-                           })
-                         }
-                       >
-                         {t("actions.deactivate")}
-                       </Button>
-                     )}
-
+                    {user.deletedAt ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={restore.isPending}
+                        onClick={() => restore.mutate(user.id, { onSuccess: () => toast.success(t("actions.restored", { name: user.displayName })) })}
+                      >
+                        {t("actions.restore")}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={user.status === "inactive" || deactivate.isPending}
+                        onClick={() =>
+                          deactivate.mutate(user.id, {
+                            onSuccess: () => toast.success(t("actions.deactivated", { name: user.displayName })),
+                          })
+                        }
+                      >
+                        {t("actions.deactivate")}
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
 
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--mut)]">
             <span>{t("pagination.summary", { page: data.page, totalPages: Math.max(data.totalPages, 1), totalItems: data.totalItems })}</span>
             <div className="flex gap-2">
               <Button

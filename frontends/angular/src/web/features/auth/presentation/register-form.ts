@@ -1,10 +1,6 @@
 import { Component, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterLink } from "@angular/router";
-import { MatButtonModule } from "@angular/material/button";
-import { MatCardModule } from "@angular/material/card";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatInputModule } from "@angular/material/input";
 import { TranslocoPipe, TranslocoService } from "@jsverse/transloco";
 
 import { AuthService } from "../../../../shared/auth/auth.service";
@@ -15,7 +11,7 @@ import type { FieldErrors, RegisterFormValues } from "../domain/validation";
 @Component({
   selector: "app-register-form",
   standalone: true,
-  imports: [FormsModule, RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, TranslocoPipe],
+  imports: [FormsModule, RouterLink, TranslocoPipe],
   templateUrl: "./register-form.html",
 })
 export class RegisterFormComponent {

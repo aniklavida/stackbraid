@@ -1,104 +1,126 @@
 @if (user.isPending()) {
-  <mat-progress-bar mode="indeterminate" class="max-w-2xl" />
+  <div class="h-64 w-full max-w-2xl rounded-[var(--r-md)] bg-[var(--subtle)] animate-pulse"></div>
 } @else if (user.isError() || !user.data()) {
-  <p role="alert" class="text-red-600">{{ "users.error" | transloco }}</p>
+  <p role="alert" class="rounded-[var(--r-sm)] border border-[var(--bad)]/25 bg-[var(--badbg)] p-3 text-sm text-[var(--bad)]">
+    {{ "users.error" | transloco }}
+  </p>
 } @else {
   @let data = user.data()!;
   <div class="flex flex-col gap-6">
     <div>
-      <a mat-button routerLink="/admin/users" class="-ml-3 mb-2">&larr; {{ "users.detail.back" | transloco }}</a>
+      <a routerLink="/admin/users" class="btn-ghost btn-sm mb-2 -ml-2.5 inline-flex items-center gap-1">
+        &larr; {{ "users.detail.back" | transloco }}
+      </a>
       <h1 class="text-2xl font-semibold tracking-tight">{{ data.displayName }}</h1>
-      <p class="text-gray-500">{{ data.email }}</p>
+      <p class="text-sm text-[var(--mut)]">{{ data.email }}</p>
     </div>
 
-    <mat-card class="max-w-2xl">
-      <mat-card-header>
-        <mat-card-title>{{ "users.detail.account" | transloco }}</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <dl class="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm">
-          <dt class="text-gray-500">{{ "users.columns.status" | transloco }}</dt>
-          <dd>
-            <span class="rounded-full px-2 py-0.5 text-xs" [class.bg-green-100]="data.status === 'active'" [class.bg-gray-100]="data.status !== 'active'">
-              {{ (data.status === "active" ? "users.statusActive" : "users.statusInactive") | transloco }}
-            </span>
-          </dd>
-          <dt class="text-gray-500">{{ "users.detail.createdAt" | transloco }}</dt>
-          <dd>{{ formatDate(data.createdAt) }}</dd>
-           <dt class="text-gray-500">{{ "users.detail.lastLoginAt" | transloco }}</dt>
-           <dd>{{ data.lastLoginAt ? formatDate(data.lastLoginAt) : ("users.detail.lastLoginAt_never" | transloco) }}</dd>
-           @if (data.deletedAt) {
-             <dt class="text-gray-500">{{ "users.detail.deletedAt" | transloco }}</dt>
-             <dd>{{ formatDate(data.deletedAt) }}</dd>
-           }
+    <!-- Account Details Card -->
+    <div class="card-container max-w-2xl gap-4">
+      <h2 class="text-base font-semibold">{{ "users.detail.account" | transloco }}</h2>
+      <dl class="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm">
+        <dt class="text-[var(--mut)]">{{ "users.columns.status" | transloco }}</dt>
+        <dd>
+          <span
+            class="badge"
+            [class.badge-default]="data.status === 'active'"
+            [class.badge-secondary]="data.status !== 'active'"
+          >
+            {{ (data.status === "active" ? "users.statusActive" : "users.statusInactive") | transloco }}
+          </span>
+        </dd>
 
-         </dl>
-         @if (data.deletedAt) {
-           <button mat-flat-button color="primary" class="mt-4" [disabled]="restore.isPending()" (click)="restoreUser()">
-             {{ "users.actions.restore" | transloco }}
-           </button>
-         }
-       </mat-card-content>
+        <dt class="text-[var(--mut)]">{{ "users.detail.createdAt" | transloco }}</dt>
+        <dd class="text-[var(--ink)]">{{ formatDate(data.createdAt) }}</dd>
 
-     </mat-card>
+        <dt class="text-[var(--mut)]">{{ "users.detail.lastLoginAt" | transloco }}</dt>
+        <dd class="text-[var(--ink)]">{{ data.lastLoginAt ? formatDate(data.lastLoginAt) : ("users.detail.lastLoginAt_never" | transloco) }}</dd>
 
-     <mat-card class="max-w-2xl">
-       <mat-card-header>
-         <mat-card-title>{{ "users.detail.audit" | transloco }}</mat-card-title>
-       </mat-card-header>
-       <mat-card-content>
-         @if (audit.isPending()) {
-           <mat-progress-bar mode="indeterminate" />
-         } @else if (audit.data()?.items?.length === 0) {
-           <p class="text-gray-500">{{ "users.detail.noAudit" | transloco }}</p>
-         } @else {
-           <ul class="flex flex-col gap-2 text-sm">
-             @for (entry of audit.data()?.items ?? []; track entry.id) {
-               <li class="flex justify-between gap-4">
-                 <span>{{ entry.action }}</span>
-                 <span class="text-gray-500">{{ formatDate(entry.occurredAt) }} · {{ entry.correlationId }}</span>
-               </li>
-             }
-           </ul>
-         }
-       </mat-card-content>
-     </mat-card>
-
-     <mat-card class="max-w-2xl">
-      <mat-card-header>
-        <mat-card-title>{{ "users.detail.roles" | transloco }}</mat-card-title>
-      </mat-card-header>
-      <mat-card-content class="flex flex-col gap-4">
-        @if (data.roles.length === 0) {
-          <p class="text-gray-500">{{ "users.detail.noRoles" | transloco }}</p>
+        @if (data.deletedAt) {
+          <dt class="text-[var(--mut)]">{{ "users.detail.deletedAt" | transloco }}</dt>
+          <dd class="text-[var(--ink)]">{{ formatDate(data.deletedAt) }}</dd>
         }
-        <ul class="flex flex-col gap-2">
-          @for (role of data.roles; track role.id) {
-            <li class="flex items-center justify-between rounded-md border px-3 py-2">
-              <span class="font-medium">{{ role.name }}</span>
-              <button mat-stroked-button [disabled]="revokeRole.isPending()" (click)="revoke(role.id, role.name)">
-                {{ "users.detail.revoke" | transloco }}
-              </button>
+      </dl>
+
+      @if (data.deletedAt) {
+        <div>
+          <button
+            type="button"
+            class="btn-primary mt-2"
+            [disabled]="restore.isPending()"
+            (click)="restoreUser()"
+          >
+            {{ "users.actions.restore" | transloco }}
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Audit Log Card -->
+    <div class="card-container max-w-2xl gap-4">
+      <h2 class="text-base font-semibold">{{ "users.detail.audit" | transloco }}</h2>
+      @if (audit.isPending()) {
+        <div class="h-20 w-full rounded-[var(--r-md)] bg-[var(--subtle)] animate-pulse"></div>
+      } @else if (audit.data()?.items?.length === 0) {
+        <p class="text-sm text-[var(--mut)]">{{ "users.detail.noAudit" | transloco }}</p>
+      } @else {
+        <ul class="flex flex-col gap-2 text-sm">
+          @for (entry of audit.data()?.items ?? []; track entry.id) {
+            <li class="flex justify-between gap-4 py-1 border-b border-[var(--line)] last:border-0">
+              <span class="text-[var(--ink)]">{{ entry.action }}</span>
+              <span class="text-xs text-[var(--mut)]">{{ formatDate(entry.occurredAt) }} &middot; {{ entry.correlationId }}</span>
             </li>
           }
         </ul>
+      }
+    </div>
 
-        @if (assignableRoles().length > 0) {
-          <div class="flex items-end gap-2">
-            <mat-form-field appearance="outline" class="flex-1">
-              <mat-label>{{ "users.detail.assignRole" | transloco }}</mat-label>
-              <mat-select [value]="selectedRoleId()" (selectionChange)="selectedRoleId.set($event.value)">
+    <!-- Roles Card -->
+    <div class="card-container max-w-2xl gap-4">
+      <h2 class="text-base font-semibold">{{ "users.detail.roles" | transloco }}</h2>
+      @if (data.roles.length === 0) {
+        <p class="text-sm text-[var(--mut)]">{{ "users.detail.noRoles" | transloco }}</p>
+      }
+      <ul class="flex flex-col gap-2">
+        @for (role of data.roles; track role.id) {
+          <li class="flex items-center justify-between rounded-[var(--r-sm)] border border-[var(--bd)] bg-[var(--surf)] px-3 py-2">
+            <span class="font-medium text-sm text-[var(--ink)]">{{ role.name }}</span>
+            <button
+              type="button"
+              class="btn-outline btn-sm"
+              [disabled]="revokeRole.isPending()"
+              (click)="revoke(role.id, role.name)"
+            >
+              {{ "users.detail.revoke" | transloco }}
+            </button>
+          </li>
+        }
+      </ul>
+
+      @if (assignableRoles().length > 0) {
+        <div class="flex items-end gap-2 pt-2 border-t border-[var(--line)]">
+          <div class="flex flex-1 flex-col gap-1.5">
+            <span class="text-sm font-medium text-[var(--ink)]">
+              {{ "users.detail.assignRole" | transloco }}
+            </span>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
+              <mat-select [value]="selectedRoleId()" (selectionChange)="selectedRoleId.set($event.value)" placeholder="{{ 'users.detail.assignRole' | transloco }}">
                 @for (role of assignableRoles(); track role.id) {
                   <mat-option [value]="role.id">{{ role.name }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
-            <button mat-flat-button color="primary" [disabled]="!selectedRoleId() || assignRole.isPending()" (click)="assign()">
-              {{ "users.detail.assign" | transloco }}
-            </button>
           </div>
-        }
-      </mat-card-content>
-    </mat-card>
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="!selectedRoleId() || assignRole.isPending()"
+            (click)="assign()"
+          >
+            {{ "users.detail.assign" | transloco }}
+          </button>
+        </div>
+      }
+    </div>
   </div>
 }

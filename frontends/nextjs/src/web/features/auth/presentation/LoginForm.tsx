@@ -51,17 +51,17 @@ export function LoginForm() {
       <form onSubmit={handleSubmit} noValidate>
         <CardHeader>
           <CardTitle>
-            <h1>{t("login.title")}</h1>
+            <h1 className="font-display text-xl font-semibold tracking-tight">{t("login.title")}</h1>
           </CardTitle>
-          <CardDescription>{t("login.subtitle")}</CardDescription>
+          <CardDescription className="text-xs text-[var(--mut)]">{t("login.subtitle")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {formError && (
-            <p role="alert" className="text-sm text-destructive">
+            <div role="alert" className="rounded-[var(--r-sm)] border border-[var(--bad)]/25 bg-[var(--badbg)] p-2.5 text-xs text-[var(--bad)] font-medium">
               {formError}
-            </p>
+            </div>
           )}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="login-email">{t("login.email")}</Label>
             <Input
               id="login-email"
@@ -73,12 +73,12 @@ export function LoginForm() {
               aria-describedby={fieldErrors.email ? "login-email-error" : undefined}
             />
             {fieldErrors.email && (
-              <p id="login-email-error" className="text-sm text-destructive">
+              <p id="login-email-error" className="text-xs text-[var(--bad)]">
                 {fieldErrors.email}
               </p>
             )}
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <Label htmlFor="login-password">{t("login.password")}</Label>
             <Input
               id="login-password"
@@ -90,19 +90,19 @@ export function LoginForm() {
               aria-describedby={fieldErrors.password ? "login-password-error" : undefined}
             />
             {fieldErrors.password && (
-              <p id="login-password-error" className="text-sm text-destructive">
+              <p id="login-password-error" className="text-xs text-[var(--bad)]">
                 {fieldErrors.password}
               </p>
             )}
           </div>
         </CardContent>
         <CardFooter className="flex flex-col items-stretch gap-3">
-          <Button type="submit" disabled={submitting}>
-            {t("login.submit")}
+          <Button type="submit" disabled={submitting} className="w-full">
+            {submitting ? "…" : t("login.submit")}
           </Button>
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-xs text-[var(--mut)]">
             {t("login.noAccount")}{" "}
-            <Link href="/register" className="font-medium text-foreground underline underline-offset-4">
+            <Link href="/register" className="font-medium text-[var(--acc)] hover:text-[var(--acc2)] underline underline-offset-4">
               {t("login.registerLink")}
             </Link>
           </p>
