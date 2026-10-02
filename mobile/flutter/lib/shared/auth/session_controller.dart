@@ -34,6 +34,9 @@ class SessionController extends ChangeNotifier implements SessionPort {
   // Bumped whenever the session is cleared so a refresh that was already in
   // flight cannot sign the user back in after they signed out.
   int _generation = 0;
+  // Set once the controller is disposed: refreshes still in flight at that point
+  // must not touch the (now unusable) notifier.
+  bool _disposed = false;
 
   AuthStatus status = AuthStatus.loading;
   User? user;
@@ -80,7 +83,7 @@ class SessionController extends ChangeNotifier implements SessionPort {
       headers: {'Authorization': 'Bearer ${tokens.accessToken}'},
     );
     final resolvedUser = userResponse.data!;
-    if (generation != null && generation != _generation) return resolvedUser;
+    if (_disposed || (generation != null && generation != _generation)) return resolvedUser;
 
     _accessToken = tokens.accessToken;
     _expiresAt = tokens.expiresAt;
@@ -95,6 +98,7 @@ class SessionController extends ChangeNotifier implements SessionPort {
 
   @override
   Future<void> clearSession() async {
+    if (_disposed) return;
     _generation++;
     _refreshTimer?.cancel();
     _refreshTimer = null;
@@ -138,6 +142,7 @@ class SessionController extends ChangeNotifier implements SessionPort {
 
   @override
   void dispose() {
+    _disposed = true;
     _refreshTimer?.cancel();
     super.dispose();
   }
